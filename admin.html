@@ -1430,17 +1430,17 @@
                 const autoSlug = defaultName.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.floor(100 + Math.random() * 900);
 
                 // Create new pending tenant
-                const { data: newTenant, error: tenantErr } = await supabaseClient
-                    .from('tenants')
-                    .insert([{
-                        restaurant_name: defaultName,
-                        plan_tier: 'basic',
-                        status: 'pending',
-                        business_type: savedBusinessType || 'restaurant',
-                        slug: autoSlug // 🌟 Save the auto-generated slug to the database!
-                    }])
-                    .select()
-                    .single();
+             const { data: newTenant, error: tenantErr } = await supabaseClient
+                 .from('tenants')
+                 .insert([{
+                     restaurant_name: defaultName,
+                     plan_tier: 'basic',
+                     status: 'pending',
+                     business_type: savedBusinessType || 'restaurant'
+                     // SLUG LINE DELETED FROM HERE
+                 }])
+                 .select()
+                 .single();
 
                 if (tenantErr) {
                     alert("Account setup error: " + tenantErr.message);
