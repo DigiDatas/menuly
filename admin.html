@@ -1177,12 +1177,24 @@
                     </div>
                 </div>
 
-                <div>
+               <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Description</label>
                     <textarea id="form-desc" rows="2" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-red-500"></textarea>
                 </div>
                 
-                
+                <!-- 🌟 NEW: VARIATIONS / SIZES BUILDER -->
+                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 my-2">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-xs font-bold text-gray-700 uppercase"><i class="fas fa-tags text-blue-500 me-1"></i> Sizes / Variations</label>
+                        <button type="button" onclick="addVariantRow()" class="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-blue-200 transition shadow-sm uppercase tracking-wider">
+                            <i class="fas fa-plus"></i> Add Size
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-gray-500 mb-3 font-medium">Add options like "Small", "Large", or "1 Liter". Leave empty if standard item.</p>
+                    <div id="variants-container" class="flex flex-col gap-2">
+                        <!-- JS Injected Rows -->
+                    </div>
+                </div>
 
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Recipe / Ingredients</label>
@@ -2924,7 +2936,18 @@ if (!graphActiveFilter) graphActiveFilter = 'week';
             }
         }
 
-        
+        // Add this helper function right ABOVE openMenuModal
+function addVariantRow(name = '', price = '') {
+    const container = document.getElementById('variants-container');
+    const row = document.createElement('div');
+    row.className = "flex gap-2 items-center variant-row";
+    row.innerHTML = `
+        <input type="text" placeholder="Size (e.g. 500ml)" value="${name}" class="variant-name flex-1 border border-gray-200 rounded-lg px-3 py-2 text-xs focus:border-red-500 outline-none">
+        <input type="number" step="0.01" placeholder="Price" value="${price}" class="variant-price w-24 border border-gray-200 rounded-lg px-3 py-2 text-xs focus:border-red-500 outline-none">
+        <button type="button" onclick="this.parentElement.remove()" class="w-8 h-8 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition flex items-center justify-center shrink-0"><i class="fas fa-trash text-[10px]"></i></button>
+    `;
+    container.appendChild(row);
+}
 
         async function openMenuModal(mode, id = null) {
             const modal = document.getElementById('menuModal');
@@ -2935,7 +2958,7 @@ if (!graphActiveFilter) graphActiveFilter = 'week';
 
             document.getElementById('edit-item-id').value = id || '';
             document.getElementById('form-related').value = ''; // Reset related mapping
-            
+            document.getElementById('variants-container').innerHTML = '';
             if (mode === 'add') {
                 document.getElementById('menu-modal-title').textContent = 'Add Menu Item';
                 
@@ -3004,7 +3027,15 @@ if (!graphActiveFilter) graphActiveFilter = 'week';
                     document.getElementById('form-order').value = item.order_index || 1;
                     document.getElementById('form-desc').value = item.description || '';
                     document.getElementById('form-calories').value = item.calories || '';
-			document.getElementById('form-stock').value = item.stock_quantity !== null ? item.stock_quantity : '';
+                    document.getElementById('form-stock').value = item.stock_quantity !== null ? item.stock_quantity : '';
+                    
+                    // 🌟 PASTE THE NEW VARIATIONS CODE RIGHT HERE 🌟
+                    document.getElementById('variants-container').innerHTML = '';
+                    if (item.variations && Array.isArray(item.variations) && item.variations.length > 0) {
+                        item.variations.forEach(v => addVariantRow(v.name, v.price));
+                    }
+                    // 🌟 ========================================= 🌟
+
                     document.getElementById('form-recipe').value = item.recipe || '';
                     document.getElementById('form-video').value = item.video_url || '';
                     
@@ -3104,25 +3135,37 @@ const { data: existingItem } = await supabaseClient
             }
             // ==========================================
 
-            // 1. Save Menu Item
+            // Add this right before the payload is built in saveMenuItem()
+            const variantRows = document.querySelectorAll('.variant-row');
+            const variationsArr = [];
+            variantRows.forEach(row => {
+                const vName = row.querySelector('.variant-name').value.trim();
+                const vPrice = parseFloat(row.querySelector('.variant-price').value);
+                if (vName && !isNaN(vPrice)) {
+                    variationsArr.push({ name: vName, price: vPrice });
+                }
+            });
+
+            // Update your payload object to include variations:
             const payload = {
-        restaurant_id: activeRestaurantId, // 🔒 Scoped
-        item_code: itemCode,
-        language: language,
-        name: name,
-        main_cat: mainCat,
-        sub_cat: subCat,
-        price: price,
-        order_index: orderIndex,
-        description: desc,
-        calories: calories,
-        stock_quantity: stockQty,
-        recipe: recipe,
-        video_url: video,
-        review_links: reviews,
-        is_today_special: isSpecial,
-        img_urls: [...currentEditingImages]
-    };
+                restaurant_id: activeRestaurantId, 
+                item_code: itemCode,
+                language: language,
+                name: name,
+                main_cat: mainCat,
+                sub_cat: subCat,
+                price: price, // Base price acts as the default if no variants selected
+                order_index: orderIndex,
+                description: desc,
+                calories: calories,
+                stock_quantity: stockQty,
+                recipe: recipe,
+                video_url: video,
+                review_links: reviews,
+                is_today_special: isSpecial,
+                img_urls: [...currentEditingImages],
+                variations: variationsArr // 🌟 NEW JSONB COLUMN
+            };
 
     let saveError;
     if (id) {
