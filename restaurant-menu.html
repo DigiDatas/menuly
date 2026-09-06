@@ -599,6 +599,23 @@
         </div>
     </div>
 
+
+<!-- ================= MODAL: VARIANT SELECTION ================= -->
+    <div id="variantModal" class="fixed inset-0 z-[140] hidden items-end sm:items-center justify-center p-0 sm:p-6">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeVariantModal()"></div>
+        <div class="relative z-10 w-full sm:max-w-sm bg-white rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col transform transition-all duration-300" id="variantModalContent">
+            
+            <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="font-bold text-gray-900 text-sm"><i class="fas fa-tags text-red-500 me-2"></i>Select Size / Option</h3>
+                <button onclick="closeVariantModal()" class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-300 transition"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="p-4 flex flex-col gap-2 bg-gray-50" id="variant-list-container">
+                <!-- JS INJECTS BUTTONS HERE -->
+            </div>
+        </div>
+    </div>
+
 <!-- 🌟 NEW: Waiter Bell Modal -->
     <div id="waiterModal" class="fixed inset-0 z-[150] hidden items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm">
         <div class="relative w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl p-6 flex flex-col gap-4 text-center transform transition-all duration-300 scale-95 opacity-0" id="waiterModalContent">
@@ -1378,7 +1395,8 @@ let relatedItemsData = []; // (You did this perfectly!)
                     isTodaySpecial: item.is_today_special || false,
                     imgUrls: item.img_urls && item.img_urls.length > 0 ? item.img_urls : [rawBranding.smartLogo || 'https://via.placeholder.com/100'],
                     img: item.img_urls && item.img_urls.length > 0 ? item.img_urls[0] : (rawBranding.smartLogo || 'https://via.placeholder.com/100'),
-                    video: item.video_url || "", reviewLinks: item.review_links || ""
+                    video: item.video_url || "", reviewLinks: item.review_links || "",
+                    variations: item.variations || [] // 🌟 NEW: Fetch the sizes array!
                 }));
                 mainCategories = [...new Set(activeMenuData.map(i => i.mainCat))];
                 allSubCategories = [...new Set(activeMenuData.map(i => i.subCat))];
@@ -3139,23 +3157,165 @@ if (slider.dataset.dragAttached === "true") return;
             updateCartUI(); // Automatically updates the red number on the floating cart!
         }
 function toggleQuickCart(id) {
-            const itemIndex = cart.findIndex(c => String(c.id) === String(id));
+            const item = activeMenuData.find(i => String(i.id) === String(id));
+            if (!item) return;
+
+            // 🌟 THE INTERCEPTOR: If item has sizes, open the size menu instead!
+            if (item.variations && item.variations.length > 0) {
+                openVariantModal(id);
+                return;
+            }
+
+            // Normal Flow for standard items
+            const itemIndex = cart.findIndex(c => String(c.id) === String(id) && !c.variantName);
             
             if (itemIndex > -1) {
-                // If it's already in the cart, remove it completely
                 cart.splice(itemIndex, 1);
             } else {
-                // If not in cart, add 1 quantity
-                const item = activeMenuData.find(i => String(i.id) === String(id));
-                if (item) {
-                    if (item.stockQty !== null && item.stockQty <= 0) {
-                        alert("Sorry, this item is currently sold out!");
-                        return;
-                    }
-                    cart.push({ ...item, qty: 1 });
+                if (item.stockQty !== null && item.stockQty <= 0) {
+                    alert("Sorry, this item is currently sold out!");
+                    return;
                 }
+                cart.push({ ...item, cartItemId: item.id, qty: 1 });
             }
             updateCartUI(); 
+        }
+
+        function updateCartUI() {
+            const countBadge = document.getElementById('cart-count-badge');
+            const floatingBtn = document.getElementById('cart-floating-btn');
+            const container = document.getElementById('cart-items-container');
+            
+            let totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+            countBadge.innerText = totalItems;
+            
+            if (totalItems > 0) {
+                floatingBtn.classList.remove('hidden'); floatingBtn.classList.add('flex');
+            } else {
+                floatingBtn.classList.add('hidden'); floatingBtn.classList.remove('flex');
+                closeCartModal();
+            }
+
+            container.innerHTML = '';
+            let subtotal = 0;
+
+            cart.forEach((item, index) => {
+                const itemPrice = parseFloat(item.price) || 0;
+                const itemTotal = itemPrice * item.qty;
+                subtotal += itemTotal;
+
+                // 🌟 SHOW VARIANT NAME IN CART
+                const displayName = item.variantName ? `${item.name} <span class="text-red-500 ml-1">(${item.variantName})</span>` : item.name;
+                const uniqueId = item.cartItemId || item.id;
+
+                container.innerHTML += `
+                    <div class="flex items-center gap-2 bg-white p-2 rounded-lg mb-2 shadow-sm border border-gray-100">
+                        <img src="${item.img}" class="w-12 h-12 rounded-md object-cover bg-gray-100 shrink-0">
+                        <div class="flex-grow min-w-0">
+                            <h4 class="font-bold text-gray-800 text-xs leading-tight truncate">${displayName}</h4>
+                            <div class="text-[10px] text-gray-500 mt-0.5 flex items-baseline gap-1"><span>${itemPrice.toFixed(2)}</span> ${getSmartCurrency(globalCurrency, '')} <span>x ${item.qty}</span></div>
+                        </div>
+                        <div class="flex flex-col items-end gap-1 shrink-0">
+                            <span class="font-bold text-red-600 text-xs">${itemTotal.toFixed(2)}</span>
+                            <div class="flex items-center">
+                                <button onclick="removeFromCart('${uniqueId}')" class="w-6 h-6 flex items-center justify-center text-red-400 hover:text-red-600 transition-colors me-1">
+                                    <i class="fas fa-trash-alt text-xs"></i>
+                                </button>
+                                
+                                <div class="flex items-center gap-1 bg-gray-100 rounded p-0.5">
+                                    <button onclick="changeQty('${uniqueId}', -1)" class="w-5 h-5 flex items-center justify-center bg-white rounded text-gray-600 shadow-sm"><i class="fas fa-minus text-[10px]"></i></button>
+                                    <span class="font-bold text-xs w-3 text-center">${item.qty}</span>
+                                    <button onclick="changeQty('${uniqueId}', 1)" class="w-5 h-5 flex items-center justify-center bg-white rounded text-gray-600 shadow-sm"><i class="fas fa-plus text-[10px]"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('cart-total').innerHTML = `${subtotal.toFixed(2)} ${getSmartCurrency(globalCurrency, 'ms-1')}`;
+            updateQuickAddButtons();
+        }
+
+        function changeQty(cartItemId, change) {
+            const item = cart.find(c => String(c.cartItemId || c.id) === String(cartItemId));
+            if (item) {
+                const newQty = item.qty + change;
+                if (change > 0 && item.stockQty !== null && newQty > item.stockQty) return alert(`Sorry, only ${item.stockQty} portions left!`);
+                item.qty = newQty;
+                if (item.qty <= 0) cart = cart.filter(c => String(c.cartItemId || c.id) !== String(cartItemId));
+                updateCartUI();
+            }
+        }
+
+        function removeFromCart(cartItemId) {
+            cart = cart.filter(c => String(c.cartItemId || c.id) !== String(cartItemId));
+            updateCartUI();
+        }
+
+        // ==========================================
+        // 🌟 NEW: VARIANT MODAL LOGIC
+        // ==========================================
+        function openVariantModal(id) {
+            const item = activeMenuData.find(i => String(i.id) === String(id));
+            if (!item || !item.variations) return;
+
+            const container = document.getElementById('variant-list-container');
+            container.innerHTML = `
+                <div class="flex items-center gap-3 mb-2 px-2">
+                    <img src="${item.img}" class="w-14 h-14 rounded-xl object-cover shadow-sm">
+                    <div>
+                        <h4 class="font-black text-gray-800 text-base leading-tight">${item.name}</h4>
+                        <p class="text-[10px] text-gray-500 font-bold mt-0.5">Please select your preferred option.</p>
+                    </div>
+                </div>
+            `;
+
+            item.variations.forEach(v => {
+                const cartItemId = `${item.id}-${v.name}`;
+                const existingQty = cart.find(c => c.cartItemId === cartItemId)?.qty || 0;
+                
+                let btnHtml = '';
+                if (existingQty > 0) {
+                     btnHtml = `
+                        <div class="flex items-center gap-3 bg-red-50 border border-red-200 p-1 rounded-xl shadow-inner w-28 justify-between">
+                            <button onclick="changeQty('${cartItemId}', -1); openVariantModal('${item.id}')" class="w-7 h-7 bg-white rounded-lg shadow-sm text-gray-600 hover:text-red-500 font-black text-[10px]">-</button>
+                            <span class="font-black text-red-600 text-xs">${existingQty}</span>
+                            <button onclick="changeQty('${cartItemId}', 1); openVariantModal('${item.id}')" class="w-7 h-7 bg-white rounded-lg shadow-sm text-gray-600 hover:text-red-500 font-black text-[10px]">+</button>
+                        </div>`;
+                } else {
+                     btnHtml = `<button onclick="addVariantToCart('${item.id}', '${v.name}', ${v.price})" class="bg-gray-900 text-white px-5 py-2 rounded-xl font-bold text-xs shadow-md hover:bg-gray-800 transition tracking-wider">Add</button>`;
+                }
+
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm border border-gray-100 hover:border-red-200 transition">
+                        <div>
+                            <span class="block font-bold text-gray-800 text-sm">${v.name}</span>
+                            <span class="block font-black text-red-500 text-xs mt-0.5">${v.price.toFixed(2)} ${globalCurrency}</span>
+                        </div>
+                        ${btnHtml}
+                    </div>
+                `;
+            });
+
+            document.getElementById('variantModal').classList.remove('hidden');
+            document.getElementById('variantModal').classList.add('flex');
+        }
+
+        function closeVariantModal() {
+            document.getElementById('variantModal').classList.add('hidden');
+            document.getElementById('variantModal').classList.remove('flex');
+        }
+
+        function addVariantToCart(itemId, vName, vPrice) {
+            const item = activeMenuData.find(i => String(i.id) === String(itemId));
+            if (!item) return;
+
+            const cartItemId = `${item.id}-${vName}`;
+            cart.push({ ...item, cartItemId: cartItemId, variantName: vName, price: vPrice, qty: 1 });
+            
+            updateCartUI();
+            openVariantModal(itemId); // Refresh modal instantly to show the - / + buttons
         }
 
         function updateQuickAddButtons() {
@@ -3199,85 +3359,7 @@ function toggleQuickCart(id) {
                 }
             }
         }
-        function updateCartUI() {
-            const countBadge = document.getElementById('cart-count-badge');
-            const floatingBtn = document.getElementById('cart-floating-btn');
-            const container = document.getElementById('cart-items-container');
-            
-            // Update Floating Button
-            let totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
-            countBadge.innerText = totalItems;
-            
-            if (totalItems > 0) {
-                floatingBtn.classList.remove('hidden');
-                floatingBtn.classList.add('flex');
-            } else {
-                floatingBtn.classList.add('hidden');
-                floatingBtn.classList.remove('flex');
-                closeCartModal();
-            }
-
-            // Render Items in Bill
-            container.innerHTML = '';
-            let subtotal = 0;
-
-            cart.forEach((item, index) => {
-                const itemPrice = parseFloat(item.price) || 0;
-                const itemTotal = itemPrice * item.qty;
-                subtotal += itemTotal;
-
-                container.innerHTML += `
-                    <div class="flex items-center gap-2 bg-white p-2 rounded-lg mb-2 shadow-sm border border-gray-100">
-                        <img src="${item.img}" class="w-12 h-12 rounded-md object-cover bg-gray-100 shrink-0">
-                        <div class="flex-grow min-w-0">
-                            <h4 class="font-bold text-gray-800 text-xs leading-tight truncate">${item.name}</h4>
-                            <div class="text-[10px] text-gray-500 mt-0.5 flex items-baseline gap-1"><span>${itemPrice.toFixed(2)}</span> ${getSmartCurrency(globalCurrency, '')} <span>x ${item.qty}</span></div>
-                        </div>
-                        <div class="flex flex-col items-end gap-1 shrink-0">
-                            <span class="font-bold text-red-600 text-xs">${itemTotal.toFixed(2)}</span>
-                            <div class="flex items-center">
-                                <button onclick="removeFromCart('${item.id}')" class="w-6 h-6 flex items-center justify-center text-red-400 hover:text-red-600 transition-colors me-1">
-                                    <i class="fas fa-trash-alt text-xs"></i>
-                                </button>
-                                
-                                <div class="flex items-center gap-1 bg-gray-100 rounded p-0.5">
-                                    <button onclick="changeQty('${item.id}', -1)" class="w-5 h-5 flex items-center justify-center bg-white rounded text-gray-600 shadow-sm"><i class="fas fa-minus text-[10px]"></i></button>
-                                    <span class="font-bold text-xs w-3 text-center">${item.qty}</span>
-                                    <button onclick="changeQty('${item.id}', 1)" class="w-5 h-5 flex items-center justify-center bg-white rounded text-gray-600 shadow-sm"><i class="fas fa-plus text-[10px]"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            // Calculate Totals (VAT Removed)
-            document.getElementById('cart-total').innerHTML = `${subtotal.toFixed(2)} ${getSmartCurrency(globalCurrency, 'ms-1')}`;
-            updateQuickAddButtons();
-        }
-
-        function changeQty(id, change) {
-            // Convert both IDs to Strings to guarantee a perfect match
-            const item = cart.find(c => String(c.id) === String(id));
-            if (item) {
-                const newQty = item.qty + change;
-                if (change > 0 && item.stockQty !== null && newQty > item.stockQty) {
-                    alert(`Sorry, only ${item.stockQty} portions left in stock!`);
-                    return;
-                }
-                item.qty = newQty;
-                // If quantity drops to 0, remove it from the cart
-                if (item.qty <= 0) {
-                    cart = cart.filter(c => String(c.id) !== String(id));
-                }
-                updateCartUI();
-            }
-        }
-      function removeFromCart(id) {
-            // Instantly delete the item regardless of quantity
-            cart = cart.filter(c => String(c.id) !== String(id));
-            updateCartUI();
-        }
+        
 
         function openCartModal() {
             if(cart.length === 0) return; // Don't open if empty
@@ -3540,7 +3622,9 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
             cart.forEach((item, index) => {
                 const itemPrice = parseFloat(item.price) || 0;
                 const total = itemPrice * item.qty;
-                msg += `${index + 1}. ${item.qty}x ${item.name} @ ${itemPrice.toFixed(2)} = ${total.toFixed(2)}\n`;
+                // 🌟 ADD VARIANT TO WHATSAPP MESSAGE
+                const printName = item.variantName ? `${item.name} (${item.variantName})` : item.name;
+                msg += `${index + 1}. ${item.qty}x ${printName} @ ${itemPrice.toFixed(2)} = ${total.toFixed(2)}\n`;
             });
             
             msg += `------------------------\n`;
