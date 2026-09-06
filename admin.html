@@ -1425,6 +1425,10 @@
                     ? `${currentUser.user_metadata.full_name}'s Business` 
                     : 'New Business';
 
+                // 🌟 NEW: Auto-generate a clean, URL-friendly slug!
+                // Converts "Design Point's Business" to "design-points-business-842"
+                const autoSlug = defaultName.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.floor(100 + Math.random() * 900);
+
                 // Create new pending tenant
                 const { data: newTenant, error: tenantErr } = await supabaseClient
                     .from('tenants')
@@ -1432,7 +1436,8 @@
                         restaurant_name: defaultName,
                         plan_tier: 'basic',
                         status: 'pending',
-                        business_type: savedBusinessType || 'restaurant' // 🌟 Lock in the choice
+                        business_type: savedBusinessType || 'restaurant',
+                        slug: autoSlug // 🌟 Save the auto-generated slug to the database!
                     }])
                     .select()
                     .single();
