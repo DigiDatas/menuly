@@ -924,8 +924,7 @@ let restaurantId = null; // 🌟 Will be filled automatically in init()
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // --- Authentication Logic ---
         let currentUser = null;
-
-        async function checkSession() {
+async function checkSession() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             const btnNavLogin = document.getElementById('btn-nav-login');
             const btnNavProfile = document.getElementById('btn-nav-profile');
@@ -934,9 +933,10 @@ let restaurantId = null; // 🌟 Will be filled automatically in init()
             if (session) {
                 currentUser = session.user;
 
+                // 🌟 ADMIN SHIELD FIX: Fetch their current role so we don't accidentally overwrite an Admin!
                 const { data: profileData } = await supabaseClient
                     .from('profiles')
-                    .select('wishlist')
+                    .select('wishlist, role, restaurant_id')
                     .eq('id', currentUser.id)
                     .maybeSingle();
 
@@ -965,16 +965,30 @@ let restaurantId = null; // 🌟 Will be filled automatically in init()
                 });
 
                 const meta = currentUser.user_metadata || {};
-                await supabaseClient.from('profiles').upsert({
+                
+                // 🌟 THE ADMIN SHIELD: 
+                // Build the payload, but DO NOT include the restaurant_id or role yet
+                const updatePayload = {
                     id: currentUser.id,
-                    restaurant_id: restaurantId, // 🌟 ADD THIS LINE so they appear in your Customer Tab
                     email: currentUser.email,
                     full_name: meta.name || meta.full_name || currentUser.email.split('@')[0],
                     phone: meta.phone || 'No Phone',
                     gender: meta.gender || 'Unknown',
                     wishlist: [...likedItems],
                     last_sign_in: new Date().toISOString()
-                });
+                };
+
+                // ONLY update the restaurant_id and role if they are a standard customer!
+                // If they are an admin, leave their home restaurant_id untouched so they don't lose admin access.
+                const isTenantAdmin = profileData && profileData.role === 'tenant_admin';
+                const isSuperAdmin = profileData && profileData.role === 'super_admin';
+                
+                if (!isTenantAdmin && !isSuperAdmin) {
+                    updatePayload.restaurant_id = restaurantId; 
+                    updatePayload.role = 'customer';
+                }
+
+                await supabaseClient.from('profiles').upsert(updatePayload);
 
                 if(btnNavLogin) btnNavLogin.classList.replace('flex', 'hidden');
                 if(btnNavProfile) btnNavProfile.classList.replace('hidden', 'flex');
