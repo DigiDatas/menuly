@@ -4263,9 +4263,12 @@ document.getElementById('set-brand').dataset.original = data.brand_name || ''; /
                 
                 // Reset modal to Step 1 in case they cancelled previously
                 document.getElementById('url-warning-text').innerHTML = "Changing your Brand Name will also change your digital menu's web address.<br><br><b>Any old links will stop working.</b>";
-                document.getElementById('url-btn-confirm').setAttribute('onclick', 'confirmUrlWarningStep1()');
-                document.getElementById('url-btn-confirm').innerText = "I Understand";
-                document.getElementById('url-btn-confirm').className = "flex-1 bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition shadow-md";
+                
+                const urlBtn = document.getElementById('url-btn-confirm');
+                urlBtn.onclick = confirmUrlWarningStep1; // 🌟 FIXED: Direct assignment
+                urlBtn.innerText = "I Understand";
+                urlBtn.className = "flex-1 bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition shadow-md";
+                
                 return; // 🛑 Halt the save function!
             }
             btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`;
@@ -4363,7 +4366,7 @@ document.getElementById('set-brand').dataset.original = data.brand_name || ''; /
         }
 
 // ==========================================
-        // 🌟 URL WARNING MODAL LOGIC
+        // 🌟 URL WARNING MODAL LOGIC (FIXED)
         // ==========================================
         window.isUrlWarningConfirmed = false;
 
@@ -4378,9 +4381,12 @@ document.getElementById('set-brand').dataset.original = data.brand_name || ''; /
             document.getElementById('url-warning-text').innerHTML = "🚨 <b class='text-red-600'>CRITICAL WARNING</b> 🚨<br><br>If you have already printed physical QR codes, they will <b>BREAK</b> and customers won't be able to scan them!<br><br>Are you absolutely sure you want to change it?";
             
             const btn = document.getElementById('url-btn-confirm');
-            btn.setAttribute('onclick', 'confirmUrlWarningStep2()');
+            
+            // 🌟 FIXED: Direct assignment moves it to Step 2
+            btn.onclick = confirmUrlWarningStep2; 
+            
             btn.innerText = "Yes, Break Old QR Codes";
-            btn.className = "flex-1 bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-black transition shadow-md"; // Turn button black for extra seriousness
+            btn.className = "flex-1 bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-black transition shadow-md"; 
         }
 
         function confirmUrlWarningStep2() {
