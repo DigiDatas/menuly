@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Usthad Menu</title>
+    <title>Digital Menu</title>
   <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ef4444">
     <link rel="apple-touch-icon" href="logo.png">
@@ -1260,7 +1260,7 @@ let relatedItemsData = []; // (You did this perfectly!)
                 // 🌟 NEW: Smart check to see if the URL is an ID or a Slug
                 const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(menuSlug);
                 
-                let query = supabaseClient.from('tenants').select('id, business_type');
+                let query = supabaseClient.from('tenants').select('id, business_type, restaurant_name');
                 
                 if (isUUID) {
                     query = query.eq('id', menuSlug); // Search by ID
@@ -1277,7 +1277,7 @@ let relatedItemsData = []; // (You did this perfectly!)
                 
                 restaurantId = tenantData.id; 
                 window.businessType = tenantData.business_type || 'restaurant'; // 🌟 Save globally!
-                
+                document.title = tenantData.restaurant_name || "Digital Menu";
                 // Load favorites now that we know the ID
                 likedItems = new Set(JSON.parse(localStorage.getItem('likedItems_' + restaurantId)) || []);
 

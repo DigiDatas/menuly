@@ -4300,6 +4300,16 @@ const ordersRes = await supabaseClient
                 }
             }
 
+            // 🌟 NEW: Automatically update the URL slug in the tenants table based on the Brand Name!
+            const brandNameStr = document.getElementById('set-brand').value.trim();
+            if (brandNameStr) {
+                // Converts "De Point Store" to "de-point-store-31d6" (ensures it is always unique!)
+                const newSlug = brandNameStr.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + activeRestaurantId.substring(0, 4);
+                
+                // Save it securely to the tenants table
+                await supabaseClient.from('tenants').update({ slug: newSlug }).eq('id', activeRestaurantId);
+            }
+
             btn.innerHTML = `<i class="fas fa-save"></i> Save Settings`;
             
             if (!hasError) {
