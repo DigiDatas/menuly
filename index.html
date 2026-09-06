@@ -1,142 +1,811 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QRGate POS | Modern Multi-Tenant Restaurant Platform</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Poppins', sans-serif; }</style>
-    <!-- Supabase JS Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menuly — Small Business. Star Treatment.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!-- Supabase JS Client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --ink:#181511;
+  --ink-soft:#615A4E;
+  --ink-faint:#A79C89;
+  --bg:#FCFAF6;
+  --bg-alt:#F1ECE0;
+  --flame:#FF4E1F;
+  --flame-dark:#E23E12;
+  --flame-tint:#FFE4D8;
+  --pine:#1F5C46;
+  --pine-tint:#DCEFE4;
+  --cobalt:#2A4FD6;
+  --cobalt-tint:#E4E9FB;
+  --plumhue:#8A3B84;
+  --plum-tint:#F5E3F2;
+  --gold:#C6890F;
+  --gold-tint:#FBF0D8;
+  --ink2:#211A1E;
+  --ink3:#302428;
+  --cream:#FFF8EF;
+  --line:#EAE2D3;
+  --shadow: 0 22px 48px -22px rgba(24,21,17,0.30);
+  --font-display:'Bricolage Grotesque', sans-serif;
+  --font-body:'Manrope', sans-serif;
+  --font-mono:'Space Mono', monospace;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;} }
+body{margin:0; font-family:var(--font-body); color:var(--ink); background:var(--bg); line-height:1.5; -webkit-font-smoothing:antialiased;}
+img,svg{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+h1,h2,h3,h4{font-family:var(--font-display); margin:0; font-weight:700; letter-spacing:-0.01em;}
+p{margin:0;}
+ul{margin:0;padding:0;list-style:none;}
+button{font-family:inherit;cursor:pointer; border:none; background:none; padding:0;}
+:focus-visible{outline:2px solid var(--flame); outline-offset:3px; border-radius:4px;}
+.wrap{max-width:1220px; margin:0 auto; padding:0 32px;}
+.eyebrow{font-family:var(--font-mono); font-size:12.5px; letter-spacing:0.1em; text-transform:uppercase; font-weight:700;}
+section{position:relative;}
+.section-pad{padding:104px 0;}
+.section-head{max-width:640px; margin-bottom:52px;}
+.section-head .eyebrow{color:var(--flame); margin-bottom:14px; display:block;}
+.section-head h2{font-size:37px; line-height:1.14; letter-spacing:-0.015em;}
+.section-head p{margin-top:16px; font-size:16.5px; color:var(--ink-soft); line-height:1.65;}
+[data-reveal]{opacity:0; transform:translateY(22px); transition:opacity .7s ease, transform .7s ease;}
+[data-reveal].in{opacity:1; transform:translateY(0);}
+
+/* ---------- NAV ---------- */
+.nav{position:fixed; top:0; left:0; right:0; z-index:100; padding:20px 0; transition:background .35s ease, padding .35s ease, box-shadow .35s ease;}
+.nav.scrolled{background:rgba(252,250,246,0.88); backdrop-filter:blur(10px); padding:13px 0; box-shadow:0 1px 0 var(--line);}
+.nav-inner{display:flex; align-items:center; justify-content:space-between;}
+.logo{display:flex; align-items:center; gap:9px; font-family:var(--font-display); font-weight:800; font-size:21px; color:var(--ink);}
+.logo-mark{width:30px;height:30px;border-radius:9px;background:var(--flame); display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px; position:relative; overflow:hidden;}
+.logo-mark::after{content:""; position:absolute; width:20px; height:20px; border-radius:50%; background:rgba(255,255,255,0.16); top:-8px; right:-6px;}
+.logo-glyph{font-family:var(--font-display); font-weight:800; font-size:15px; line-height:1; letter-spacing:-0.02em; position:relative; z-index:1;}
+.nav-links{display:flex; gap:32px; align-items:center;}
+.nav-links a{font-size:14.5px; font-weight:700; color:var(--ink-soft); transition:color .2s;}
+.nav-links a:hover{color:var(--ink);}
+.nav-cta{background:var(--ink); color:#fff; padding:10px 20px; border-radius:100px; font-size:13.5px; font-weight:700; transition:transform .2s ease, background .2s ease;}
+.nav-cta:hover{background:var(--flame-dark); transform:translateY(-1px);}
+.nav-toggle{display:none; font-size:22px;color:var(--ink);}
+.mobile-menu{display:none; position:fixed; top:64px; left:16px; right:16px; background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:10px; z-index:99; flex-direction:column;}
+.mobile-menu.open{display:flex;}
+.mobile-menu a{padding:12px 14px; font-weight:700; font-size:15px; color:var(--ink); border-radius:10px;}
+.mobile-menu a:hover{background:var(--bg-alt);}
+
+/* ---------- HERO ---------- */
+.hero{padding:164px 0 96px; background:radial-gradient(700px 420px at 90% -10%, var(--flame-tint) 0%, transparent 62%), radial-gradient(600px 380px at 6% 6%, var(--pine-tint) 0%, transparent 58%);}
+.hero-grid{display:grid; grid-template-columns:1.05fr 0.85fr; gap:56px; align-items:center;}
+.hero-badges{display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap;}
+.badge{display:flex; align-items:center; gap:7px; background:var(--cream); border:1px solid var(--line); padding:7px 14px; border-radius:100px; font-size:12.5px; font-weight:700; color:var(--ink-soft);}
+.badge i{color:var(--flame); font-size:12px;}
+.hero h1{font-size:53px; line-height:1.06; letter-spacing:-0.02em; max-width:600px;}
+.hero h1 em{font-style:normal; color:var(--flame);}
+.hero-sub{margin-top:22px; font-size:17.5px; color:var(--ink-soft); max-width:500px; line-height:1.62;}
+.hero-actions{display:flex; gap:14px; margin-top:34px; flex-wrap:wrap;}
+.btn{display:inline-flex; align-items:center; gap:9px; padding:14px 26px; border-radius:100px; font-weight:700; font-size:15px; border:1.5px solid transparent; transition:transform .2s ease, background .2s ease, border-color .2s ease, color .2s ease;}
+.btn-primary{background:var(--flame); color:#fff;}
+.btn-primary:hover{background:var(--flame-dark); transform:translateY(-2px);}
+.btn-ghost{border-color:var(--line); color:var(--ink); background:#fff;}
+.btn-ghost:hover{border-color:var(--ink); transform:translateY(-2px);}
+
+/* hero browser mock */
+.browser{background:#fff; border-radius:18px; box-shadow:var(--shadow); border:1px solid var(--line); overflow:hidden;}
+.browser-bar{display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--line); background:#FBFAF7;}
+.dot{width:9px;height:9px;border-radius:50%;}
+.browser-bar .dot:nth-child(1){background:#F0A6A6;}
+.browser-bar .dot:nth-child(2){background:#F2D48E;}
+.browser-bar .dot:nth-child(3){background:#A8D0B0;}
+.browser-url{margin-left:10px; background:#fff; border:1px solid var(--line); border-radius:100px; padding:5px 14px; font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); flex:1; max-width:280px;}
+.browser-body{padding:22px; background:linear-gradient(180deg,#FFF7F0,#FFFFFF);}
+.search-demo{display:flex; align-items:center; gap:9px; background:#fff; border:1.5px solid var(--line); border-radius:100px; padding:11px 15px; box-shadow:0 8px 18px -12px rgba(24,21,17,0.22);}
+.search-demo i{color:var(--ink-faint); font-size:12px;}
+.type-text{font-size:12.5px; color:var(--ink-soft);}
+.type-text .cursor{display:inline-block; width:2px; background:var(--flame); margin-left:2px; animation:blink 1s step-start infinite;}
+@keyframes blink{50%{opacity:0;}}
+.chip-row{display:flex; gap:7px; margin-top:14px; flex-wrap:wrap;}
+.chip{padding:6px 12px; border-radius:100px; font-size:10.5px; font-weight:700;}
+.chip.on{background:var(--flame); color:#fff;}
+.chip.off{background:#F1EAE3; color:var(--ink-soft);}
+.result-list{margin-top:14px; display:flex; flex-direction:column; gap:8px;}
+.result-row{display:flex; align-items:center; gap:10px; background:#fff; border:1px solid var(--line); border-radius:11px; padding:8px; opacity:0; transform:translateY(6px); animation:riseIn .5s ease forwards;}
+.result-row:nth-child(1){animation-delay:.05s;} .result-row:nth-child(2){animation-delay:.2s;} .result-row:nth-child(3){animation-delay:.35s;}
+@keyframes riseIn{to{opacity:1; transform:translateY(0);}}
+.result-thumb{width:34px;height:34px;border-radius:8px; flex-shrink:0;}
+.result-txt{flex:1;}
+.result-txt .name{font-size:11.5px; font-weight:700; color:var(--ink);}
+.result-txt .price{font-size:10.5px; color:var(--ink-faint); font-family:var(--font-mono); margin-top:2px;}
+.result-heart{color:var(--flame-tint); font-size:13px;}
+.result-heart.liked{color:var(--flame);}
+.hphone-foot{margin-top:16px; display:flex; align-items:center; justify-content:center; gap:6px; font-size:11px; color:var(--pine); font-weight:700; background:var(--pine-tint); padding:10px; border-radius:100px;}
+
+/* ---------- PROBLEM ---------- */
+.problem{background:var(--bg);}
+.problem-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:20px;}
+.p-card{border:1px solid var(--line); border-radius:18px; padding:28px 24px; background:#FCFAF6;}
+.p-icon{width:50px;height:50px;border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:19px; margin-bottom:18px;}
+.p-card h3{font-size:17.5px; margin-bottom:9px; font-weight:700; font-family:var(--font-body); letter-spacing:-0.005em;}
+.p-card p{font-size:13.6px; color:var(--ink-soft); line-height:1.6;}
+.problem-close{margin-top:40px; text-align:center; font-size:16px; color:var(--ink-soft); max-width:640px; margin-left:auto; margin-right:auto;}
+.problem-close strong{color:var(--ink);}
+
+/* ---------- SOLUTION ---------- */
+.solution{background:var(--bg-alt);}
+.solution-grid{display:grid; grid-template-columns:1fr 0.95fr; gap:56px; align-items:center;}
+.feat-list{display:flex; flex-direction:column; gap:19px; margin-top:28px;}
+.feat-row{display:flex; align-items:flex-start; gap:15px;}
+.feat-ico{width:42px;height:42px;border-radius:12px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:15px;}
+.feat-row strong{font-size:15.5px; display:block; margin-bottom:2px;}
+.feat-row span{font-size:13.5px; color:var(--ink-soft);}
+.engine-card{background:#fff; border-radius:20px; box-shadow:var(--shadow); border:1px solid var(--line); padding:8px;}
+.engine-head{display:flex;align-items:center;gap:10px; padding:16px 18px 10px;}
+.engine-head i{color:var(--flame);}
+.engine-head span{font-family:var(--font-mono); font-size:12px; color:var(--ink-faint); font-weight:700;}
+.engine-row{display:flex; align-items:center; gap:14px; padding:14px 18px; border-top:1px solid var(--line);}
+.engine-dot{width:36px;height:36px;border-radius:10px; flex-shrink:0; display:flex; align-items:center;justify-content:center; font-size:14px;}
+.engine-row b{font-size:13.8px; display:block;}
+.engine-row small{font-size:12px; color:var(--ink-soft);}
+
+/* ---------- STORY / STICKY PHONE ---------- */
+.story{background:var(--bg);}
+.story-grid{display:grid; grid-template-columns:1.05fr 0.95fr; gap:60px; margin-top:16px;}
+.feature-block{padding:66px 0; border-top:1px solid var(--line); opacity:0.38; transition:opacity .4s ease;}
+.feature-block:first-child{border-top:none; padding-top:0;}
+.feature-block.active{opacity:1;}
+.f-num{font-family:var(--font-mono); font-size:13px; color:var(--flame); font-weight:700; margin-bottom:14px; display:block;}
+.feature-block h3{font-size:26px; letter-spacing:-0.01em; margin-bottom:14px;}
+.feature-block p{font-size:15.5px; color:var(--ink-soft); line-height:1.7; max-width:440px;}
+.benefit-pill{display:inline-flex; align-items:center; gap:8px; margin-top:20px; background:var(--pine-tint); color:var(--pine); font-weight:700; font-size:13px; padding:9px 16px; border-radius:100px;}
+.story-visual{position:relative;}
+.phone-sticky{position:sticky; top:104px; height:calc(100vh - 150px); max-height:640px; display:flex; align-items:center; justify-content:center;}
+.phone-frame{width:280px; height:570px; border-radius:36px; background:var(--ink); padding:12px; box-shadow:0 40px 70px -30px rgba(24,21,17,0.45); position:relative;}
+.phone-notch{position:absolute; top:12px; left:50%; transform:translateX(-50%); width:78px; height:15px; border-radius:8px; background:var(--ink); z-index:5;}
+.phone-screen{width:100%;height:100%; border-radius:26px; overflow:hidden; position:relative; background:#fff;}
+.screen-layer{position:absolute; inset:0; opacity:0; visibility:hidden; transition:opacity .5s ease; padding:24px 15px 15px; display:flex; flex-direction:column;}
+.screen-layer.active{opacity:1; visibility:visible;}
+
+.scr-browse{background:#FBF7F1;}
+.scr-bar{display:flex; align-items:center; gap:8px; background:#fff; border-radius:100px; padding:10px 14px; box-shadow:0 4px 10px -6px rgba(0,0,0,0.15); margin-bottom:13px;}
+.scr-bar i{color:var(--ink-faint); font-size:12px;}
+.scr-card{background:#fff; border-radius:12px; padding:9px; display:flex; gap:10px; align-items:center; margin-bottom:9px; box-shadow:0 3px 8px -5px rgba(0,0,0,0.12);}
+.scr-thumb{width:42px;height:42px;border-radius:9px; flex-shrink:0;}
+.scr-line{height:8px; border-radius:4px; background:var(--ink); opacity:0.85; margin-bottom:6px;}
+.scr-line.light{background:var(--flame);}
+.scr-tag{font-size:8px; font-family:var(--font-mono); background:var(--cobalt-tint); color:var(--cobalt); padding:3px 7px; border-radius:6px;}
+
+.scr-order{background:#FFF0EA;}
+.cart-title{font-size:12.5px; font-weight:700; text-align:center; margin-bottom:11px;}
+.cart-row{display:flex; align-items:center; gap:10px; background:#fff; border-radius:11px; padding:9px; margin-bottom:7px;}
+.cart-qty{width:26px;height:22px;border-radius:6px; background:var(--flame-tint); color:var(--flame-dark); font-size:10px; font-weight:800; display:flex;align-items:center;justify-content:center; margin-left:auto;}
+.cart-totals{background:#fff; border-radius:11px; padding:11px; margin-top:5px; margin-bottom:11px;}
+.cart-total-row{display:flex; justify-content:space-between; font-size:11px; color:var(--ink-soft); margin-bottom:6px; font-family:var(--font-mono);}
+.cart-btn{margin-top:auto; background:#3FBF6F; color:#fff; text-align:center; padding:13px; border-radius:100px; font-size:12.5px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;}
+
+/* ---------- BENEFITS ---------- */
+.benefits{background:var(--bg-alt);}
+.benefit-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:20px;}
+.b-card{background:#fff; border:1px solid var(--line); border-radius:18px; padding:26px; transition:transform .25s ease, box-shadow .25s ease;}
+.b-card:hover{transform:translateY(-4px); box-shadow:var(--shadow);}
+.b-icon{width:44px;height:44px;border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:17px; margin-bottom:16px;}
+.b-card h3{font-size:16px; font-family:var(--font-body); font-weight:700; margin-bottom:8px;}
+.b-card p{font-size:13.5px; color:var(--ink-soft); line-height:1.6;}
+
+/* ---------- STEPS ---------- */
+.steps{background:var(--bg);}
+.steps-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px; position:relative;}
+.steps-line{display:none;}
+@media (min-width:900px){.steps-line{display:block; position:absolute; top:38px; left:15%; right:15%; height:2px; background:var(--line); z-index:0;}}
+.step-card{position:relative; z-index:1; background:#fff; border:1px solid var(--line); border-radius:20px; padding:30px 26px; text-align:center;}
+.step-num{width:64px;height:64px;border-radius:16px; margin:0 auto 20px; display:flex; align-items:center; justify-content:center; font-size:24px;}
+.step-card h3{font-size:18px; margin-bottom:10px;}
+.step-card p{font-size:13.8px; color:var(--ink-soft); line-height:1.6;}
+
+/* ---------- COMPARE / PLANS ---------- */
+.compare{background:var(--bg-alt);}
+.table-wrap{border:1px solid var(--line); border-radius:20px; overflow-x:auto; background:#fff;}
+table{width:100%; border-collapse:collapse; min-width:560px;}
+thead th{background:var(--ink); color:var(--cream); font-family:var(--font-body); font-weight:700; font-size:13px; padding:16px 14px; text-align:center;}
+thead th:first-child{text-align:left;}
+thead th small{display:block; font-weight:500; font-size:10.5px; color:#C9BEB3; margin-top:3px; font-family:var(--font-mono);}
+thead th.hi{color:#FFB48F;}
+tbody td{padding:14px 14px; text-align:center; border-top:1px solid var(--line); font-size:13.5px;}
+tbody td:first-child{text-align:left; font-weight:700; color:var(--ink);}
+tbody tr:nth-child(even){background:#FBF9F5;}
+td.hi-col{background:var(--flame-tint);}
+tbody tr:nth-child(even) td.hi-col{background:#FBDACB;}
+.yes{color:var(--pine);} .no{color:#C97361;} .partial{color:var(--gold);}
+.plan-note{margin-top:18px; text-align:center; font-size:13.5px; color:var(--ink-soft);}
+
+/* ---------- TESTIMONIALS ---------- */
+.testimonials{background:var(--bg);}
+.test-scroll{display:flex; gap:20px; overflow-x:auto; scroll-snap-type:x mandatory; padding:6px 6px 22px; margin:0 -6px; -webkit-overflow-scrolling:touch; scrollbar-width:thin;}
+.test-scroll::-webkit-scrollbar{height:7px;}
+.test-scroll::-webkit-scrollbar-thumb{background:var(--line); border-radius:100px;}
+.test-card{flex:0 0 320px; scroll-snap-align:start; background:#FCFAF6; border:1px solid var(--line); border-radius:18px; padding:28px;}
+.test-stars{color:var(--gold); font-size:14px; margin-bottom:14px;}
+.test-quote{font-size:15px; color:var(--ink); line-height:1.65; font-weight:500;}
+.test-who{margin-top:18px; display:flex; align-items:center; gap:11px;}
+.test-avatar{width:38px;height:38px;border-radius:50%; display:flex; align-items:center;justify-content:center; color:#fff; font-weight:700;}
+.test-who b{display:block; font-size:13.5px;}
+
+/* ---------- CTA / FOOTER ---------- */
+.cta{background:var(--ink2); color:var(--cream); text-align:center; overflow:hidden; position:relative;}
+.cta::before{content:"";position:absolute; width:520px; height:520px; border-radius:50%; background:var(--ink3); top:-260px; left:-160px; z-index:0;}
+.cta::after{content:"";position:absolute; width:460px; height:460px; border-radius:50%; background:var(--ink3); bottom:-260px; right:-160px; z-index:0;}
+.cta .wrap{position:relative; z-index:1;}
+.cta .eyebrow{color:var(--gold); display:block; margin-bottom:18px;}
+.cta h2{font-size:42px; max-width:760px; margin:0 auto; line-height:1.15; letter-spacing:-0.015em;}
+.cta-actions{display:flex; justify-content:center; gap:16px; margin-top:38px; flex-wrap:wrap;}
+.cta-card{display:flex; align-items:center; gap:12px; background:rgba(255,248,239,0.08); border:1px solid rgba(255,248,239,0.16); padding:16px 22px; border-radius:16px; transition:background .2s ease, transform .2s ease; cursor:pointer;}
+.cta-card:hover{background:rgba(255,248,239,0.15); transform:translateY(-3px);}
+.cta-card i{color:var(--flame); font-size:18px;}
+.cta-card span{font-size:13.5px; font-weight:700;}
+.footer{border-top:1px solid rgba(255,248,239,0.14); margin-top:76px; padding-top:32px; padding-bottom:14px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;}
+.footer .logo{color:var(--cream);}
+.footer small{color:#B5A79A; font-size:12.5px;}
+
+/* ---------- MODAL (CUSTOM CSS) ---------- */
+.modal-overlay { position:fixed; inset:0; background:rgba(24,21,17,0.7); backdrop-filter:blur(4px); z-index:1000; display:none; align-items:center; justify-content:center; padding:20px; opacity:0; transition:opacity 0.3s ease; }
+.modal-overlay.open { display:flex; opacity:1; }
+.modal-box { background:#fff; border-radius:24px; width:100%; max-width:420px; padding:32px; position:relative; box-shadow:var(--shadow); transform:scale(0.95); transition:transform 0.3s ease; }
+.modal-overlay.open .modal-box { transform:scale(1); }
+.modal-close { position:absolute; top:20px; right:20px; background:none; border:none; font-size:20px; color:var(--ink-faint); cursor:pointer; }
+.modal-close:hover { color:var(--ink); }
+.modal-step { display:none; flex-direction:column; text-align:center; }
+.modal-step.active { display:flex; }
+.m-icon { width:56px; height:56px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 16px; }
+.modal-step h2 { font-size:22px; margin-bottom:6px; color:var(--ink); }
+.modal-step p { font-size:13.5px; color:var(--ink-soft); margin-bottom:24px; }
+.modal-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.modal-cat-btn { background:#fff; border:1px solid var(--line); border-radius:16px; padding:20px 12px; cursor:pointer; transition:all 0.2s; display:flex; flex-direction:column; align-items:center; gap:12px; font-family:var(--font-body); }
+.modal-cat-btn i { font-size:28px; color:var(--ink-faint); transition:color 0.2s; }
+.modal-cat-btn span { font-size:13.5px; font-weight:700; color:var(--ink); transition:color 0.2s; }
+.modal-cat-btn:hover { border-color:var(--cobalt); background:var(--cobalt-tint); }
+.modal-cat-btn:hover i, .modal-cat-btn:hover span { color:var(--cobalt); }
+.modal-skip { margin-top:20px; font-size:12px; font-weight:700; color:var(--cobalt); cursor:pointer; }
+.modal-skip:hover { color:#1F3CAE; }
+.modal-sub-list { display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto; padding-right:4px; }
+.modal-sub-list::-webkit-scrollbar { width:4px; }
+.modal-sub-list::-webkit-scrollbar-thumb { background:var(--line); border-radius:10px; }
+.modal-sub-btn { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; text-align:left; font-family:var(--font-body); }
+.modal-sub-btn:hover { border-color:var(--cobalt); background:var(--cobalt-tint); }
+.modal-sub-btn i { color:var(--ink-faint); font-size:20px; width:24px; text-align:center; transition:color 0.2s; }
+.modal-sub-btn:hover i { color:var(--cobalt); }
+.modal-sub-btn span { font-size:14px; font-weight:700; color:var(--ink); }
+.btn-google { width:100%; background:#fff; border:1px solid var(--line); color:var(--ink); padding:14px; border-radius:12px; font-weight:700; font-size:14.5px; display:flex; align-items:center; justify-content:center; gap:12px; transition:background 0.2s; cursor:pointer; }
+.btn-google:hover { background:var(--bg-alt); }
+.btn-google img { width:20px; height:20px; }
+.modal-back { align-self:flex-start; background:none; border:none; color:var(--ink-faint); font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; margin-bottom:16px; transition:color 0.2s; }
+.modal-back:hover { color:var(--ink); }
+.modal-legal { font-size:11px; color:var(--ink-faint); margin-top:16px; }
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width:980px){
+  .hero-grid, .solution-grid, .story-grid {grid-template-columns:1fr;}
+  .hero h1{font-size:40px;}
+  .problem-grid{grid-template-columns:1fr 1fr;}
+  .steps-grid{grid-template-columns:1fr 1fr;}
+  .story-grid{display:grid; grid-template-columns:1fr; gap:0;}
+  .story-text{grid-column:1; grid-row:1; margin-top:400px;}
+  .story-visual{grid-column:1; grid-row:1; display:block; position:relative; z-index:5;}
+  .phone-sticky{position:sticky; top:72px; height:auto; max-height:none; padding:12px 0 34px; background:var(--bg); z-index:5;}
+  .phone-frame{width:230px; height:452px; margin:0 auto;}
+  .feature-block{opacity:1; padding:44px 0;}
+  .nav-links{display:none;}
+  .nav-toggle{display:block;}
+  .nav-inner{gap:14px;}
+  .cta h2{font-size:30px;}
+}
+@media (max-width:600px){
+  .wrap{padding:0 20px;}
+  .hero{padding:136px 0 64px;}
+  .hero h1{font-size:31px;}
+  .problem-grid, .steps-grid{grid-template-columns:1fr;}
+  .benefit-grid{grid-template-columns:1fr; gap:12px;}
+  .section-head h2{font-size:26px;}
+  .cta h2{font-size:24px;}
+  .steps-line{display:none;}
+}
+</style>
 </head>
-<body class="bg-white text-gray-800">
+<body>
 
-    <!-- NAVBAR -->
-    <nav class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between border-b border-gray-100">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-indigo-200">
-                <i class="fas fa-qrcode"></i>
-            </div>
-            <span class="font-bold text-xl tracking-tight text-gray-900">QRGate<span class="text-indigo-600">.</span></span>
-        </div>
-        <div class="flex items-center gap-4">
-            <button onclick="loginWithGoogle()" class="bg-gray-900 text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-indigo-600 transition shadow-sm flex items-center gap-2">
-                <i class="fab fa-google"></i> Business Login
-            </button>
-        </div>
-    </nav>
+<nav class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a href="#top" class="logo"><span class="logo-mark"><span class="logo-glyph">M</span></span>Menuly</a>
+    <div class="nav-links">
+      <a href="#problem">The Problem</a>
+      <a href="#features">Features</a>
+      <a href="#steps">How it works</a>
+      <a href="#plans">Plans</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <button onclick="openLoginModal()" class="nav-cta hidden-mobile">Business Login</button>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#problem">The Problem</a>
+    <a href="#features">Features</a>
+    <a href="#steps">How it works</a>
+    <a href="#plans">Plans</a>
+    <a href="#faq">FAQ</a>
+    <button onclick="openLoginModal()" class="nav-cta" style="margin-top:10px; width:100%;">Business Login</button>
+  </div>
+</nav>
 
-    <!-- HERO SECTION -->
-    <section class="max-w-5xl mx-auto px-6 py-20 text-center space-y-6">
-        <span class="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-indigo-100">Next-Gen SaaS POS Platform</span>
-        <h1 class="text-4xl sm:text-6xl font-extrabold text-gray-900 tracking-tight leading-tight">
-            Digitize Your Restaurant <br><span class="text-indigo-600">in Under 2 Minutes.</span>
-        </h1>
-        <p class="text-sm sm:text-base text-gray-500 max-w-2xl mx-auto leading-relaxed">
-            Empower your tables with live QR ordering, real-time kitchen display alerts, and seamless multi-tenant restaurant management.
-        </p>
-        <div class="pt-4 flex justify-center gap-4">
-            <button onclick="loginWithGoogle()" class="bg-indigo-600 text-white px-8 py-4 rounded-2xl text-sm font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 flex items-center gap-3">
-                <i class="fab fa-google text-base"></i> Get Started Free with Google
-            </button>
+<!-- ================= HERO ================= -->
+<header class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div data-reveal>
+      <div class="hero-badges">
+        <span class="badge"><i class="fa-solid fa-utensils"></i>Restaurants</span>
+        <span class="badge"><i class="fa-solid fa-bag-shopping"></i>Grocery</span>
+        <span class="badge"><i class="fa-solid fa-store"></i>Retail</span>
+      </div>
+      <h1>Small business. <em>Star treatment.</em></h1>
+      <p class="hero-sub">You don't need a corporate budget to look and feel like the big brands. Menuly digitizes your restaurant in under 2 minutes with live QR ordering, real-time kitchen alerts, and seamless multi-tenant management.</p>
+      <div class="hero-actions">
+        <button onclick="openLoginModal()" class="btn btn-primary"><i class="fab fa-google"></i>Get Started Free</button>
+        <a href="#problem" class="btn btn-ghost">See the problem we solve</a>
+      </div>
+    </div>
+    <div data-reveal>
+      <div class="browser">
+        <div class="browser-bar">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          <span class="browser-url">menu.yourbusiness.com</span>
         </div>
-    </section>
+        <div class="browser-body">
+          <div class="search-demo">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span class="type-text" id="typeText"></span>
+          </div>
+          <div class="chip-row">
+            <span class="chip on">Mains</span>
+            <span class="chip off">Grocery</span>
+            <span class="chip off">Drinks</span>
+          </div>
+          <div class="result-list">
+            <div class="result-row">
+              <div class="result-thumb" style="background:var(--flame-tint)"></div>
+              <div class="result-txt"><div class="name">Grilled Chicken Skewers</div><div class="price">SAR 32 · 320g</div></div>
+              <i class="fa-solid fa-heart result-heart liked"></i>
+            </div>
+            <div class="result-row">
+              <div class="result-thumb" style="background:var(--pine-tint)"></div>
+              <div class="result-txt"><div class="name">Farm Fresh Tomatoes</div><div class="price">SAR 6 · 1kg</div></div>
+              <i class="fa-regular fa-heart result-heart"></i>
+            </div>
+          </div>
+          <div class="hphone-foot"><i class="fa-brands fa-whatsapp"></i>Order sent straight to WhatsApp</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
 
-    <!-- FEATURES GRID -->
-    <section class="max-w-7xl mx-auto px-6 py-16 border-t border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="p-6 bg-gray-50/50 rounded-3xl border border-gray-100 space-y-3">
-            <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">
-                <i class="fas fa-bolt"></i>
-            </div>
-            <h3 class="font-bold text-gray-900 text-sm">Real-Time Sync</h3>
-            <p class="text-xs text-gray-500 leading-relaxed">Instant order notifications, live stock tracking, and table occupancy updates via WebSockets.</p>
-        </div>
-        <div class="p-6 bg-gray-50/50 rounded-3xl border border-gray-100 space-y-3">
-            <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">
-                <i class="fas fa-utensils"></i>
-            </div>
-            <h3 class="font-bold text-gray-900 text-sm">Digital QR Menus</h3>
-            <p class="text-xs text-gray-500 leading-relaxed">Customers scan table codes, browse localized menus, and place orders directly to your kitchen.</p>
-        </div>
-        <div class="p-6 bg-gray-50/50 rounded-3xl border border-gray-100 space-y-3">
-            <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">
-                <i class="fas fa-shield-alt"></i>
-            </div>
-            <h3 class="font-bold text-gray-900 text-sm">Secure Tenant SaaS</h3>
-            <p class="text-xs text-gray-500 leading-relaxed">Isolated restaurant environments with subscription tracking, plan tiers, and approval controls.</p>
-        </div>
-    </section>
-You should paste the Login Modal HTML exactly between the closing </section> tag of your Features Grid and the <!-- SUPABASE CONFIG & AUTH SCRIPT --> comment.
+<!-- ================= PROBLEM ================= -->
+<section class="problem section-pad" id="problem">
+  <div class="wrap">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow">The real story behind every missed order</span>
+      <h2>Answering the same question, twenty times a day</h2>
+      <p>Most small businesses aren't losing sales to bad food or bad service — they're losing time and patience to the gap between a customer's question and a clear answer.</p>
+    </div>
+    <div class="problem-grid">
+      <div class="p-card" data-reveal>
+        <div class="p-icon" style="background:var(--flame-tint); color:var(--flame-dark)"><i class="fa-solid fa-phone-volume"></i></div>
+        <h3>Every call, twenty questions</h3>
+        <p>"What's the price?" "Is it in stock?" Staff spend the day repeating answers instead of taking the order.</p>
+      </div>
+      <div class="p-card" data-reveal>
+        <div class="p-icon" style="background:var(--cobalt-tint); color:var(--cobalt)"><i class="fa-solid fa-comments"></i></div>
+        <h3>Explained twice, still unclear</h3>
+        <p>A server walks the table through the menu, and the guest still asks to see it again. Words alone rarely sell a dish.</p>
+      </div>
+      <div class="p-card" data-reveal>
+        <div class="p-icon" style="background:var(--gold-tint); color:var(--gold)"><i class="fa-solid fa-print"></i></div>
+        <h3>Printed menus go stale fast</h3>
+        <p>A price rises or an item sells out — and the printed card in front of the guest still tells yesterday's story.</p>
+      </div>
+      <div class="p-card" data-reveal>
+        <div class="p-icon" style="background:var(--plum-tint); color:var(--plumhue)"><i class="fa-solid fa-clock"></i></div>
+        <h3>Rush hour turns into chaos</h3>
+        <p>Phones ring nonstop right when tables need attention most, and mistakes multiply exactly when you can least afford them.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-Here is exactly how that section of your code should look after you paste it in:
-
-HTML
-        <div class="p-6 bg-gray-50/50 rounded-3xl border border-gray-100 space-y-3">
-            <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">
-                <i class="fas fa-shield-alt"></i>
-            </div>
-            <h3 class="font-bold text-gray-900 text-sm">Secure Tenant SaaS</h3>
-            <p class="text-xs text-gray-500 leading-relaxed">Isolated restaurant environments with subscription tracking, plan tiers, and approval controls.</p>
+<!-- ================= SOLUTION ================= -->
+<section class="solution section-pad" id="solution">
+  <div class="wrap solution-grid">
+    <div data-reveal>
+      <span class="eyebrow" style="color:var(--pine)">How Menuly works</span>
+      <h2 style="font-size:35px; margin-top:14px; letter-spacing:-0.015em;">One app. Every answer.<br>Always current.</h2>
+      <p style="margin-top:16px; font-size:15.5px; color:var(--ink-soft); line-height:1.7; max-width:480px;">
+        Menuly runs entirely in the browser and builds itself from your own item list. Update a price, a weight or a photo once, and it's live everywhere.
+      </p>
+      <div class="feat-list">
+        <div class="feat-row">
+          <div class="feat-ico" style="background:var(--flame-tint); color:var(--flame-dark)"><i class="fa-solid fa-list-check"></i></div>
+          <div><strong>Digital QR Menus</strong><span>Customers scan codes, browse localized menus, and order instantly.</span></div>
         </div>
-    </section>
-
-    <!-- 🌟 PASTE THE LOGIN UI CARD HERE 🌟 -->
-    <div id="loginModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-center justify-center z-50 transition-opacity">
-        <div class="bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 text-center space-y-6 max-w-sm w-full relative transform transition-all">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 transition">
-                <i class="fas fa-times text-lg"></i>
-            </button>
-            <div class="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-2xl shadow-md mx-auto">
-                <i class="fas fa-qrcode"></i>
-            </div>
-            <div>
-                <h2 class="font-bold text-gray-900 text-xl">Welcome to QRGate</h2>
-                <p class="text-xs text-gray-500 mt-2">Sign in or create a new restaurant account to access your POS dashboard.</p>
-            </div>
-            <button onclick="loginWithGoogle()" class="w-full bg-white border border-gray-300 text-gray-700 px-4 py-3 rounded-xl text-sm font-semibold hover:bg-gray-50 transition shadow-sm flex items-center justify-center gap-3">
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
-                Continue with Google
-            </button>
-            <p class="text-[10px] text-gray-400">By continuing, you agree to our Terms of Service and Privacy Policy.</p>
+        <div class="feat-row">
+          <div class="feat-ico" style="background:var(--pine-tint); color:var(--pine)"><i class="fa-solid fa-cash-register"></i></div>
+          <div><strong>Advanced Cashier POS</strong><span>A lightning-fast, 3-pane workstation managing tables and payments.</span></div>
         </div>
+        <div class="feat-row">
+          <div class="feat-ico" style="background:var(--cobalt-tint); color:var(--cobalt)"><i class="fa-solid fa-bolt"></i></div>
+          <div><strong>Real-Time Kitchen Sync</strong><span>Instant order notifications and live Kanban status tracking via WebSockets.</span></div>
+        </div>
+        <div class="feat-row">
+          <div class="feat-ico" style="background:var(--plum-tint); color:var(--plumhue)"><i class="fa-solid fa-shield-alt"></i></div>
+          <div><strong>Secure Tenant SaaS</strong><span>Isolated environments per brand with secure subscription controls.</span></div>
+        </div>
+      </div>
+    </div>
+    <div data-reveal>
+      <div class="engine-card">
+        <div class="engine-head"><i class="fa-solid fa-layer-group"></i><span>THE ADVANCED FEATURES</span></div>
+        <div class="engine-row">
+          <div class="engine-dot" style="background:var(--flame-tint); color:var(--flame-dark)"><i class="fa-solid fa-tags"></i></div>
+          <div><b>Analytics & CRM</b><small>Track top-selling items and export data instantly</small></div>
+        </div>
+        <div class="engine-row">
+          <div class="engine-dot" style="background:var(--plum-tint); color:var(--plumhue)"><i class="fa-brands fa-whatsapp"></i></div>
+          <div><b>Checkout on WhatsApp</b><small>Clean, formatted orders land in your chat</small></div>
+        </div>
+        <div class="engine-row">
+          <div class="engine-dot" style="background:var(--cobalt-tint); color:var(--cobalt)"><i class="fa-solid fa-tv"></i></div>
+          <div><b>Digital TV Signage</b><small>Cast promo loops directly to your smart TVs</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STORY / FEATURES ================= -->
+<section class="story section-pad" id="features">
+  <div class="wrap">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow">Inside the experience</span>
+      <h2>A guided tour of the ordering flow</h2>
+    </div>
+    <div class="story-grid">
+      <div class="story-text">
+        <div class="feature-block active" data-phone="browse">
+          <span class="f-num">01 / Browse</span>
+          <h3>Every answer, before they ask</h3>
+          <p>A live-typing search box and expandable categories show price, weight and details up front — no more waiting for staff to explain.</p>
+        </div>
+        <div class="feature-block" data-phone="specials">
+          <span class="f-num">02 / Specials</span>
+          <h3>Today's offers, always centre stage</h3>
+          <p>A glowing banner and flash cards put your promotions, seasonal items and price changes front and centre.</p>
+        </div>
+        <div class="feature-block" data-phone="order">
+          <span class="f-num">03 / Checkout</span>
+          <h3>From table to WhatsApp in one tap</h3>
+          <p>Quantities and totals recalculate live, and the full order arrives in your chat, fully formatted and ready to prep.</p>
+        </div>
+      </div>
+
+      <div class="story-visual">
+        <div class="phone-sticky">
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="screen-layer scr-browse active" data-screen="browse">
+                <div class="scr-bar"><i class="fa-solid fa-magnifying-glass"></i><span>Search grilled...</span></div>
+                <div class="scr-card"><div class="scr-thumb" style="background:var(--pine-tint)"></div><div style="flex:1"><div class="scr-line" style="width:70%"></div><div class="scr-line light" style="width:35%"></div><div class="scr-detail-row"><span class="scr-tag">320g</span><span class="scr-tag">SAR 32</span></div></div></div>
+                <div class="scr-card"><div class="scr-thumb" style="background:var(--gold-tint)"></div><div style="flex:1"><div class="scr-line" style="width:60%"></div><div class="scr-line light" style="width:30%"></div><div class="scr-detail-row"><span class="scr-tag">1kg</span><span class="scr-tag">SAR 6</span></div></div></div>
+              </div>
+
+              <div class="screen-layer scr-specials" data-screen="specials">
+                <div class="spec-banner">
+                  <span class="tag">TODAY'S SPECIAL</span>
+                  <div class="scr-line" style="width:75%; margin-top:9px;"></div>
+                  <div class="scr-line" style="width:45%;"></div>
+                </div>
+                <div class="flash-row">
+                  <div class="flash-card"><div class="scr-line light" style="width:60%"></div><div class="scr-line" style="width:80%"></div></div>
+                  <div class="flash-card"><div class="scr-line light" style="width:50%"></div><div class="scr-line" style="width:70%"></div></div>
+                </div>
+              </div>
+
+              <div class="screen-layer scr-order" data-screen="order">
+                <div class="cart-title">Your Order</div>
+                <div class="cart-row"><div class="scr-thumb" style="background:var(--pine-tint); width:36px;height:36px;"></div><div style="flex:1"><div class="scr-line" style="width:70%"></div></div><div class="cart-qty">×2</div></div>
+                <div class="cart-totals">
+                  <div class="cart-total-row"><span>Subtotal</span><span>SAR 96.00</span></div>
+                  <div class="cart-total-row"><span>VAT 15%</span><span>SAR 14.40</span></div>
+                </div>
+                <div class="cart-btn"><i class="fa-brands fa-whatsapp"></i>Send Order</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STEPS ================= -->
+<section class="steps section-pad" id="steps">
+  <div class="wrap">
+    <div class="section-head" data-reveal style="margin-left:auto; margin-right:auto; text-align:center;">
+      <span class="eyebrow" style="color:var(--pine)">Getting started</span>
+      <h2>Launch your app in 3 simple steps</h2>
+      <p style="margin-left:auto; margin-right:auto;">No coding, no complicated dashboard. We handle the infrastructure — you focus on the food.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="steps-line"></div>
+      <div class="step-card" data-reveal>
+        <div class="step-num" style="background:var(--pine-tint); color:var(--pine)"><i class="fa-solid fa-list-check"></i></div>
+        <h3>1. Create &amp; Update Data</h3>
+        <p>Easily upload your menu items, prices, weights, and product photos right from our sleek admin panel.</p>
+      </div>
+      <div class="step-card" data-reveal>
+        <div class="step-num" style="background:var(--flame-tint); color:var(--flame-dark)"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <h3>2. Publish &amp; Customize</h3>
+        <p>Apply your logo and branding. Your menu is instantly published to your unique link or QR code.</p>
+      </div>
+      <div class="step-card" data-reveal>
+        <div class="step-num" style="background:var(--cobalt-tint); color:var(--cobalt)"><i class="fa-brands fa-whatsapp"></i></div>
+        <h3>3. Get Orders &amp; Analytics</h3>
+        <p>Receive live orders directly on WhatsApp, and track your performance with fully trackable analytics.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= COMPARE / PLANS ================= -->
+<section class="compare section-pad" id="plans">
+  <div class="wrap">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow" style="color:var(--cobalt)">Pick your size</span>
+      <h2>A plan for every stage of your business</h2>
+      <p>Start focused, grow into the advanced features whenever you're ready — nothing to rebuild.</p>
+    </div>
+    <div class="table-wrap" data-reveal>
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Basic<small>Digital catalog</small></th>
+            <th>Pro<small>WhatsApp ordering</small></th>
+            <th class="hi">Premium<small>Full commerce</small></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Menu with items</td><td><i class="fa-solid fa-check yes"></i></td><td><i class="fa-solid fa-check yes"></i></td><td class="hi-col"><i class="fa-solid fa-check yes"></i></td></tr>
+          <tr><td>Single language</td><td><i class="fa-solid fa-check yes"></i></td><td><i class="fa-solid fa-check yes"></i></td><td class="hi-col"><i class="fa-solid fa-check yes"></i></td></tr>
+          <tr><td>Multi-language toggle</td><td><i class="fa-solid fa-xmark no"></i></td><td><i class="fa-solid fa-xmark no"></i></td><td class="hi-col"><i class="fa-solid fa-check yes"></i></td></tr>
+          <tr><td>Direct WhatsApp order</td><td><i class="fa-solid fa-xmark no"></i></td><td><i class="fa-solid fa-check yes"></i></td><td class="hi-col"><i class="fa-solid fa-check yes"></i></td></tr>
+          <tr><td>Add to cart &amp; order preview</td><td><i class="fa-solid fa-xmark no"></i></td><td><i class="fa-solid fa-xmark no"></i></td><td class="hi-col"><i class="fa-solid fa-check yes"></i></td></tr>
+          <tr><td>Advanced Cashier POS</td><td><i class="fa-solid fa-xmark no"></i></td><td><i class="fa-solid fa-xmark no"></i></td><td class="hi-col"><i class="fa-solid fa-check yes"></i></td></tr>
+          <tr><td>Real-Time Kitchen Sync</td><td><i class="fa-solid fa-xmark no"></i></td><td><i class="fa-solid fa-xmark no"></i></td><td class="hi-col"><i class="fa-solid fa-check yes"></i></td></tr>
+          <tr><td>Trackable Analytics</td><td><i class="fa-solid fa-xmark no"></i></td><td><i class="fa-solid fa-check yes"></i></td><td class="hi-col"><i class="fa-solid fa-check yes"></i></td></tr>
+          <tr><td>Digital TV Signage</td><td><i class="fa-solid fa-xmark no"></i></td><td><i class="fa-solid fa-xmark no"></i></td><td class="hi-col"><i class="fa-solid fa-check yes"></i></td></tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>Try it out</td>
+            <td><button onclick="openLoginModal()" class="try-btn try-btn-starter">Get Started</button></td>
+            <td><button onclick="openLoginModal()" class="try-btn try-btn-professional">Get Started</button></td>
+            <td class="hi-col"><button onclick="openLoginModal()" class="try-btn try-btn-premium">Get Started</button></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CTA / FOOTER ================= -->
+<section class="cta section-pad" id="cta">
+  <div class="wrap">
+    <span class="eyebrow">Ready when you are</span>
+    <h2>You may be small — but you can show up like a star.</h2>
+    <p>One lightweight platform for browsing, ordering, kitchen management, and analytics.</p>
+    <div class="cta-actions">
+      <button onclick="openLoginModal()" class="cta-card" style="border:none; cursor:pointer;"><i class="fa-solid fa-rocket"></i><span>Get Started Free</span></button>
+      <a href="#steps" class="cta-card"><i class="fa-solid fa-arrows-rotate"></i><span>See the 3-step process</span></a>
+    </div>
+    <div class="footer">
+      <a href="#top" class="logo"><span class="logo-mark"><span class="logo-glyph">M</span></span>Menuly</a>
+      <div class="footer-links">
+        <a href="#features">Features</a>
+        <a href="#steps">How it works</a>
+        <a href="#plans">Plans</a>
+      </div>
+      <small>© 2026 Menuly. All rights reserved.</small>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MULTI-STEP LOGIN MODAL (CUSTOM CSS) ================= -->
+<div id="loginModal" class="modal-overlay">
+  <div class="modal-box">
+    <button onclick="closeLoginModal()" class="modal-close"><i class="fas fa-times"></i></button>
+
+    <!-- STEP 1: Main Category -->
+    <div id="modal-step-1" class="modal-step active">
+      <div class="m-icon" style="background:var(--cobalt-tint); color:var(--cobalt);"><i class="fas fa-store"></i></div>
+      <h2>What are you building?</h2>
+      <p>Select your primary business type.</p>
+      
+      <div class="modal-grid">
+        <button onclick="selectMainCategory('food')" class="modal-cat-btn">
+          <i class="fas fa-utensils"></i>
+          <span>Food &amp; Beverage</span>
+        </button>
+        <button onclick="selectMainCategory('grocery')" class="modal-cat-btn">
+          <i class="fas fa-shopping-basket"></i>
+          <span>Grocery / Mart</span>
+        </button>
+      </div>
+      
+      <button onclick="loginWithGoogle()" class="modal-skip">I already have an account (Skip)</button>
     </div>
 
-    <!-- SUPABASE CONFIG & AUTH SCRIPT -->
-    <script>
-    // 1. Supabase Setup
-    const SUPABASE_URL = "https://vhrxsjfblldksnalpyio.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_we3X4oxc_1R2mQVtlSuJVA_gGcQoQ-k";
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <!-- STEP 2: Sub-Category -->
+    <div id="modal-step-2" class="modal-step">
+      <button onclick="backToStep1()" class="modal-back"><i class="fas fa-arrow-left"></i> Back</button>
+      <h2>Refine your concept</h2>
+      <p>Which best describes your menu?</p>
+      
+      <div id="sub-category-list" class="modal-sub-list">
+        <!-- JS injected -->
+      </div>
+    </div>
 
-    // 2. Modal UI Controls
-    function openModal() {
-        const modal = document.getElementById('loginModal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    }
+    <!-- STEP 3: Google Auth -->
+    <div id="modal-step-3" class="modal-step">
+      <button onclick="backToStep1()" class="modal-back"><i class="fas fa-arrow-left"></i> Back</button>
+      <div class="m-icon" style="background:var(--flame-tint); color:var(--flame);"><i class="fas fa-rocket"></i></div>
+      <h2>Ready to launch!</h2>
+      <p>We've tailored the setup for a <strong id="display-selected-type" style="color:var(--cobalt);">Restaurant</strong>.</p>
+      
+      <button onclick="loginWithGoogle()" class="btn-google">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google"> Continue with Google
+      </button>
+      <p class="modal-legal">By continuing, you agree to our Terms of Service.</p>
+    </div>
 
-    function closeModal() {
-        const modal = document.getElementById('loginModal');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
+  </div>
+</div>
 
-    // 3. Google Auth Logic
-    async function loginWithGoogle() {
-        const { error } = await supabaseClient.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                // 🚀 Send them directly to the admin dashboard!
-                redirectTo: window.location.origin + '/menuly/admin.html'
-            }
-        });
-        if (error) alert("Login Error: " + error.message);
+<script>
+// --- PAGE SCRIPTS ---
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => { nav.classList.toggle('scrolled', window.scrollY > 30); }, { passive:true });
+
+const navToggle = document.getElementById('navToggle');
+const mobileMenu = document.getElementById('mobileMenu');
+navToggle.addEventListener('click', () => {
+  const open = mobileMenu.classList.toggle('open');
+  navToggle.innerHTML = open ? '<i class="fa-solid fa-xmark"></i>' : '<i class="fa-solid fa-bars"></i>';
+});
+mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+  mobileMenu.classList.remove('open');
+  navToggle.innerHTML = '<i class="fa-solid fa-bars"></i>';
+}));
+
+const revealEls = document.querySelectorAll('[data-reveal]');
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); revealObserver.unobserve(e.target); } });
+}, { threshold:0.15 });
+revealEls.forEach(el => revealObserver.observe(el));
+
+const phrases = ["Search grilled chicken...", "Search fresh produce...", "Search today's special...", "Search cold drinks..."];
+const typeEl = document.getElementById('typeText');
+let pIndex = 0, cIndex = 0, deleting = false;
+function typeLoop(){
+  if(!typeEl) return;
+  const current = phrases[pIndex];
+  if(!deleting){
+    cIndex++;
+    typeEl.innerHTML = current.slice(0,cIndex) + '<span class="cursor">&nbsp;</span>';
+    if(cIndex === current.length){ deleting = true; setTimeout(typeLoop, 1200); return; }
+  } else {
+    cIndex--;
+    typeEl.innerHTML = current.slice(0,cIndex) + '<span class="cursor">&nbsp;</span>';
+    if(cIndex === 0){ deleting = false; pIndex = (pIndex+1) % phrases.length; }
+  }
+  setTimeout(typeLoop, deleting ? 35 : 55);
+}
+typeLoop();
+
+const blocks = document.querySelectorAll('.feature-block');
+const layers = document.querySelectorAll('.screen-layer');
+const storyObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      const target = entry.target.getAttribute('data-phone');
+      blocks.forEach(b => b.classList.toggle('active', b === entry.target));
+      layers.forEach(l => l.classList.toggle('active', l.getAttribute('data-screen') === target));
     }
+  });
+}, { threshold:0.5, rootMargin:"-15% 0px -15% 0px" });
+blocks.forEach(b => storyObserver.observe(b));
+
+// --- MODAL & AUTH SCRIPTS ---
+const SUPABASE_URL = "https://vhrxsjfblldksnalpyio.supabase.co";
+const SUPABASE_KEY = "sb_publishable_we3X4oxc_1R2mQVtlSuJVA_gGcQoQ-k";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const businessTypes = {
+    food: [
+        { id: 'arabian', label: 'Arabian Food Restaurant', icon: 'fas fa-star-and-crescent' },
+        { id: 'asian', label: 'Asian Food Restaurant', icon: 'fas fa-bowl-rice' },
+        { id: 'shawarma', label: 'Shawarma & Grills', icon: 'fas fa-fire-burner' },
+        { id: 'broasted', label: 'Broasted / Fried Chicken', icon: 'fas fa-drumstick-bite' },
+        { id: 'cloud', label: 'Cloud Kitchen', icon: 'fas fa-cloud' },
+        { id: 'cafe', label: 'Coffee Shop & Cafe', icon: 'fas fa-coffee' }
+    ],
+    grocery: [
+        { id: 'supermarket', label: 'Supermarket', icon: 'fas fa-shopping-cart' },
+        { id: 'minimart', label: 'Mini Mart', icon: 'fas fa-store' },
+        { id: 'specialty', label: 'Specialty Foods', icon: 'fas fa-leaf' }
+    ]
+};
+
+function openLoginModal() {
+    backToStep1();
+    const modal = document.getElementById('loginModal');
+    modal.classList.add('open');
+}
+
+function closeLoginModal() {
+    const modal = document.getElementById('loginModal');
+    modal.classList.remove('open');
+}
+
+function selectMainCategory(categoryKey) {
+    const step1 = document.getElementById('modal-step-1');
+    const step2 = document.getElementById('modal-step-2');
+    const listContainer = document.getElementById('sub-category-list');
+    
+    listContainer.innerHTML = '';
+    
+    businessTypes[categoryKey].forEach(sub => {
+        listContainer.innerHTML += `
+            <button onclick="finalizeSelection('${sub.label}')" class="modal-sub-btn">
+                <i class="${sub.icon}"></i>
+                <span>${sub.label}</span>
+            </button>
+        `;
+    });
+
+    step1.classList.remove('active');
+    step2.classList.add('active');
+}
+
+function finalizeSelection(businessName) {
+    localStorage.setItem('pending_business_type', businessName);
+    document.getElementById('display-selected-type').textContent = businessName;
+    document.getElementById('modal-step-2').classList.remove('active');
+    document.getElementById('modal-step-3').classList.add('active');
+}
+
+function backToStep1() {
+    document.getElementById('modal-step-1').classList.add('active');
+    document.getElementById('modal-step-2').classList.remove('active');
+    document.getElementById('modal-step-3').classList.remove('active');
+}
+
+async function loginWithGoogle() {
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + '/menuly/admin.html' }
+    });
+    if (error) alert("Login Error: " + error.message);
+}
 </script>
 </body>
 </html>
