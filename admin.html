@@ -4254,12 +4254,9 @@ const ordersRes = await supabaseClient
             const payload = {
                 restaurant_id: activeRestaurantId, 
                 brand_name: document.getElementById('set-brand').value.trim(),
-                brand_name_ar: document.getElementById('set-brand-ar').value.trim(), // 🌟 Saved to new column
-                
-                // 🌟 NEW: Save descriptions to database
+                brand_name_ar: document.getElementById('set-brand-ar').value.trim(),
                 description: document.getElementById('admin-desc-en').value.trim(),
                 description_ar: document.getElementById('admin-desc-ar').value.trim(),
-
                 currency: document.getElementById('set-currency').value.trim(),
                 language: activeLang,
                 contact: document.getElementById('set-contact').value.trim(),
@@ -4319,6 +4316,13 @@ const ordersRes = await supabaseClient
                     alert("🚨 RLS SECURITY BLOCK: Supabase blocked saving the Slug to the tenants table! Check your UPDATE policies.");
                 }
             }
+
+            btn.innerHTML = `<i class="fas fa-save"></i> Save Settings`;
+            
+            if (!hasError) {
+                alert("Restaurant settings updated successfully!");
+            }
+        }
 
 // ==========================================
         // 🌟 DYNAMIC FLOOR PLAN MANAGER (SAAS)
