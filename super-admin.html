@@ -402,8 +402,17 @@
             if(id) {
                 const { error } = await supabaseClient.from('tenants').update({ restaurant_name, plan_tier, status, plan_expiry }).eq('id', id);
                 if(error) return alert("Error updating tenant: " + error.message);
+                
+                // 🌟 FIX THE CLASH: Auto-Approve any pending plan requests since you just manually updated it!
+                await supabaseClient
+                    .from('tenant_requests')
+                    .update({ status: 'approved' })
+                    .eq('restaurant_id', id)
+                    .eq('request_type', 'plan_change')
+                    .eq('status', 'pending');
+                    
             } else {
-                // 🌟 Auto-Generate Slug (lowercases, adds hyphens, removes weird symbols)
+                // Auto-Generate Slug
                 const slug = restaurant_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
                 
                 const { error } = await supabaseClient.from('tenants').insert([{ restaurant_name, plan_tier, status, plan_expiry, slug }]);
@@ -412,6 +421,7 @@
 
             closeAddTenantModal();
             fetchTenantsData();
+            fetchPendingRequests(); // Refresh the inbox just in case!
         }
 
         // Safe Impersonation Action
@@ -510,7 +520,7 @@
         async function processRequest(requestId, action, type, tenantId, plan, dataStr) {
             if (!confirm(`Are you sure you want to ${action.toUpperCase()} this request?`)) return;
 
-            // 1. First, mark the request as approved or rejected in the holding table
+            // 1. Mark the request as approved or rejected
             const { error: reqError } = await supabaseClient
                 .from('tenant_requests')
                 .update({ status: action })
@@ -518,22 +528,25 @@
 
             if (reqError) return alert("Failed to update request status: " + reqError.message);
 
-            // 2. If APPROVED, we must push the changes to the live tables!
+            // 2. If APPROVED, safely push changes and check for RLS blocks!
             if (action === 'approved') {
                 
                 if (type === 'plan_change') {
-                    // Update the tenants table plan
-                    await supabaseClient
+                    // Update the tenants table and FORCE a return to check for RLS blocks
+                    const { data: tData, error: tErr } = await supabaseClient
                         .from('tenants')
                         .update({ plan_tier: plan })
-                        .eq('id', tenantId);
+                        .eq('id', tenantId)
+                        .select();
+                        
+                    if (tErr || !tData || tData.length === 0) {
+                        return alert("🚨 RLS BLOCK: Super Admin does not have permission to update the Tenants table!");
+                    }
                 } 
                 
                 else if (type === 'profile_update') {
-                    // Update the live settings table
                     const parsedData = JSON.parse(dataStr.replace(/&quot;/g, '"'));
                     
-                    // We need to fetch the setting row ID first to safely update
                     const { data: settingRow } = await supabaseClient
                         .from('restaurant_settings')
                         .select('id')
@@ -541,12 +554,16 @@
                         .limit(1).maybeSingle();
                         
                     if (settingRow) {
-                        await supabaseClient
+                        const { data: sData, error: sErr } = await supabaseClient
                             .from('restaurant_settings')
                             .update({ contact: parsedData.contact, email: parsedData.email })
-                            .eq('id', settingRow.id);
+                            .eq('id', settingRow.id)
+                            .select();
+                            
+                        if (sErr || !sData || sData.length === 0) {
+                            return alert("🚨 RLS BLOCK: Super Admin does not have permission to update Restaurant Settings!");
+                        }
                     } else {
-                        // Edge case: They don't have settings yet, insert a basic row
                         await supabaseClient
                             .from('restaurant_settings')
                             .insert([{ restaurant_id: tenantId, contact: parsedData.contact, email: parsedData.email }]);
@@ -557,7 +574,6 @@
                 alert("Request REJECTED. The tenant's data was not changed.");
             }
 
-            // Refresh dashboards
             fetchPendingRequests();
             fetchTenantsData(); 
         }
