@@ -1417,9 +1417,12 @@
 
             // 2. AUTO-PROVISION IF BRAND NEW USER
             if (!profile) {
+                // 🌟 NEW: Grab the choice from localStorage (defaults to restaurant if missing)
+                const savedBusinessType = localStorage.getItem('pending_business_type') || 'restaurant';
+                
                 const defaultName = currentUser.user_metadata?.full_name 
-                    ? `${currentUser.user_metadata.full_name}'s Restaurant` 
-                    : 'New Restaurant';
+                    ? `${currentUser.user_metadata.full_name}'s Business` 
+                    : 'New Business';
 
                 // Create new pending tenant
                 const { data: newTenant, error: tenantErr } = await supabaseClient
@@ -1427,7 +1430,8 @@
                     .insert([{
                         restaurant_name: defaultName,
                         plan_tier: 'basic',
-                        status: 'pending'
+                        status: 'pending',
+                        business_type: savedBusinessType // 🌟 Permanently locking it in!
                     }])
                     .select()
                     .single();
@@ -1444,7 +1448,7 @@
                     .insert([{
                         id: currentUser.id,
                         email: currentUser.email,
-                        full_name: currentUser.user_metadata?.full_name || 'Restaurant Admin',
+                        full_name: currentUser.user_metadata?.full_name || 'Business Admin',
                         role: 'tenant_admin',
                         restaurant_id: newTenant.id
                     }])
@@ -1457,6 +1461,8 @@
                     return;
                 }
 
+                // 🌟 Clear the temporary memory so it doesn't leak to other logins
+                localStorage.removeItem('pending_business_type');
                 profile = newProfile;
             }
 
@@ -1504,8 +1510,12 @@
             const profileEl = document.getElementById('admin-profile-name');
             if (profileEl) profileEl.textContent = adminName;
 
+            // 🌟 NEW: Save business type globally and trigger Admin Chameleon
+            window.adminBusinessType = profile.tenants?.business_type || 'restaurant';
+            applyAdminChameleon();
+
             applyPlanGating(currentTenantPlan);
-	initWaiterBell();
+            initWaiterBell();
 
             // 🌟 ADD THIS CODE RIGHT HERE:
             const previewBtn = document.getElementById('preview-link');
@@ -1712,6 +1722,50 @@ async function logoutAdmin() {
             localStorage.removeItem('impersonate_tenant_id');
             localStorage.removeItem('impersonate_business_name');
             window.location.href = 'super-admin.html';
+        }
+
+
+// ==========================================
+        // 🌟 ADMIN CHAMELEON ENGINE: ADAPT FOR GROCERY
+        // ==========================================
+        function applyAdminChameleon() {
+            if (window.adminBusinessType === 'grocery') {
+                
+                // 1. Hide Table & Dine-In features from the POS
+                const posTablesBtn = document.getElementById('pos-mid-btn-tables');
+                if (posTablesBtn) posTablesBtn.style.display = 'none';
+                
+                const posDineInFlt = document.getElementById('pos-flt-Dine In');
+                if (posDineInFlt) posDineInFlt.style.display = 'none';
+
+                const posGuestInput = document.getElementById('pos-guest-count');
+                if (posGuestInput) posGuestInput.parentElement.style.display = 'none';
+
+                // 2. Hide Floor Plan & Tables from Settings
+                const settingsTables = document.getElementById('settings-tables-container');
+                if (settingsTables) settingsTables.parentElement.style.display = 'none';
+
+                // 3. Rename Dashboard Cards (Dine-In -> In-Store)
+                const dineInRev = document.getElementById('stat-dinein-rev');
+                if (dineInRev) {
+                    const label = dineInRev.previousElementSibling;
+                    if (label) label.innerHTML = 'In-Store';
+                }
+                const dineInTakeawayTitle = document.querySelector('.fa-utensils.text-emerald-500');
+                if (dineInTakeawayTitle && dineInTakeawayTitle.parentElement) {
+                    dineInTakeawayTitle.parentElement.innerHTML = '<i class="fas fa-store text-emerald-500 me-2"></i> In-Store vs Delivery';
+                }
+
+                // 4. Rename "Cooking" to "Packing" on Top Stats
+                const cookRevLabel = document.getElementById('stat-cook-rev');
+                if (cookRevLabel && cookRevLabel.previousElementSibling) {
+                    cookRevLabel.previousElementSibling.innerHTML = '<i class="fas fa-box-open me-1"></i> Packing';
+                }
+                const cookOrdLabel = document.getElementById('stat-cook-ord');
+                if (cookOrdLabel) {
+                    cookOrdLabel.textContent = cookOrdLabel.textContent.replace('Cooking', 'Packing');
+                }
+            }
         }
 
         function applyPlanGating(plan) {
@@ -2109,8 +2163,12 @@ async function logoutAdmin() {
                 const date = new Date(order.created_at).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
                 const waitStr = getWaitTimeStr(order.created_at);
                 
+                // 🌟 CHAMELEON: Change "Cooking" text to "Packing" for Grocery
+                const activeStateName = window.adminBusinessType === 'grocery' ? 'Packing' : 'Cooking';
+                const activeStateAction = window.adminBusinessType === 'grocery' ? 'Pack' : 'Cook';
+
                 let badge = `<span class="bg-orange-100 text-orange-700 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-sm border border-orange-200">Pending</span>`;
-                if(order.status === 'Cooking') badge = `<span class="bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-sm border border-yellow-200">Cooking</span>`;
+                if(order.status === 'Cooking') badge = `<span class="bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-sm border border-yellow-200">${activeStateName}</span>`;
                 if(order.status === 'Completed') badge = `<span class="bg-green-100 text-green-700 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-sm border border-green-200">Completed</span>`;
                 if(order.status === 'Cancelled') badge = `<span class="bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-sm border border-red-200">Cancelled</span>`;
 
@@ -2144,10 +2202,10 @@ async function logoutAdmin() {
                     cookActionHtml = `
                         <div class="flex gap-1 items-stretch">
                             <input type="number" id="cook-time-${order.id}" value="15" class="w-12 text-center text-[10px] font-black rounded-lg border border-yellow-300 bg-white focus:outline-none focus:border-yellow-500 shadow-inner" onclick="event.stopPropagation()">
-                            <button onclick="updateStatus('${order.id}', 'Cooking', event, document.getElementById('cook-time-${order.id}').value)" class="flex-1 py-2.5 text-[10px] font-black uppercase rounded-lg bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 transition shadow-sm">Cook</button>
+                            <button onclick="updateStatus('${order.id}', 'Cooking', event, document.getElementById('cook-time-${order.id}').value)" class="flex-1 py-2.5 text-[10px] font-black uppercase rounded-lg bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 transition shadow-sm">${activeStateAction}</button>
                         </div>`;
                 } else {
-                    cookActionHtml = `<button onclick="updateStatus('${order.id}', 'Cooking', event)" class="w-full py-2.5 text-[10px] font-black uppercase rounded-lg bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 transition shadow-sm opacity-50 cursor-not-allowed">Cooking Active</button>`;
+                    cookActionHtml = `<button onclick="updateStatus('${order.id}', 'Cooking', event)" class="w-full py-2.5 text-[10px] font-black uppercase rounded-lg bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 transition shadow-sm opacity-50 cursor-not-allowed">${activeStateName} Active</button>`;
                 }
 
                 // 🌟 FIX: Add Payment Status Badge Logic

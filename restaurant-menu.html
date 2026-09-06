@@ -1244,7 +1244,7 @@ let relatedItemsData = []; // (You did this perfectly!)
                 if (!menuSlug) throw new Error("No menu specified in URL.");
                 const { data: tenantData, error: tenantErr } = await supabaseClient
                     .from('tenants')
-                    .select('id')
+                    .select('id, business_type') // 🌟 NEW: Fetching business_type!
                     .eq('slug', menuSlug)
                     .single();
                     
@@ -1253,7 +1253,8 @@ let relatedItemsData = []; // (You did this perfectly!)
                     return;
                 }
                 
-                restaurantId = tenantData.id; // Boom! We have the correct UUID!
+                restaurantId = tenantData.id; 
+                window.businessType = tenantData.business_type || 'restaurant';
                 
                 // Load favorites now that we know the ID
                 likedItems = new Set(JSON.parse(localStorage.getItem('likedItems_' + restaurantId)) || []);
@@ -1390,7 +1391,9 @@ let relatedItemsData = []; // (You did this perfectly!)
                 activeMenuData = menuData.map(item => ({
                     id: item.id, itemCode: item.item_code, mainCat: item.main_cat, subCat: item.sub_cat,
                     name: item.name, order: item.order_index || 999, price: item.price || 0,
-                    desc: item.description || "", calories: item.calories || "", recipe: item.recipe || "",
+                    desc: item.description || "", 
+                    calories: window.businessType === 'grocery' ? null : (item.calories || ""), // 🌟 FIX: Step 3 is right here!
+                    recipe: item.recipe || "",
                     stockQty: item.stock_quantity !== null ? item.stock_quantity : null,
                     isTodaySpecial: item.is_today_special || false,
                     imgUrls: item.img_urls && item.img_urls.length > 0 ? item.img_urls : [rawBranding.smartLogo || 'https://via.placeholder.com/100'],
@@ -1434,7 +1437,36 @@ let relatedItemsData = []; // (You did this perfectly!)
                 }, 10000); 
             }
             document.getElementById('lang-text').textContent = currentLang === 'en' ? 'AR' : 'EN';
-        }
+            
+            // ==========================================
+            // 🌟 CHAMELEON ENGINE: ADAPT FOR GROCERY
+            // ==========================================
+            if (window.businessType === 'grocery') {
+                // 1. Hide the Waiter Bell
+                const waiterBtn = document.getElementById('btn-call-waiter');
+                if (waiterBtn) waiterBtn.style.display = 'none';
+
+                // 2. Change the default fallback logo from Fork/Knife to Shopping Basket
+                const defaultLogo = document.getElementById('default-logo-icon');
+                if (defaultLogo) {
+                    defaultLogo.classList.remove('fa-utensils');
+                    defaultLogo.classList.add('fa-shopping-basket');
+                }
+
+                // 3. Hide the "Dine-In" button in the shopping cart and force Takeaway
+                const btnDineIn = document.getElementById('btn-type-dinein');
+                if (btnDineIn) btnDineIn.style.display = 'none';
+                if (typeof setDiningType === 'function') setDiningType('Takeaway');
+
+                // 4. Change specific text labels (Overrides the staticText object)
+                staticText.en.todaySpecial = '🌟 Special Offers';
+                staticText.ar.todaySpecial = '🌟 عروض خاصة';
+                staticText.en.specialBadge = 'Offer';
+                staticText.ar.specialBadge = 'عرض';
+                staticText.en.recipe = 'Product Details';
+                staticText.ar.recipe = 'تفاصيل المنتج';
+            }
+        } // 🌟 FIX: The closing brace goes HERE, at the very end!
 
         function toggleLanguage() {
             currentLang = currentLang === 'en' ? 'ar' : 'en';

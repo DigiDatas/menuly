@@ -766,7 +766,13 @@ function closeLoginModal() {
     modal.classList.remove('open');
 }
 
+// 🌟 NEW: Track the master category so the database doesn't crash!
+let masterBusinessType = 'restaurant'; 
+
 function selectMainCategory(categoryKey) {
+    // Save whether they picked 'food' or 'grocery'
+    masterBusinessType = categoryKey === 'food' ? 'restaurant' : 'grocery';
+    
     const step1 = document.getElementById('modal-step-1');
     const step2 = document.getElementById('modal-step-2');
     const listContainer = document.getElementById('sub-category-list');
@@ -787,7 +793,10 @@ function selectMainCategory(categoryKey) {
 }
 
 function finalizeSelection(businessName) {
-    localStorage.setItem('pending_business_type', businessName);
+    // 🌟 Save the strict 'restaurant' or 'grocery' keyword for the database!
+    localStorage.setItem('pending_business_type', masterBusinessType);
+    
+    // Update the UI text
     document.getElementById('display-selected-type').textContent = businessName;
     document.getElementById('modal-step-2').classList.remove('active');
     document.getElementById('modal-step-3').classList.add('active');
@@ -806,6 +815,22 @@ async function loginWithGoogle() {
     });
     if (error) alert("Login Error: " + error.message);
 }
+
+// 🌟 Capture the business type and open the login/signup modal
+    function selectBusiness(type) {
+        // 1. Save the choice (restaurant or grocery) to the browser memory
+        localStorage.setItem('pending_business_type', type);
+        
+        // 2. Open your authentication modal (adjust the ID if yours is named differently)
+        const authModal = document.getElementById('authModal');
+        if (authModal) {
+            authModal.classList.remove('hidden');
+            authModal.classList.add('flex');
+        } else {
+            console.log("Business type saved:", type);
+            // If you redirect instead of using a modal, put your window.location.href here
+        }
+    }
 </script>
 </body>
 </html>
