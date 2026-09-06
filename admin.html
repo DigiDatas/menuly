@@ -962,51 +962,71 @@
             </div>
         </section>
 
-<!-- 🌟 NEW: MY TV TAB PASTED HERE 🌟 -->
-        <!-- ===================== MY TV TAB ===================== -->
-        <div id="tab-tv" class="hidden h-full flex flex-col p-6 animate-fade-in">
-            <div class="flex justify-between items-center mb-6 shrink-0">
-                <div>
-                    <h2 class="text-3xl font-black text-gray-900 tracking-tight">Digital Signage</h2>
-                    <p class="text-gray-400 text-sm mt-1">Manage what plays on the restaurant TVs.</p>
+<!-- ===================== MY TV TAB ===================== -->
+        <div id="tab-tv" class="hidden h-full p-6 animate-fade-in w-full bg-gray-100">
+            
+            <!-- 🌟 UPSELL SCREEN (For Basic & Pro Plans) -->
+            <div id="tv-upsell-screen" class="hidden flex-col items-center justify-center h-full text-center max-w-xl mx-auto">
+                <div class="w-20 h-20 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-4xl mb-6 shadow-sm">
+                    <i class="fas fa-tv"></i>
                 </div>
-                <button onclick="castToTv()" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl shadow-lg shadow-blue-900/50 hover:bg-blue-500 hover:scale-105 font-black tracking-wide transition-all flex items-center gap-2">
-                    <i class="fas fa-bolt text-yellow-300"></i> Cast to TV
-                </button>
+                <h2 class="text-3xl font-black text-gray-900 tracking-tight mb-3">Digital Signage Manager</h2>
+                <p class="text-gray-500 text-sm mb-8 leading-relaxed px-4">Turn your restaurant's smart TVs into powerful marketing tools. Cast promotional loops, showcase daily specials, and display flash cards directly from this dashboard.</p>
+                
+                <div class="bg-gradient-to-r from-fuchsia-500 via-purple-500 to-blue-500 p-1 rounded-3xl shadow-xl w-full mb-6 relative overflow-hidden">
+                    <!-- Shimmer effect -->
+                    <div class="absolute inset-0 bg-white/20 w-1/2 h-full -skew-x-12 transform -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                    
+                    <div class="bg-white rounded-[22px] p-8 text-center flex flex-col items-center">
+                        <h4 class="font-black text-gray-900 uppercase tracking-widest text-xs mb-3 flex items-center gap-2"><i class="fas fa-crown text-yellow-500 text-lg"></i> Premium Feature</h4>
+                        <p class="text-xs font-bold text-gray-500 mb-6 max-w-sm">Upgrade to the Premium Plan to unlock Digital Signage casting and push live menu updates directly to your screens.</p>
+                        
+                        <button onclick="submitPlanRequest('premium')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 group">
+                            Request Premium Upgrade <i class="fas fa-arrow-up group-hover:-translate-y-1 transition-transform"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 overflow-hidden">
-                <!-- Add Media Form -->
-                <!-- Add / Edit Media Form -->
-<div class="bg-gray-800 p-5 rounded-2xl border border-gray-700 h-fit">
-    <h3 id="tv-form-title" class="text-lg font-bold text-white mb-4">Add to TV Loop</h3>
-    
-    <!-- 🌟 Hidden ID field to track what we are editing -->
-    <input type="hidden" id="tv-edit-id">
-    
-    <input type="text" id="tv-media-url" placeholder="Paste Image/Video URL" class="w-full bg-gray-900 text-white border border-gray-700 rounded-xl px-4 py-2.5 text-sm mb-3 focus:border-blue-500 outline-none">
-    
-    <div class="flex gap-3 mb-4">
-        <select id="tv-media-type" class="flex-1 bg-gray-900 text-white border border-gray-700 rounded-xl px-3 py-2 text-sm outline-none">
-            <option value="image">Image</option>
-            <option value="video">Video</option>
-        </select>
-        <input type="number" id="tv-duration" placeholder="Seconds" value="10" class="w-24 bg-gray-900 text-white border border-gray-700 rounded-xl px-3 py-2 text-sm outline-none">
-    </div>
+            <!-- 🌟 PREMIUM SCREEN (The Actual TV Manager) -->
+            <div id="tv-manager-screen" class="hidden flex-col h-full w-full">
+                <div class="flex justify-between items-center mb-6 shrink-0">
+                    <div>
+                        <h2 class="text-3xl font-black text-gray-900 tracking-tight">Digital Signage</h2>
+                        <p class="text-gray-400 text-sm mt-1">Manage what plays on the restaurant TVs.</p>
+                    </div>
+                    <button onclick="castToTv()" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl shadow-lg shadow-blue-900/50 hover:bg-blue-500 hover:scale-105 font-black tracking-wide transition-all flex items-center gap-2">
+                        <i class="fas fa-bolt text-yellow-300"></i> Cast to TV
+                    </button>
+                </div>
 
-    <div class="flex gap-2">
-        <button onclick="saveTvMedia()" id="tv-submit-btn" class="flex-1 bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-500 font-bold text-sm transition">
-            <i class="fas fa-plus"></i> Add to Loop
-        </button>
-        <button onclick="resetTvForm()" id="tv-cancel-btn" class="hidden bg-gray-700 text-gray-300 px-4 py-2 rounded-xl hover:bg-gray-600 text-sm transition">
-            Cancel
-        </button>
-    </div>
-</div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 overflow-hidden">
+                    <!-- Add Media Form -->
+                    <div class="bg-gray-800 p-5 rounded-2xl border border-gray-700 h-fit">
+                        <h3 id="tv-form-title" class="text-lg font-bold text-white mb-4">Add to TV Loop</h3>
+                        <input type="hidden" id="tv-edit-id">
+                        <input type="text" id="tv-media-url" placeholder="Paste Image/Video URL" class="w-full bg-gray-900 text-white border border-gray-700 rounded-xl px-4 py-2.5 text-sm mb-3 focus:border-blue-500 outline-none">
+                        <div class="flex gap-3 mb-4">
+                            <select id="tv-media-type" class="flex-1 bg-gray-900 text-white border border-gray-700 rounded-xl px-3 py-2 text-sm outline-none">
+                                <option value="image">Image</option>
+                                <option value="video">Video</option>
+                            </select>
+                            <input type="number" id="tv-duration" placeholder="Seconds" value="10" class="w-24 bg-gray-900 text-white border border-gray-700 rounded-xl px-3 py-2 text-sm outline-none">
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="saveTvMedia()" id="tv-submit-btn" class="flex-1 bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-500 font-bold text-sm transition">
+                                <i class="fas fa-plus"></i> Add to Loop
+                            </button>
+                            <button onclick="resetTvForm()" id="tv-cancel-btn" class="hidden bg-gray-700 text-gray-300 px-4 py-2 rounded-xl hover:bg-gray-600 text-sm transition">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
 
-                <!-- Playlist Preview -->
-                <div class="md:col-span-2 bg-gray-900 rounded-2xl border border-gray-800 p-2 overflow-y-auto hide-scrollbar flex flex-col gap-2" id="tv-playlist-container">
-                    <!-- Fetched from Supabase -->
+                    <!-- Playlist Preview -->
+                    <div class="md:col-span-2 bg-gray-900 rounded-2xl border border-gray-800 p-2 overflow-y-auto hide-scrollbar flex flex-col gap-2" id="tv-playlist-container">
+                        <!-- Fetched from Supabase -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -1796,15 +1816,34 @@ async function logoutAdmin() {
             const posBtn = document.getElementById('tab-btn-pos');
             const tvBtn = document.getElementById('tab-btn-tv');
 
+            // 1. Handle POS Tab (Locked on Basic)
             if (plan === 'basic') {
                 if (posBtn) posBtn.classList.add('opacity-40', 'pointer-events-none');
-                if (tvBtn) tvBtn.classList.add('opacity-40', 'pointer-events-none');
-            } else if (plan === 'pro') {
+            } else {
                 if (posBtn) posBtn.classList.remove('opacity-40', 'pointer-events-none');
-                if (tvBtn) tvBtn.classList.add('opacity-40', 'pointer-events-none');
-            } else if (plan === 'premium') {
-                if (posBtn) posBtn.classList.remove('opacity-40', 'pointer-events-none');
-                if (tvBtn) tvBtn.classList.remove('opacity-40', 'pointer-events-none');
+            }
+
+            // 2. Handle TV Tab Button (ALWAYS Clickable now, removing locks!)
+            if (tvBtn) tvBtn.classList.remove('pointer-events-none', 'opacity-40', 'opacity-50');
+
+            // 3. Toggle Internal TV Screens based on plan
+            const tvUpsell = document.getElementById('tv-upsell-screen');
+            const tvManager = document.getElementById('tv-manager-screen');
+            
+            if (tvUpsell && tvManager) {
+                if (plan === 'premium') {
+                    // Show actual TV Manager
+                    tvUpsell.classList.add('hidden');
+                    tvUpsell.classList.remove('flex');
+                    tvManager.classList.remove('hidden');
+                    tvManager.classList.add('flex');
+                } else {
+                    // Show Upsell Card
+                    tvUpsell.classList.remove('hidden');
+                    tvUpsell.classList.add('flex');
+                    tvManager.classList.add('hidden');
+                    tvManager.classList.remove('flex');
+                }
             }
         }
 
