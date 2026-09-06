@@ -87,15 +87,15 @@
         </div>
 
 
-        <!-- Profile & Logout at Bottom -->
+        <!-- Profile & Billing at Bottom -->
         <div class="p-3 border-t border-gray-800">
-            <div class="relative h-10 w-full flex items-center">
-                <div class="absolute left-1/2 -translate-x-1/2 group-hover:left-1 group-hover:translate-x-0 w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center border border-gray-600 transition-all duration-300">
-                    <i class="fas fa-user text-gray-300 text-sm"></i>
+            <div onclick="openBillingModal()" class="relative h-11 w-full flex items-center cursor-pointer hover:bg-gray-800 rounded-xl transition px-1 group">
+                <div class="absolute left-1/2 -translate-x-1/2 group-hover:left-1 group-hover:translate-x-0 w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center border border-indigo-500 transition-all duration-300 shadow-sm">
+                    <i class="fas fa-building text-white text-sm"></i>
                 </div>
                 <div class="absolute left-11 opacity-0 group-hover:opacity-100 flex flex-col whitespace-nowrap overflow-hidden transition-opacity duration-300">
-                    <span id="admin-profile-name" class="text-xs font-black truncate max-w-[120px]">Admin</span>
-                    <button onclick="logoutAdmin()" id="btn-admin-logout" class="text-[10px] font-bold text-red-400 hover:text-red-300 text-left uppercase tracking-wider mt-0.5">Sign Out</button>
+                    <span id="admin-profile-name" class="text-xs font-black text-white truncate max-w-[120px]">Admin</span>
+                    <span class="text-[9px] font-bold text-gray-400 text-left uppercase tracking-wider mt-0.5">Account & Billing</span>
                 </div>
             </div>
         </div>
@@ -1016,6 +1016,89 @@
     </main>
 </div> <!-- 🚨 NEW: THIS CLOSES THE MAIN CONTENT WRAPPER 🚨 -->
 
+
+<!-- ================= MODAL: ACCOUNT & BILLING ================= -->
+    <div id="billingModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl flex flex-col">
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="font-black text-lg text-gray-900"><i class="fas fa-building text-indigo-600 me-2"></i> Business Account & Billing</h3>
+                <button onclick="closeBillingModal()" class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300 transition"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="flex flex-col md:flex-row flex-1 p-6 gap-6 bg-gray-100">
+                <!-- LEFT COLUMN: Profile Update -->
+                <div class="flex-1 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col relative">
+                    <h4 class="text-sm font-black text-gray-800 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Business Contacts</h4>
+                    
+                    <div class="space-y-4 flex-1">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Contact Phone</label>
+                            <input type="text" id="bill-phone" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:border-indigo-500 outline-none bg-gray-50 font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Business Email</label>
+                            <input type="email" id="bill-email" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:border-indigo-500 outline-none bg-gray-50 font-bold">
+                        </div>
+                        
+                        <!-- Pending Alert -->
+                        <div id="profile-pending-alert" class="hidden mt-2 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 shadow-sm">
+                            <i class="fas fa-clock text-amber-500 mt-0.5"></i>
+                            <div>
+                                <p class="text-xs font-bold text-amber-800">Update Pending</p>
+                                <p class="text-[10px] text-amber-600">Waiting for Super Admin approval.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="submitProfileRequest()" id="btn-submit-profile" class="mt-4 w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition shadow-md text-sm">
+                        Request Details Update
+                    </button>
+                </div>
+
+                <!-- RIGHT COLUMN: Billing & Plan -->
+                <div class="flex-1 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col">
+                    <h4 class="text-sm font-black text-gray-800 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Subscription Plan</h4>
+                    
+                    <div class="flex items-center justify-between bg-indigo-50 border border-indigo-100 p-4 rounded-xl mb-4 shadow-sm">
+                        <div>
+                            <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Active Tier</p>
+                            <h3 id="bill-current-plan" class="text-xl font-black text-indigo-700 capitalize">Basic</h3>
+                        </div>
+                        <i class="fas fa-crown text-3xl text-indigo-200"></i>
+                    </div>
+
+                    <ul class="text-xs text-gray-600 space-y-2 mb-4 flex-1 font-medium">
+                        <li><i class="fas fa-check text-green-500 me-2"></i> Digital QR Menu & Catalog</li>
+                        <li><i id="plan-feat-pos" class="fas fa-times text-gray-300 me-2 transition-colors"></i> Cashier POS & Tables <span class="text-[9px] text-gray-400 ml-1">(Pro+)</span></li>
+                        <li><i id="plan-feat-tv" class="fas fa-times text-gray-300 me-2 transition-colors"></i> Digital Signage (TV) <span class="text-[9px] text-gray-400 ml-1">(Premium)</span></li>
+                    </ul>
+
+                    <!-- Pending Alert -->
+                    <div id="plan-pending-alert" class="hidden mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 shadow-sm">
+                        <i class="fas fa-sync fa-spin text-amber-500 mt-0.5"></i>
+                        <div>
+                            <p class="text-xs font-bold text-amber-800">Plan Change Requested</p>
+                            <p class="text-[10px] text-amber-600">Waiting for Super Admin approval.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2" id="plan-action-buttons">
+                        <button onclick="submitPlanRequest('downgrade')" class="w-1/3 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition text-xs shadow-sm">Downgrade</button>
+                        <button onclick="submitPlanRequest('upgrade')" class="w-2/3 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-md text-xs">Request Upgrade <i class="fas fa-arrow-up ml-1"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer with Logout -->
+            <div class="p-4 border-t border-gray-100 bg-white flex justify-end">
+                <button onclick="logoutAdmin()" class="flex items-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 px-6 py-2.5 rounded-xl font-bold text-xs transition border border-red-100 shadow-sm">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out Securely
+                </button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- ================= MODAL: ADD / EDIT MENU ITEM ================= -->
     <div id="menuModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
         <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
@@ -1413,6 +1496,125 @@
             if (typeof setGraphFilter === 'function') setGraphFilter('week');
             livePollingTimer = setInterval(() => fetchDashboardData(null, true), 30000);
         }
+
+// ==========================================
+        // ACCOUNT & BILLING MODAL LOGIC
+        // ==========================================
+        async function openBillingModal() {
+            const modal = document.getElementById('billingModal');
+            
+            // 1. Load current contact data
+            const { data: settings } = await supabaseClient
+                .from('restaurant_settings')
+                .select('contact, email')
+                .eq('restaurant_id', activeRestaurantId)
+                .limit(1).maybeSingle();
+                
+            document.getElementById('bill-phone').value = settings?.contact || '';
+            document.getElementById('bill-email').value = settings?.email || currentUser?.email || '';
+            
+            // 2. Set current plan visually
+            document.getElementById('bill-current-plan').textContent = currentTenantPlan || 'Basic';
+            
+            // Toggle checklist visuals
+            document.getElementById('plan-feat-pos').className = (currentTenantPlan === 'pro' || currentTenantPlan === 'premium') ? "fas fa-check text-green-500 me-2" : "fas fa-times text-gray-300 me-2";
+            document.getElementById('plan-feat-tv').className = (currentTenantPlan === 'premium') ? "fas fa-check text-green-500 me-2" : "fas fa-times text-gray-300 me-2";
+
+            // 3. Check for existing pending requests to lock buttons
+            await checkPendingRequests();
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeBillingModal() {
+            document.getElementById('billingModal').classList.add('hidden');
+            document.getElementById('billingModal').classList.remove('flex');
+        }
+
+        async function checkPendingRequests() {
+            const { data: requests } = await supabaseClient
+                .from('tenant_requests')
+                .select('request_type')
+                .eq('restaurant_id', activeRestaurantId)
+                .eq('status', 'pending');
+            
+            const hasProfileReq = requests?.some(r => r.request_type === 'profile_update');
+            const hasPlanReq = requests?.some(r => r.request_type === 'plan_change');
+
+            // Toggle Profile UI
+            if (hasProfileReq) {
+                document.getElementById('btn-submit-profile').classList.add('hidden');
+                document.getElementById('profile-pending-alert').classList.remove('hidden');
+                document.getElementById('bill-phone').disabled = true;
+                document.getElementById('bill-email').disabled = true;
+            } else {
+                document.getElementById('btn-submit-profile').classList.remove('hidden');
+                document.getElementById('profile-pending-alert').classList.add('hidden');
+                document.getElementById('bill-phone').disabled = false;
+                document.getElementById('bill-email').disabled = false;
+            }
+
+            // Toggle Plan UI
+            if (hasPlanReq) {
+                document.getElementById('plan-action-buttons').classList.add('hidden');
+                document.getElementById('plan-pending-alert').classList.remove('hidden');
+            } else {
+                document.getElementById('plan-action-buttons').classList.remove('hidden');
+                document.getElementById('plan-pending-alert').classList.add('hidden');
+            }
+        }
+
+        async function submitProfileRequest() {
+            const phone = document.getElementById('bill-phone').value.trim();
+            const email = document.getElementById('bill-email').value.trim();
+
+            if(!phone && !email) return alert("Please enter at least one contact detail.");
+
+            const btn = document.getElementById('btn-submit-profile');
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Submitting...`;
+
+            const { error } = await supabaseClient.from('tenant_requests').insert([{
+                restaurant_id: activeRestaurantId,
+                request_type: 'profile_update',
+                requested_data: { contact: phone, email: email },
+                status: 'pending'
+            }]);
+
+            if (error) {
+                alert("Error: " + error.message);
+                btn.innerHTML = "Request Details Update";
+            } else {
+                checkPendingRequests();
+            }
+        }
+
+        async function submitPlanRequest(direction) {
+            let targetPlan = 'basic';
+            if (direction === 'upgrade') {
+                targetPlan = currentTenantPlan === 'basic' ? 'pro' : 'premium';
+                if (currentTenantPlan === 'premium') return alert("You are already on the highest plan!");
+            } else {
+                targetPlan = currentTenantPlan === 'premium' ? 'pro' : 'basic';
+                if (currentTenantPlan === 'basic') return alert("You are already on the lowest plan!");
+            }
+
+            if (!confirm(`Are you sure you want to request a change to the ${targetPlan.toUpperCase()} plan?`)) return;
+
+            const { error } = await supabaseClient.from('tenant_requests').insert([{
+                restaurant_id: activeRestaurantId,
+                request_type: 'plan_change',
+                requested_plan: targetPlan,
+                status: 'pending'
+            }]);
+
+            if (error) {
+                alert("Error: " + error.message);
+            } else {
+                checkPendingRequests();
+            }
+        }
+
 async function logoutAdmin() {
     // 1. Clear any active impersonation tokens
     localStorage.removeItem('impersonate_tenant_id');

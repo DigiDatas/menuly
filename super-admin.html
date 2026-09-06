@@ -37,6 +37,13 @@
                 <a href="#" onclick="switchTab('tenants')" id="nav-tenants" class="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-700 transition">
                     <i class="fas fa-building w-4"></i> Businesses & Tenants
                 </a>
+                
+                <!-- 🌟 NEW: Pending Requests Inbox Link -->
+                <a href="#" onclick="switchTab('requests')" id="nav-requests" class="flex items-center justify-between px-4 py-3 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3"><i class="fas fa-inbox w-4"></i> Pending Requests</div>
+                    <span id="badge-requests" class="hidden bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-sm">0</span>
+                </a>
+
                 <a href="#" onclick="switchTab('analytics')" id="nav-analytics" class="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50 transition">
                     <i class="fas fa-chart-line w-4"></i> Global Analytics
                 </a>
@@ -135,6 +142,36 @@
                 </div>
             </div>
 
+            <!-- 🌟 NEW TAB 3: PENDING REQUESTS -->
+            <div id="tab-requests" class="hidden space-y-6">
+                <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
+                        <h2 class="font-bold text-sm text-gray-800"><i class="fas fa-inbox me-2 text-indigo-600"></i>Tenant Change Requests</h2>
+                        <button onclick="fetchPendingRequests()" class="text-xs text-gray-500 hover:text-indigo-600 transition font-bold"><i class="fas fa-sync-alt"></i> Refresh Inbox</button>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-gray-200 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50/80">
+                                    <th class="p-4">Business Name</th>
+                                    <th class="p-4">Request Type</th>
+                                    <th class="p-4">Requested Details</th>
+                                    <th class="p-4">Date</th>
+                                    <th class="p-4 text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requests-table-body" class="text-xs divide-y divide-gray-100">
+                                <tr><td colspan="5" class="p-6 text-center text-gray-400">Loading inbox...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
         </div>
     </main>
 
@@ -198,14 +235,18 @@
                 if (emailEl) emailEl.innerText = session.user.email;
             }
             await fetchTenantsData();
+            await fetchPendingRequests(); // 🌟 NEW: Fetch inbox on load
         };
 
         // Tab Switching
         function switchTab(tabName) {
             document.getElementById('tab-tenants').classList.add('hidden');
             document.getElementById('tab-analytics').classList.add('hidden');
+            document.getElementById('tab-requests').classList.add('hidden');
+
             document.getElementById('nav-tenants').className = "flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50 transition";
             document.getElementById('nav-analytics').className = "flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50 transition";
+            document.getElementById('nav-requests').className = "flex items-center justify-between px-4 py-3 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50 transition";
 
             if(tabName === 'tenants') {
                 document.getElementById('tab-tenants').classList.remove('hidden');
@@ -213,6 +254,10 @@
             } else if(tabName === 'analytics') {
                 document.getElementById('tab-analytics').classList.remove('hidden');
                 document.getElementById('nav-analytics').className = "flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-700 transition";
+            } else if(tabName === 'requests') {
+                document.getElementById('tab-requests').classList.remove('hidden');
+                document.getElementById('nav-requests').className = "flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-700 transition";
+                fetchPendingRequests(); // Refresh on tab click
             }
         }
 
@@ -383,6 +428,140 @@
                 window.location.href = 'index.html';
             });
         }
+
+// ==========================================
+        // 🌟 REQUEST APPROVAL ENGINE
+        // ==========================================
+        let pendingRequestsCache = [];
+
+        async function fetchPendingRequests() {
+            // Join with the tenants table to easily display the restaurant name
+            const { data, error } = await supabaseClient
+                .from('tenant_requests')
+                .select('*, tenants(restaurant_name)')
+                .eq('status', 'pending')
+                .order('created_at', { ascending: true });
+
+            if (error) {
+                console.error("Error fetching requests:", error);
+                return;
+            }
+            
+            pendingRequestsCache = data || [];
+            
+            // Update Notification Badge
+            const badge = document.getElementById('badge-requests');
+            if (pendingRequestsCache.length > 0) {
+                badge.textContent = pendingRequestsCache.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            renderRequestsTable(pendingRequestsCache);
+        }
+
+        function renderRequestsTable(list) {
+            const tbody = document.getElementById('requests-table-body');
+            tbody.innerHTML = '';
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-400 font-bold italic">Inbox is empty. No pending requests! 🎉</td></tr>`;
+                return;
+            }
+
+            list.forEach(req => {
+                const bName = req.tenants?.restaurant_name || 'Unknown Business';
+                const dateStr = new Date(req.created_at).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+                
+                let typeBadge = '';
+                let detailsStr = '';
+                
+                if (req.request_type === 'plan_change') {
+                    typeBadge = `<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="fas fa-crown"></i> Plan Change</span>`;
+                    detailsStr = `Requested Upgrade/Downgrade to: <span class="font-black text-purple-600 uppercase">${req.requested_plan}</span>`;
+                } else if (req.request_type === 'profile_update') {
+                    typeBadge = `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="fas fa-address-card"></i> Profile Details</span>`;
+                    detailsStr = `Phone: <b>${req.requested_data?.contact || 'N/A'}</b><br>Email: <b>${req.requested_data?.email || 'N/A'}</b>`;
+                }
+
+                // Pass the data safely as a JSON string to the button click
+                const safeDataStr = req.requested_data ? JSON.stringify(req.requested_data).replace(/"/g, '&quot;') : '{}';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50/50 transition border-b border-gray-100">
+                        <td class="p-4 font-bold text-gray-900">${bName} <div class="text-[9px] text-gray-400 font-mono mt-0.5">${req.restaurant_id}</div></td>
+                        <td class="p-4">${typeBadge}</td>
+                        <td class="p-4 text-gray-600 leading-tight">${detailsStr}</td>
+                        <td class="p-4 text-gray-500">${dateStr}</td>
+                        <td class="p-4 text-end space-x-1">
+                            <button onclick="processRequest('${req.id}', 'approved', '${req.request_type}', '${req.restaurant_id}', '${req.requested_plan}', '${safeDataStr}')" class="bg-green-500 text-white hover:bg-green-600 px-4 py-2 rounded-lg font-bold text-xs transition shadow-sm">
+                                Approve
+                            </button>
+                            <button onclick="processRequest('${req.id}', 'rejected', '${req.request_type}', '${req.restaurant_id}', '${req.requested_plan}', '${safeDataStr}')" class="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded-lg font-bold text-xs transition border border-red-100">
+                                Reject
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function processRequest(requestId, action, type, tenantId, plan, dataStr) {
+            if (!confirm(`Are you sure you want to ${action.toUpperCase()} this request?`)) return;
+
+            // 1. First, mark the request as approved or rejected in the holding table
+            const { error: reqError } = await supabaseClient
+                .from('tenant_requests')
+                .update({ status: action })
+                .eq('id', requestId);
+
+            if (reqError) return alert("Failed to update request status: " + reqError.message);
+
+            // 2. If APPROVED, we must push the changes to the live tables!
+            if (action === 'approved') {
+                
+                if (type === 'plan_change') {
+                    // Update the tenants table plan
+                    await supabaseClient
+                        .from('tenants')
+                        .update({ plan_tier: plan })
+                        .eq('id', tenantId);
+                } 
+                
+                else if (type === 'profile_update') {
+                    // Update the live settings table
+                    const parsedData = JSON.parse(dataStr.replace(/&quot;/g, '"'));
+                    
+                    // We need to fetch the setting row ID first to safely update
+                    const { data: settingRow } = await supabaseClient
+                        .from('restaurant_settings')
+                        .select('id')
+                        .eq('restaurant_id', tenantId)
+                        .limit(1).maybeSingle();
+                        
+                    if (settingRow) {
+                        await supabaseClient
+                            .from('restaurant_settings')
+                            .update({ contact: parsedData.contact, email: parsedData.email })
+                            .eq('id', settingRow.id);
+                    } else {
+                        // Edge case: They don't have settings yet, insert a basic row
+                        await supabaseClient
+                            .from('restaurant_settings')
+                            .insert([{ restaurant_id: tenantId, contact: parsedData.contact, email: parsedData.email }]);
+                    }
+                }
+                alert("Request APPROVED and live data successfully updated!");
+            } else {
+                alert("Request REJECTED. The tenant's data was not changed.");
+            }
+
+            // Refresh dashboards
+            fetchPendingRequests();
+            fetchTenantsData(); 
+        }
+
     </script>
 </body>
 </html>
