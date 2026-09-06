@@ -1372,6 +1372,23 @@
         </div>
     </div>
 
+<!-- ================= MODAL: URL & QR CODE WARNING ================= -->
+    <div id="urlWarningModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl flex flex-col text-center p-6 border-2 border-red-500">
+            <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 animate-bounce">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="font-black text-xl text-gray-900 mb-2">URL Will Change!</h3>
+            <p class="text-sm text-gray-600 mb-6" id="url-warning-text">
+                Changing your Brand Name will also change your digital menu's web address.<br><br>Any old links will stop working.
+            </p>
+            <div class="flex gap-3">
+                <button onclick="closeUrlWarning()" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-200 transition shadow-sm">Cancel</button>
+                <button onclick="confirmUrlWarningStep1()" id="url-btn-confirm" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition shadow-md">I Understand</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ================= JAVASCRIPT LOGIC ================= -->
     <script>
         const SUPABASE_URL = "https://vhrxsjfblldksnalpyio.supabase.co"; 
@@ -4177,6 +4194,7 @@ const ordersRes = await supabaseClient
             if (data) {
                 document.getElementById('setting-id').value = data.id;
                 document.getElementById('set-brand').value = data.brand_name || '';
+document.getElementById('set-brand').dataset.original = data.brand_name || ''; // 🌟 NEW: Track original name
                 
                 // 🌟 Read Arabic directly from the new column
                 document.getElementById('set-brand-ar').value = data.brand_name_ar || ''; 
@@ -4233,6 +4251,23 @@ const ordersRes = await supabaseClient
         async function saveSettings() {
             const settingId = document.getElementById('setting-id').value;
             const btn = document.getElementById('btn-save-settings');
+// 🌟 NEW: URL INTERCEPTOR ENGINE
+            const brandInput = document.getElementById('set-brand');
+            const currentBrand = brandInput.value.trim();
+            const originalBrand = brandInput.dataset.original || '';
+
+            // If the name changed, and they haven't passed the warning modal yet, STOP saving and show the modal!
+            if (currentBrand !== originalBrand && !window.isUrlWarningConfirmed) {
+                document.getElementById('urlWarningModal').classList.remove('hidden');
+                document.getElementById('urlWarningModal').classList.add('flex');
+                
+                // Reset modal to Step 1 in case they cancelled previously
+                document.getElementById('url-warning-text').innerHTML = "Changing your Brand Name will also change your digital menu's web address.<br><br><b>Any old links will stop working.</b>";
+                document.getElementById('url-btn-confirm').setAttribute('onclick', 'confirmUrlWarningStep1()');
+                document.getElementById('url-btn-confirm').innerText = "I Understand";
+                document.getElementById('url-btn-confirm').className = "flex-1 bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition shadow-md";
+                return; // 🛑 Halt the save function!
+            }
             btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`;
 
             adminSocials.forEach((soc, i) => {
@@ -4301,7 +4336,7 @@ const ordersRes = await supabaseClient
             const brandNameStr = document.getElementById('set-brand').value.trim();
             if (brandNameStr) {
                 // Converts "De Point Store" to "de-point-store-31d6" (ensures it is always unique!)
-                const newSlug = brandNameStr.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + activeRestaurantId.substring(0, 4);
+                const newSlug = brandNameStr.toLowerCase().replace(/[^a-z0-9]+/g, '-');
                 
                 // 🌟 FIX: We added .select() to FORCE Supabase to tell us if it actually saved!
                 const { data: slugData, error: slugErr } = await supabaseClient
@@ -4321,7 +4356,37 @@ const ordersRes = await supabaseClient
             
             if (!hasError) {
                 alert("Restaurant settings updated successfully!");
+// Reset the lock and update the tracker for next time
+            brandInput.dataset.original = currentBrand;
+            window.isUrlWarningConfirmed = false;
             }
+        }
+
+// ==========================================
+        // 🌟 URL WARNING MODAL LOGIC
+        // ==========================================
+        window.isUrlWarningConfirmed = false;
+
+        function closeUrlWarning() {
+            document.getElementById('urlWarningModal').classList.add('hidden');
+            document.getElementById('urlWarningModal').classList.remove('flex');
+            window.isUrlWarningConfirmed = false; // Reset
+        }
+
+        function confirmUrlWarningStep1() {
+            // Transition to Step 2: The QR Code Warning
+            document.getElementById('url-warning-text').innerHTML = "🚨 <b class='text-red-600'>CRITICAL WARNING</b> 🚨<br><br>If you have already printed physical QR codes, they will <b>BREAK</b> and customers won't be able to scan them!<br><br>Are you absolutely sure you want to change it?";
+            
+            const btn = document.getElementById('url-btn-confirm');
+            btn.setAttribute('onclick', 'confirmUrlWarningStep2()');
+            btn.innerText = "Yes, Break Old QR Codes";
+            btn.className = "flex-1 bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-black transition shadow-md"; // Turn button black for extra seriousness
+        }
+
+        function confirmUrlWarningStep2() {
+            window.isUrlWarningConfirmed = true; // Unlock the gate
+            closeUrlWarning(); // Hide modal
+            saveSettings(); // 🚀 Re-trigger the save function!
         }
 
 // ==========================================
