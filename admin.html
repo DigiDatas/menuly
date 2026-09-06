@@ -4306,16 +4306,19 @@ const ordersRes = await supabaseClient
                 // Converts "De Point Store" to "de-point-store-31d6" (ensures it is always unique!)
                 const newSlug = brandNameStr.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + activeRestaurantId.substring(0, 4);
                 
-                // Save it securely to the tenants table
-                await supabaseClient.from('tenants').update({ slug: newSlug }).eq('id', activeRestaurantId);
-            }
+                // 🌟 FIX: We added .select() to FORCE Supabase to tell us if it actually saved!
+                const { data: slugData, error: slugErr } = await supabaseClient
+                    .from('tenants')
+                    .update({ slug: newSlug })
+                    .eq('id', activeRestaurantId)
+                    .select();
 
-            btn.innerHTML = `<i class="fas fa-save"></i> Save Settings`;
-            
-            if (!hasError) {
-                alert("Restaurant settings updated successfully!");
+                if (slugErr) {
+                    alert("Slug Save Error: " + slugErr.message);
+                } else if (!slugData || slugData.length === 0) {
+                    alert("🚨 RLS SECURITY BLOCK: Supabase blocked saving the Slug to the tenants table! Check your UPDATE policies.");
+                }
             }
-        }
 
 // ==========================================
         // 🌟 DYNAMIC FLOOR PLAN MANAGER (SAAS)
