@@ -1073,7 +1073,7 @@
                         <li><i id="plan-feat-tv" class="fas fa-times text-gray-300 me-2 transition-colors"></i> Digital Signage (TV) <span class="text-[9px] text-gray-400 ml-1">(Premium)</span></li>
                     </ul>
 
-                    <!-- Pending Alert -->
+                   <!-- Pending Alert -->
                     <div id="plan-pending-alert" class="hidden mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 shadow-sm">
                         <i class="fas fa-sync fa-spin text-amber-500 mt-0.5"></i>
                         <div>
@@ -1082,9 +1082,8 @@
                         </div>
                     </div>
 
+                    <!-- 🌟 FIX: Emptied this container so JS can inject dynamic options -->
                     <div class="flex gap-2" id="plan-action-buttons">
-                        <button onclick="submitPlanRequest('downgrade')" class="w-1/3 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition text-xs shadow-sm">Downgrade</button>
-                        <button onclick="submitPlanRequest('upgrade')" class="w-2/3 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-md text-xs">Request Upgrade <i class="fas fa-arrow-up ml-1"></i></button>
                     </div>
                 </div>
             </div>
@@ -1520,7 +1519,26 @@
             document.getElementById('plan-feat-pos').className = (currentTenantPlan === 'pro' || currentTenantPlan === 'premium') ? "fas fa-check text-green-500 me-2" : "fas fa-times text-gray-300 me-2";
             document.getElementById('plan-feat-tv').className = (currentTenantPlan === 'premium') ? "fas fa-check text-green-500 me-2" : "fas fa-times text-gray-300 me-2";
 
-            // 3. Check for existing pending requests to lock buttons
+            // 🌟 3. NEW: Inject exact upgrade/downgrade buttons based on current plan
+            const planActions = document.getElementById('plan-action-buttons');
+            if (currentTenantPlan === 'basic') {
+                planActions.innerHTML = `
+                    <button onclick="submitPlanRequest('pro')" class="w-1/2 bg-blue-50 text-blue-700 py-3 rounded-xl font-bold hover:bg-blue-100 transition text-xs shadow-sm border border-blue-200">Upgrade to Pro</button>
+                    <button onclick="submitPlanRequest('premium')" class="w-1/2 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-md text-xs">Upgrade to Premium</button>
+                `;
+            } else if (currentTenantPlan === 'pro') {
+                planActions.innerHTML = `
+                    <button onclick="submitPlanRequest('basic')" class="w-1/2 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition text-xs shadow-sm">Downgrade to Basic</button>
+                    <button onclick="submitPlanRequest('premium')" class="w-1/2 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-md text-xs">Upgrade to Premium</button>
+                `;
+            } else if (currentTenantPlan === 'premium') {
+                planActions.innerHTML = `
+                    <button onclick="submitPlanRequest('basic')" class="w-1/2 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition text-xs shadow-sm">Downgrade to Basic</button>
+                    <button onclick="submitPlanRequest('pro')" class="w-1/2 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition text-xs shadow-sm">Downgrade to Pro</button>
+                `;
+            }
+
+            // 4. Check for existing pending requests to lock buttons
             await checkPendingRequests();
             
             modal.classList.remove('hidden');
@@ -1585,7 +1603,32 @@
                 alert("Error: " + error.message);
                 btn.innerHTML = "Request Details Update";
             } else {
-                checkPendingRequests();
+                // 🌟 FIX: Auto-close and confirm immediately
+                alert("Profile update request sent successfully! Waiting for Super Admin approval.");
+                closeBillingModal();
+                checkPendingRequests(); // Updates background state so it's correct if they reopen it
+                btn.innerHTML = "Request Details Update"; // Reset button visually
+            }
+        }
+
+        // 🌟 FIX: Target specific plans directly based on dynamic buttons
+        async function submitPlanRequest(targetPlan) {
+            if (!confirm(`Are you sure you want to request a change to the ${targetPlan.toUpperCase()} plan?`)) return;
+
+            const { error } = await supabaseClient.from('tenant_requests').insert([{
+                restaurant_id: activeRestaurantId,
+                request_type: 'plan_change',
+                requested_plan: targetPlan,
+                status: 'pending'
+            }]);
+
+            if (error) {
+                alert("Error: " + error.message);
+            } else {
+                // 🌟 FIX: Auto-close and confirm immediately
+                alert("Plan change request sent successfully! Waiting for Super Admin approval.");
+                closeBillingModal();
+                checkPendingRequests(); // Updates background state so it's correct if they reopen it
             }
         }
 
