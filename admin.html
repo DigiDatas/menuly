@@ -79,7 +79,7 @@
                         <span class="font-black text-sm leading-tight mt-0.5">My TV</span>
                     </div>
                 </button>
-                <button onclick="alert('📦 Inventory Control is a Premium Feature.')" class="sidebar-btn relative h-11 w-full rounded-xl bg-gradient-to-r from-fuchsia-500 via-purple-500 to-blue-500 text-white opacity-50 hover:opacity-95 transition-all flex items-center group overflow-hidden shadow-sm">
+                <button onclick="switchTab('inventory')" id="tab-btn-inventory" class="sidebar-btn relative h-11 w-full rounded-xl bg-gradient-to-r from-fuchsia-500 via-purple-500 to-blue-500 text-white opacity-50 hover:opacity-95 transition-all flex items-center group overflow-hidden shadow-sm">
                     <div class="absolute left-1/2 -translate-x-1/2 group-hover:left-4 group-hover:translate-x-0 w-6 h-6 flex items-center justify-center transition-all duration-300"><i class="fas fa-boxes text-[15px]"></i></div>
                     <span class="absolute left-12 opacity-0 group-hover:opacity-100 font-bold text-sm whitespace-nowrap transition-opacity duration-300 flex items-center gap-2">Inventory <i class="fas fa-crown text-[9px] text-yellow-300 pb-1"></i></span>
                 </button>
@@ -1660,119 +1660,9 @@
             }
         }
 
-        function closeBillingModal() {
-            document.getElementById('billingModal').classList.add('hidden');
-            document.getElementById('billingModal').classList.remove('flex');
-        }
+        
 
-        async function checkPendingRequests() {
-            const { data: requests } = await supabaseClient
-                .from('tenant_requests')
-                .select('request_type')
-                .eq('restaurant_id', activeRestaurantId)
-                .eq('status', 'pending');
-            
-            const hasProfileReq = requests?.some(r => r.request_type === 'profile_update');
-            const hasPlanReq = requests?.some(r => r.request_type === 'plan_change');
-
-            // Toggle Profile UI
-            if (hasProfileReq) {
-                document.getElementById('btn-submit-profile').classList.add('hidden');
-                document.getElementById('profile-pending-alert').classList.remove('hidden');
-                document.getElementById('bill-phone').disabled = true;
-                document.getElementById('bill-email').disabled = true;
-            } else {
-                document.getElementById('btn-submit-profile').classList.remove('hidden');
-                document.getElementById('profile-pending-alert').classList.add('hidden');
-                document.getElementById('bill-phone').disabled = false;
-                document.getElementById('bill-email').disabled = false;
-            }
-
-            // Toggle Plan UI
-            if (hasPlanReq) {
-                document.getElementById('plan-action-buttons').classList.add('hidden');
-                document.getElementById('plan-pending-alert').classList.remove('hidden');
-            } else {
-                document.getElementById('plan-action-buttons').classList.remove('hidden');
-                document.getElementById('plan-pending-alert').classList.add('hidden');
-            }
-        }
-
-        async function submitProfileRequest() {
-            const phone = document.getElementById('bill-phone').value.trim();
-            const email = document.getElementById('bill-email').value.trim();
-
-            if(!phone && !email) return alert("Please enter at least one contact detail.");
-
-            const btn = document.getElementById('btn-submit-profile');
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Submitting...`;
-
-            const { error } = await supabaseClient.from('tenant_requests').insert([{
-                restaurant_id: activeRestaurantId,
-                request_type: 'profile_update',
-                requested_data: { contact: phone, email: email },
-                status: 'pending'
-            }]);
-
-            if (error) {
-                alert("Error: " + error.message);
-                btn.innerHTML = "Request Details Update";
-            } else {
-                // 🌟 FIX: Auto-close and confirm immediately
-                alert("Profile update request sent successfully! Waiting for Super Admin approval.");
-                closeBillingModal();
-                checkPendingRequests(); // Updates background state so it's correct if they reopen it
-                btn.innerHTML = "Request Details Update"; // Reset button visually
-            }
-        }
-
-        // 🌟 FIX: Target specific plans directly based on dynamic buttons
-        async function submitPlanRequest(targetPlan) {
-            if (!confirm(`Are you sure you want to request a change to the ${targetPlan.toUpperCase()} plan?`)) return;
-
-            const { error } = await supabaseClient.from('tenant_requests').insert([{
-                restaurant_id: activeRestaurantId,
-                request_type: 'plan_change',
-                requested_plan: targetPlan,
-                status: 'pending'
-            }]);
-
-            if (error) {
-                alert("Error: " + error.message);
-            } else {
-                // 🌟 FIX: Auto-close and confirm immediately
-                alert("Plan change request sent successfully! Waiting for Super Admin approval.");
-                closeBillingModal();
-                checkPendingRequests(); // Updates background state so it's correct if they reopen it
-            }
-        }
-
-        async function submitPlanRequest(direction) {
-            let targetPlan = 'basic';
-            if (direction === 'upgrade') {
-                targetPlan = currentTenantPlan === 'basic' ? 'pro' : 'premium';
-                if (currentTenantPlan === 'premium') return alert("You are already on the highest plan!");
-            } else {
-                targetPlan = currentTenantPlan === 'premium' ? 'pro' : 'basic';
-                if (currentTenantPlan === 'basic') return alert("You are already on the lowest plan!");
-            }
-
-            if (!confirm(`Are you sure you want to request a change to the ${targetPlan.toUpperCase()} plan?`)) return;
-
-            const { error } = await supabaseClient.from('tenant_requests').insert([{
-                restaurant_id: activeRestaurantId,
-                request_type: 'plan_change',
-                requested_plan: targetPlan,
-                status: 'pending'
-            }]);
-
-            if (error) {
-                alert("Error: " + error.message);
-            } else {
-                checkPendingRequests();
-            }
-        }
-
+        
 async function logoutAdmin() {
     // 1. Clear any active impersonation tokens
     localStorage.removeItem('impersonate_tenant_id');
@@ -1815,64 +1705,68 @@ async function logoutAdmin() {
         function applyPlanGating(plan) {
             const posBtn = document.getElementById('tab-btn-pos');
             const tvBtn = document.getElementById('tab-btn-tv');
+            const invBtn = document.getElementById('tab-btn-inventory');
 
-            // 1. Handle POS Tab (Locked on Basic)
+            // 1. Visual Locks ONLY (Removed pointer-events-none so they remain clickable!)
             if (plan === 'basic') {
-                if (posBtn) posBtn.classList.add('opacity-40', 'pointer-events-none');
+                if (posBtn) posBtn.classList.add('opacity-50');
             } else {
-                if (posBtn) posBtn.classList.remove('opacity-40', 'pointer-events-none');
+                if (posBtn) posBtn.classList.remove('opacity-50');
             }
 
-            // 2. Handle TV Tab Button (ALWAYS Clickable now, removing locks!)
-            if (tvBtn) tvBtn.classList.remove('pointer-events-none', 'opacity-40', 'opacity-50');
+            if (plan !== 'premium') {
+                if (invBtn) invBtn.classList.add('opacity-50');
+            } else {
+                if (invBtn) invBtn.classList.remove('opacity-50');
+            }
 
-            // 3. Toggle Internal TV Screens based on plan
+            // 2. TV Tab internal screen toggle (Always clickable)
             const tvUpsell = document.getElementById('tv-upsell-screen');
             const tvManager = document.getElementById('tv-manager-screen');
             
             if (tvUpsell && tvManager) {
                 if (plan === 'premium') {
-                    // Show actual TV Manager
-                    tvUpsell.classList.add('hidden');
-                    tvUpsell.classList.remove('flex');
-                    tvManager.classList.remove('hidden');
-                    tvManager.classList.add('flex');
+                    tvUpsell.classList.add('hidden'); tvUpsell.classList.remove('flex');
+                    tvManager.classList.remove('hidden'); tvManager.classList.add('flex');
                 } else {
-                    // Show Upsell Card
-                    tvUpsell.classList.remove('hidden');
-                    tvUpsell.classList.add('flex');
-                    tvManager.classList.add('hidden');
-                    tvManager.classList.remove('flex');
+                    tvUpsell.classList.remove('hidden'); tvUpsell.classList.add('flex');
+                    tvManager.classList.add('hidden'); tvManager.classList.remove('flex');
                 }
             }
         }
 
-        
-
         // Profile Menu Toggle
         function toggleProfileMenu() {
             const menu = document.getElementById('profile-dropdown');
-            menu.classList.toggle('hidden');
-            menu.classList.toggle('flex');
+            menu.classList.toggle('hidden'); menu.classList.toggle('flex');
         }
 
-        // BULLETPROOF TABS ENGINE
+        // 🌟 UPGRADED: BULLETPROOF TABS ENGINE WITH LOCK INTERCEPTOR
         function switchTab(tabId) {
+            // 1. Intercept Locked Tabs & Trigger Upsell Modal
+            if (tabId === 'pos' && currentTenantPlan === 'basic') {
+                openBillingModal();
+                return;
+            }
+            if (tabId === 'inventory') {
+                if (currentTenantPlan !== 'premium') {
+                    openBillingModal();
+                    return;
+                } else {
+                    alert("Inventory module coming soon!");
+                    return;
+                }
+            }
+
             const tabNames = ['dashboard', 'pos', 'menu', 'tv', 'reviews', 'settings', 'social', 'offers', 'users'];
             
             tabNames.forEach(name => {
-                // 1. Hide the content sections robustly
                 const candidates = [
-                    document.getElementById(name),
-                    document.getElementById('tab-' + name),
-                    document.getElementById('section-' + name),
-                    document.getElementById(name + '-tab')
+                    document.getElementById(name), document.getElementById('tab-' + name),
+                    document.getElementById('section-' + name), document.getElementById(name + '-tab')
                 ];
-                candidates.forEach(el => {
-                    if (el) el.classList.add('hidden');
-                });
+                candidates.forEach(el => { if (el) el.classList.add('hidden'); });
 
-                // 2. Reset the button colors (skip gradient buttons)
                 const btn = document.getElementById('tab-btn-' + name);
                 if (btn && name !== 'tv' && name !== 'inventory') { 
                     btn.classList.remove('bg-red-600', 'text-white', 'shadow-sm');
@@ -1880,25 +1774,14 @@ async function logoutAdmin() {
                 }
             });
 
-            // 3. Show target content
-            const target = document.getElementById(tabId) || 
-                           document.getElementById('tab-' + tabId) || 
-                           document.getElementById('section-' + tabId) || 
-                           document.getElementById(tabId + '-tab');
+            const target = document.getElementById(tabId) || document.getElementById('tab-' + tabId) || document.getElementById('section-' + tabId);
+            if (target) target.classList.remove('hidden');
 
-            if (target) {
-                target.classList.remove('hidden');
-            } else {
-                console.log("Note: Could not find container for tab: " + tabId);
-            }
-
-            // 4. Highlight the active button
             const activeBtn = document.getElementById('tab-btn-' + tabId);
             if (activeBtn && tabId !== 'tv' && tabId !== 'inventory') {
                 activeBtn.classList.remove('text-gray-400', 'hover:bg-gray-800', 'hover:text-white');
                 activeBtn.classList.add('bg-red-600', 'text-white', 'shadow-sm');
                 
-                // 5. Update Top Header Title dynamically
                 const headerTitle = document.getElementById('th-title');
                 if (headerTitle) headerTitle.textContent = activeBtn.innerText.trim();
             }
