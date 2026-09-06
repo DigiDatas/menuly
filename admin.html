@@ -1502,24 +1502,30 @@
         async function openBillingModal() {
             const modal = document.getElementById('billingModal');
             
-            // 1. Load current contact data
-            const { data: settings } = await supabaseClient
-                .from('restaurant_settings')
-                .select('contact, email')
-                .eq('restaurant_id', activeRestaurantId)
-                .limit(1).maybeSingle();
-                
+            // 🌟 1. Fetch FRESH Tenant Plan AND Settings from database simultaneously
+            const [tenantRes, settingsRes] = await Promise.all([
+                supabaseClient.from('tenants').select('plan_tier').eq('id', activeRestaurantId).single(),
+                supabaseClient.from('restaurant_settings').select('contact, email').eq('restaurant_id', activeRestaurantId).limit(1).maybeSingle()
+            ]);
+
+            // 🌟 2. Update the global plan variable & instantly unlock restricted tabs!
+            if (tenantRes.data) {
+                currentTenantPlan = tenantRes.data.plan_tier || 'basic';
+                if(typeof applyPlanGating === 'function') applyPlanGating(currentTenantPlan);
+            }
+
+            const settings = settingsRes.data;
             document.getElementById('bill-phone').value = settings?.contact || '';
             document.getElementById('bill-email').value = settings?.email || currentUser?.email || '';
             
-            // 2. Set current plan visually
+            // 3. Set current plan visually
             document.getElementById('bill-current-plan').textContent = currentTenantPlan || 'Basic';
             
             // Toggle checklist visuals
             document.getElementById('plan-feat-pos').className = (currentTenantPlan === 'pro' || currentTenantPlan === 'premium') ? "fas fa-check text-green-500 me-2" : "fas fa-times text-gray-300 me-2";
             document.getElementById('plan-feat-tv').className = (currentTenantPlan === 'premium') ? "fas fa-check text-green-500 me-2" : "fas fa-times text-gray-300 me-2";
 
-            // 🌟 3. NEW: Inject exact upgrade/downgrade buttons based on current plan
+            // 4. Inject exact upgrade/downgrade buttons based on FRESH plan
             const planActions = document.getElementById('plan-action-buttons');
             if (currentTenantPlan === 'basic') {
                 planActions.innerHTML = `
@@ -1538,7 +1544,7 @@
                 `;
             }
 
-            // 4. Check for existing pending requests to lock buttons
+            // 5. Check for existing pending requests to lock buttons
             await checkPendingRequests();
             
             modal.classList.remove('hidden');
