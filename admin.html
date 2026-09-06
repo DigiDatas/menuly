@@ -3035,9 +3035,10 @@ function addVariantRow(name = '', price = '') {
                 // 🌟 SMART SEQUENTIAL ID GENERATOR (Starts at 001)
                 let nextNum = 1; // Start from 1 for a brand new menu
                 
-                if (adminMenuData && adminMenuData.length > 0) {
+                // 🌟 FIX: Changed adminMenuData to allMenuItems
+                if (allMenuItems && allMenuItems.length > 0) {
                     // 1. Look at all existing items and pull out their numbers
-                    const existingNums = adminMenuData.map(item => {
+                    const existingNums = allMenuItems.map(item => {
                         const code = item.item_code || '';
                         const parts = code.split('ITM-');
                         // parseInt correctly turns "005" into the math number 5
