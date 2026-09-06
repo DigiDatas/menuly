@@ -1598,6 +1598,95 @@
             const btn = document.getElementById('btn-submit-profile');
             btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Submitting...`;
 
+            const { data, error } = await supabaseClient.from('tenant_requests').insert([{
+                restaurant_id: activeRestaurantId,
+                request_type: 'profile_update',
+                requested_data: { contact: phone, email: email },
+                status: 'pending'
+            }]).select(); // 🌟 Force return data to verify RLS
+
+            if (error) {
+                alert("Error: " + error.message);
+                btn.innerHTML = "Request Details Update";
+            } else if (!data || data.length === 0) {
+                alert("🚨 Security Block: Supabase blocked the request. Check RLS policies.");
+                btn.innerHTML = "Request Details Update";
+            } else {
+                alert("Profile update request sent successfully! Waiting for Super Admin approval.");
+                closeBillingModal();
+                checkPendingRequests(); 
+                btn.innerHTML = "Request Details Update";
+            }
+        }
+
+        async function submitPlanRequest(targetPlan) {
+            if (!confirm(`Are you sure you want to request a change to the ${targetPlan.toUpperCase()} plan?`)) return;
+
+            const { data, error } = await supabaseClient.from('tenant_requests').insert([{
+                restaurant_id: activeRestaurantId,
+                request_type: 'plan_change',
+                requested_plan: targetPlan,
+                status: 'pending'
+            }]).select(); // 🌟 Force return data to verify RLS
+
+            if (error) {
+                alert("Error: " + error.message);
+            } else if (!data || data.length === 0) {
+                alert("🚨 Security Block: Supabase blocked the request. Check RLS policies.");
+            } else {
+                alert("Plan change request sent successfully! Waiting for Super Admin approval.");
+                closeBillingModal();
+                checkPendingRequests();
+            }
+        }
+
+        function closeBillingModal() {
+            document.getElementById('billingModal').classList.add('hidden');
+            document.getElementById('billingModal').classList.remove('flex');
+        }
+
+        async function checkPendingRequests() {
+            const { data: requests } = await supabaseClient
+                .from('tenant_requests')
+                .select('request_type')
+                .eq('restaurant_id', activeRestaurantId)
+                .eq('status', 'pending');
+            
+            const hasProfileReq = requests?.some(r => r.request_type === 'profile_update');
+            const hasPlanReq = requests?.some(r => r.request_type === 'plan_change');
+
+            // Toggle Profile UI
+            if (hasProfileReq) {
+                document.getElementById('btn-submit-profile').classList.add('hidden');
+                document.getElementById('profile-pending-alert').classList.remove('hidden');
+                document.getElementById('bill-phone').disabled = true;
+                document.getElementById('bill-email').disabled = true;
+            } else {
+                document.getElementById('btn-submit-profile').classList.remove('hidden');
+                document.getElementById('profile-pending-alert').classList.add('hidden');
+                document.getElementById('bill-phone').disabled = false;
+                document.getElementById('bill-email').disabled = false;
+            }
+
+            // Toggle Plan UI
+            if (hasPlanReq) {
+                document.getElementById('plan-action-buttons').classList.add('hidden');
+                document.getElementById('plan-pending-alert').classList.remove('hidden');
+            } else {
+                document.getElementById('plan-action-buttons').classList.remove('hidden');
+                document.getElementById('plan-pending-alert').classList.add('hidden');
+            }
+        }
+
+        async function submitProfileRequest() {
+            const phone = document.getElementById('bill-phone').value.trim();
+            const email = document.getElementById('bill-email').value.trim();
+
+            if(!phone && !email) return alert("Please enter at least one contact detail.");
+
+            const btn = document.getElementById('btn-submit-profile');
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Submitting...`;
+
             const { error } = await supabaseClient.from('tenant_requests').insert([{
                 restaurant_id: activeRestaurantId,
                 request_type: 'profile_update',
