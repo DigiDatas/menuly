@@ -1256,11 +1256,19 @@ let relatedItemsData = []; // (You did this perfectly!)
             try {
                 // 🌟 SLUG TO UUID LOOKUP BRIDGE
                 if (!menuSlug) throw new Error("No menu specified in URL.");
-                const { data: tenantData, error: tenantErr } = await supabaseClient
-                    .from('tenants')
-                    .select('id, business_type') // 🌟 NEW: Fetching business_type!
-                    .eq('slug', menuSlug)
-                    .single();
+                
+                // 🌟 NEW: Smart check to see if the URL is an ID or a Slug
+                const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(menuSlug);
+                
+                let query = supabaseClient.from('tenants').select('id, business_type');
+                
+                if (isUUID) {
+                    query = query.eq('id', menuSlug); // Search by ID
+                } else {
+                    query = query.eq('slug', menuSlug); // Search by Slug
+                }
+
+                const { data: tenantData, error: tenantErr } = await query.single();
                     
                 if (tenantErr || !tenantData) {
                     document.body.innerHTML = `<div style="display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif; color:#ef4444;"><h2>Menu not found. Please check the link.</h2></div>`;
@@ -1268,7 +1276,7 @@ let relatedItemsData = []; // (You did this perfectly!)
                 }
                 
                 restaurantId = tenantData.id; 
-                window.businessType = tenantData.business_type || 'restaurant';
+                window.businessType = tenantData.business_type || 'restaurant'; // 🌟 Save globally!
                 
                 // Load favorites now that we know the ID
                 likedItems = new Set(JSON.parse(localStorage.getItem('likedItems_' + restaurantId)) || []);
