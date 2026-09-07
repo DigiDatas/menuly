@@ -3800,7 +3800,10 @@ async function handleVrUpload(event) {
                 document.getElementById('btn-import-json').innerHTML = 'Import to Database';
             }
         }
-function closeMediaLibrary()
+function closeMediaLibrary() {
+            document.getElementById('mediaLibraryModal').classList.add('hidden');
+            document.getElementById('mediaLibraryModal').classList.remove('flex');
+        }
 
         // --- CUSTOMER DIRECTORY & ANALYTICS ---
         async function fetchUsersAndOrders(btnElement = null) {
