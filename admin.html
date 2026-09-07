@@ -11,6 +11,8 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
     <style>
         /* Restored original sleek system fonts */
         body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f3f4f6; }
@@ -1016,7 +1018,7 @@
                         <div>
                             <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">360° Panorama Image URL *</label>
                             <div class="flex gap-2">
-                                <input type="text" id="vr-image-url" placeholder="https://..." class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:border-teal-500 outline-none">
+                                <input type="text" id="vr-image-url" onchange="renderVrPreview()" placeholder="https://..." class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:border-teal-500 outline-none">
                                 <label class="bg-teal-50 text-teal-600 border border-teal-200 px-3 py-2 rounded-xl text-[10px] font-bold cursor-pointer hover:bg-teal-100 transition shadow-sm flex items-center justify-center">
                                     <i class="fas fa-cloud-upload-alt"></i>
                                     <input type="file" id="vr-upload-input" accept="image/jpeg, image/png" class="hidden" onchange="handleVrUpload(event)">
@@ -2986,7 +2988,7 @@ if (!graphActiveFilter) graphActiveFilter = 'week';
                     `;
                     
                     html += subItems.map(item => {
-                        const img = item.img_urls && item.img_urls.length > 0 ? item.img_urls[0] : 'https://via.placeholder.com/100';
+                        const img = item.img_urls && item.img_urls.length > 0 ? item.img_urls[0] : 'https://raw.githubusercontent.com/DigiDatas/menuly/multimedia/Placeholder.jpg';
                         const isModified = modifiedMenuIds.has(item.id) ? 'border-yellow-400 shadow-md bg-yellow-50/50' : 'border-gray-200 bg-white hover:border-red-300 hover:shadow-md';
                         
                         let stockDisplay = '';
@@ -6165,7 +6167,7 @@ function updatePosRightPanelLabels() {
                 const data = payload.payload;
                 
                 // 1. Play the Bell Sound!
-                const audio = new Audio('https://raw.githubusercontent.com/DigiDatas/ShawarMax-Menu/main/images/service-bell.mp3'); 
+                const audio = new Audio('https://raw.githubusercontent.com/DigiDatas/menuly/multimedia/bell.mp3'); 
                 audio.play().catch(e => console.log("Audio requires user interaction first."));
 
                 const container = document.getElementById('waiter-toast-container');
@@ -6537,6 +6539,161 @@ function updatePosRightPanelLabels() {
 
             btn.innerHTML = originalHtml;
             btn.disabled = false;
+        }
+
+// ==========================================
+        // 🌟 VIRTUAL SHOWROOM (VR) LOGIC
+        // ==========================================
+        let currentVrHotspots = [];
+        let vrPreviewViewer = null;
+
+        // 1. Fetch existing VR Scene when Admin logs in
+        async function fetchVrScene() {
+            const { data, error } = await supabaseClient
+                .from('virtual_scenes')
+                .select('*')
+                .eq('restaurant_id', activeRestaurantId)
+                .maybeSingle();
+                
+            if (data) {
+                document.getElementById('vr-scene-id').value = data.id;
+                document.getElementById('vr-image-url').value = data.panorama_url || '';
+                document.getElementById('vr-audio-url').value = data.audio_url || '';
+                currentVrHotspots = data.hotspots || [];
+            } else {
+                currentVrHotspots = [];
+            }
+            renderVrHotspots();
+            renderVrPreview();
+        }
+
+        // 2. Load the actual 360 image into the preview box
+        function renderVrPreview() {
+            const container = document.querySelector('#vr-manager-screen .flex-1.bg-gray-900');
+            const imgUrl = document.getElementById('vr-image-url').value.trim();
+            
+            if (!imgUrl) {
+                container.innerHTML = `
+                    <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center p-6 z-10">
+                        <i class="fas fa-cubes text-4xl text-gray-500 mb-3"></i>
+                        <h3 class="text-white font-bold text-sm">360° Engine Preview</h3>
+                        <p class="text-gray-400 text-xs mt-1 max-w-xs">Paste a URL or upload an image to view the panorama.</p>
+                    </div>`;
+                if (vrPreviewViewer) { vrPreviewViewer.destroy(); vrPreviewViewer = null; }
+                return;
+            }
+
+            // Create container for Pannellum
+            container.innerHTML = '<div id="admin-panorama-viewer" class="w-full h-full relative z-20"></div>';
+            
+            try {
+                vrPreviewViewer = pannellum.viewer('admin-panorama-viewer', {
+                    "type": "equirectangular",
+                    "panorama": imgUrl,
+                    "autoLoad": true,
+                    "compass": false,
+                    "showControls": true
+                });
+            } catch (e) {
+                container.innerHTML = `<div class="text-red-500 flex flex-col items-center justify-center h-full relative z-20"><i class="fas fa-exclamation-triangle text-3xl mb-2"></i><span>Failed to load 360 image. Check URL.</span></div>`;
+            }
+        }
+
+        // 3. Add a new hotspot row to the UI
+        function addVrHotspotRow() {
+            currentVrHotspots.push({ pitch: 0, yaw: 0, item_id: '' });
+            renderVrHotspots();
+        }
+
+        // 4. Remove a hotspot row
+        function removeVrHotspotRow(index) {
+            currentVrHotspots.splice(index, 1);
+            renderVrHotspots();
+        }
+
+        // 5. Render the Hotspot Inputs
+        function renderVrHotspots() {
+            const container = document.getElementById('vr-hotspots-container');
+            container.innerHTML = '';
+            
+            // Build dropdown options using your actual food menu!
+            let menuOptions = '<option value="">Select Menu Item...</option>';
+            allMenuItems.forEach(item => {
+                menuOptions += `<option value="${item.id}">${item.name}</option>`;
+            });
+
+            currentVrHotspots.forEach((hs, i) => {
+                container.innerHTML += `
+                    <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex flex-col gap-2 relative shadow-sm">
+                        <button onclick="removeVrHotspotRow(${i})" class="absolute top-2 right-2 w-6 h-6 bg-red-50 rounded text-red-400 hover:text-red-600 hover:bg-red-100 flex items-center justify-center transition"><i class="fas fa-times text-[10px]"></i></button>
+                        
+                        <div class="grid grid-cols-2 gap-3 pr-6">
+                            <div>
+                                <label class="text-[9px] font-bold text-gray-500 uppercase">Pitch (Up/Down)</label>
+                                <input type="number" step="0.1" id="vr-hs-pitch-${i}" value="${hs.pitch}" class="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-teal-500">
+                            </div>
+                            <div>
+                                <label class="text-[9px] font-bold text-gray-500 uppercase">Yaw (Left/Right)</label>
+                                <input type="number" step="0.1" id="vr-hs-yaw-${i}" value="${hs.yaw}" class="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-teal-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-gray-500 uppercase">Linked Menu Item</label>
+                            <select id="vr-hs-item-${i}" class="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-teal-500 font-bold text-gray-700">
+                                ${menuOptions.replace(`value="${hs.item_id}"`, `value="${hs.item_id}" selected`)}
+                            </select>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // 6. Save the Scene to Supabase
+        async function saveVrScene() {
+            const btn = document.getElementById('btn-save-vr');
+            const imgUrl = document.getElementById('vr-image-url').value.trim();
+            
+            if (!imgUrl) return alert("You must provide a 360 Panorama URL to save the environment!");
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            
+            // Gather all hotspot inputs
+            const newHotspots = [];
+            currentVrHotspots.forEach((_, i) => {
+                const pitch = parseFloat(document.getElementById(`vr-hs-pitch-${i}`).value) || 0;
+                const yaw = parseFloat(document.getElementById(`vr-hs-yaw-${i}`).value) || 0;
+                const itemId = document.getElementById(`vr-hs-item-${i}`).value;
+                newHotspots.push({ pitch, yaw, item_id: itemId });
+            });
+            currentVrHotspots = newHotspots;
+
+            const payload = {
+                restaurant_id: activeRestaurantId,
+                panorama_url: imgUrl,
+                audio_url: document.getElementById('vr-audio-url').value.trim(),
+                hotspots: currentVrHotspots
+            };
+
+            const sceneId = document.getElementById('vr-scene-id').value;
+            let error;
+
+            if (sceneId) {
+                const res = await supabaseClient.from('virtual_scenes').update(payload).eq('id', sceneId).select();
+                error = res.error;
+            } else {
+                const res = await supabaseClient.from('virtual_scenes').insert([payload]).select();
+                error = res.error;
+                if (res.data && res.data.length > 0) document.getElementById('vr-scene-id').value = res.data[0].id;
+            }
+
+            btn.innerHTML = '<i class="fas fa-save"></i> Save Environment';
+
+            if (error) {
+                alert("Error saving scene: " + error.message);
+            } else {
+                alert("Virtual Environment Saved Successfully!");
+                renderVrPreview(); 
+            }
         }
 // Single clean entry point
         window.onload = verifyAdmin;
