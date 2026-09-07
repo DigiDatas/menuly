@@ -4656,22 +4656,49 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
         let customerVrAudio = null;
         let currentPlayingAudioUrl = null;
         
-        let activeVrLayer = 1; // Tracks which engine is in front
+        let activeVrLayer = 1; 
         let isTransitioning = false;
 
-        // 🌟 FIX: Safe Native CSS Pulsing
+        // 🌟 FIX: Bulletproof CSS with explicit Width, Height, and Display!
         if (!document.getElementById('vr-custom-styles')) {
             const style = document.createElement('style');
             style.id = 'vr-custom-styles';
             style.innerHTML = `
-                .custom-pulse-door {
-                    border-radius: 50%;
-                    animation: pulseVR 2s infinite;
+                .custom-vr-door {
+                    width: 36px !important;
+                    height: 36px !important;
+                    background: rgba(255, 255, 255, 0.95) !important;
+                    border-radius: 50% !important;
+                    border: 2px solid #ef4444 !important;
+                    cursor: pointer !important;
+                    display: block !important;
+                    pointer-events: auto !important;
+                    animation: pulseVR 2s infinite !important;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+                    transition: all 0.3s ease;
+                }
+                .custom-vr-door::after {
+                    content: "▲";
+                    color: #ef4444;
+                    font-size: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 100%;
+                    height: 100%;
+                    transition: all 0.3s ease;
+                }
+                .custom-vr-door:hover {
+                    background: #ef4444 !important;
+                    transform: scale(1.1);
+                }
+                .custom-vr-door:hover::after {
+                    color: #ffffff;
                 }
                 @keyframes pulseVR {
-                    0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
-                    70% { box-shadow: 0 0 0 15px rgba(255,255,255,0); }
-                    100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+                    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
+                    70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+                    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
                 }
             `;
             document.head.appendChild(style);
@@ -4696,9 +4723,9 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
         function startNewAudio(url) {
             customerVrAudio = new Audio(url);
             customerVrAudio.loop = true;
-            customerVrAudio.volume = 0; // Start silent
+            customerVrAudio.volume = 0; 
             customerVrAudio.play().catch(e => console.log('Audio autoplay blocked'));
-            fadeAudio(customerVrAudio, 1); // Fade to full
+            fadeAudio(customerVrAudio, 1); 
             currentPlayingAudioUrl = url;
             
             document.getElementById('vr-audio-toggle').classList.remove('hidden');
@@ -4717,7 +4744,6 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
                     startNewAudio(sceneData.audio_url);
                 }
             } else if (!sceneData.audio_url) {
-                // Let the current music keep playing seamlessly!
                 if (customerVrAudio) audioToggle.classList.remove('hidden');
                 else audioToggle.classList.add('hidden');
             }
@@ -4791,16 +4817,15 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
                     const isInfo = hs.type === 'info';
                     const config = {
                         pitch: hs.pitch, yaw: hs.yaw, 
-                        type: "info", // Keeps clickHandler active
+                        type: "info", 
                         text: hs.text || (isInfo ? 'View Item' : 'Walk to Next Room'),
                         clickHandlerFunc: isInfo 
                             ? () => { if(hs.target_id) openModal(hs.target_id); } 
                             : () => { if(hs.target_id) crossfadeToScene(hs.target_id); }
                     };
                     
-                    // 🌟 NATIVE FIX: Use Pannellum's built-in doorway icon class!
                     if (!isInfo) {
-                        config.cssClass = "pnlm-scene custom-pulse-door"; 
+                        config.cssClass = "custom-vr-door"; 
                     }
                     return config;
                 })
