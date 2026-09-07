@@ -4653,6 +4653,22 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
         let customerVrScenes = [];
         let customerVrViewer = null;
         let customerVrAudio = null;
+        let currentPlayingAudioUrl = null; // Tracks audio loop persistence
+
+        // Helper function for cinematic audio fades
+        function fadeAudio(audioElement, targetVolume, callback) {
+            let fadeInterval = setInterval(() => {
+                if (targetVolume === 0 && audioElement.volume > 0.05) {
+                    audioElement.volume -= 0.05;
+                } else if (targetVolume === 1 && audioElement.volume < 0.95) {
+                    audioElement.volume += 0.05;
+                } else {
+                    audioElement.volume = targetVolume;
+                    clearInterval(fadeInterval);
+                    if (callback) callback();
+                }
+            }, 50); // Small step every 50ms for smooth curve
+        }
 
         async function openVirtualStore(sceneId = null) {
             const modal = document.getElementById('vrCustomerModal');
@@ -4662,19 +4678,13 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
             modal.classList.add('flex');
             document.body.style.overflow = 'hidden';
 
-            // 1. Fetch Scenes from database
             if (customerVrScenes.length === 0) {
                 viewerContainer.innerHTML = '<div class="absolute inset-0 flex flex-col items-center justify-center text-white"><i class="fas fa-spinner fa-spin text-4xl mb-4"></i><p class="font-bold tracking-widest uppercase text-xs">Entering Virtual Space...</p></div>';
                 
-                const { data } = await supabaseClient
-                    .from('virtual_scenes')
-                    .select('*')
-                    .eq('restaurant_id', restaurantId)
-                    .order('created_at', { ascending: true });
+                const { data } = await supabaseClient.from('virtual_scenes').select('*').eq('restaurant_id', restaurantId).order('created_at', { ascending: true });
                 
                 if (data && data.length > 0) customerVrScenes = data;
                 else {
-                    // Universal Fallback if they enabled it but built nothing
                     customerVrScenes = [{
                         id: 'sample', scene_name: 'Main Entrance',
                         panorama_url: 'https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/RESTAURANT-PAnorama.jpg',
@@ -4684,47 +4694,64 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
                 }
             }
 
-            // 2. Select specific room or the first room
             const sceneToLoad = sceneId ? customerVrScenes.find(s => s.id === sceneId) : customerVrScenes[0];
             if (!sceneToLoad) return;
 
             document.getElementById('vr-customer-title').textContent = sceneToLoad.scene_name || 'Virtual Showroom';
 
-            // 3. Mount Audio
-            if (customerVrAudio) { customerVrAudio.pause(); customerVrAudio = null; }
+            // 🌟 CINEMATIC AUDIO ENGINE
             const audioToggle = document.getElementById('vr-audio-toggle');
             
-            if (sceneToLoad.audio_url) {
-                customerVrAudio = new Audio(sceneToLoad.audio_url);
-                customerVrAudio.loop = true;
-                customerVrAudio.play().catch(e => console.log('Audio autoplay blocked by browser'));
-                audioToggle.classList.remove('hidden');
-                audioToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
-            } else {
-                audioToggle.classList.add('hidden');
+            if (sceneToLoad.audio_url && sceneToLoad.audio_url !== currentPlayingAudioUrl) {
+                // Scenario 1: New scene has DIFFERENT audio. Fade out old, fade in new.
+                if (customerVrAudio) {
+                    fadeAudio(customerVrAudio, 0, () => {
+                        customerVrAudio.pause();
+                        startNewAudio(sceneToLoad.audio_url);
+                    });
+                } else {
+                    startNewAudio(sceneToLoad.audio_url);
+                }
+            } else if (!sceneToLoad.audio_url) {
+                // Scenario 2: New scene has NO audio. Keep old one looping seamlessly!
+                if (customerVrAudio) {
+                    audioToggle.classList.remove('hidden');
+                } else {
+                    audioToggle.classList.add('hidden');
+                }
             }
 
-            // 4. Mount Pannellum & Wire Hotspots to Food Cards!
-            if (customerVrViewer) customerVrViewer.destroy();
-            viewerContainer.innerHTML = ''; 
+            function startNewAudio(url) {
+                customerVrAudio = new Audio(url);
+                customerVrAudio.loop = true;
+                customerVrAudio.volume = 0; // Start silent
+                customerVrAudio.play().catch(e => console.log('Audio autoplay blocked'));
+                fadeAudio(customerVrAudio, 1); // Fade to full volume
+                currentPlayingAudioUrl = url;
+                
+                audioToggle.classList.remove('hidden');
+                audioToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
+            }
+
+            // 🌟 CINEMATIC VISUAL FADE
+            // 1. Fade the screen to black
+            viewerContainer.style.transition = "opacity 0.4s ease-in-out";
+            viewerContainer.style.opacity = 0;
 
             const mappedHotspots = (sceneToLoad.hotspots || []).map(hs => {
                 const isInfo = hs.type === 'info';
-                
                 return {
-                    pitch: hs.pitch,
-                    yaw: hs.yaw,
-                    type: isInfo ? 'info' : 'scene',
+                    pitch: hs.pitch, yaw: hs.yaw, type: isInfo ? 'info' : 'scene',
                     text: hs.text || (isInfo ? 'View Item' : 'Walk to Next Room'),
-                    clickHandlerFunc: isInfo ? () => {
-                        if(hs.target_id) openModal(hs.target_id); 
-                    } : () => {
-                        if(hs.target_id) openVirtualStore(hs.target_id);
-                    }
+                    clickHandlerFunc: isInfo ? () => { if(hs.target_id) openModal(hs.target_id); } : () => { if(hs.target_id) openVirtualStore(hs.target_id); }
                 };
             });
 
+            // 2. Wait for black screen, rebuild engine, then fade screen back in
             setTimeout(() => {
+                if (customerVrViewer) customerVrViewer.destroy();
+                viewerContainer.innerHTML = ''; 
+                
                 customerVrViewer = pannellum.viewer('customer-panorama-viewer', {
                     "type": "equirectangular",
                     "panorama": sceneToLoad.panorama_url,
@@ -4734,7 +4761,10 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
                     "crossOrigin": "anonymous",
                     "hotSpots": mappedHotspots
                 });
-            }, 100);
+
+                // Fade back in smoothly
+                setTimeout(() => { viewerContainer.style.opacity = 1; }, 200);
+            }, 400);
         }
 
         function closeVirtualStore() {
@@ -4743,7 +4773,13 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
             document.body.style.overflow = '';
             
             if (customerVrViewer) { customerVrViewer.destroy(); customerVrViewer = null; }
-            if (customerVrAudio) { customerVrAudio.pause(); customerVrAudio = null; }
+            if (customerVrAudio) { 
+                fadeAudio(customerVrAudio, 0, () => {
+                    customerVrAudio.pause(); 
+                    customerVrAudio = null; 
+                    currentPlayingAudioUrl = null;
+                });
+            }
         }
 
         function toggleVrAudio() {
@@ -4751,10 +4787,13 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
             const btn = document.getElementById('vr-audio-toggle');
             if (customerVrAudio.paused) {
                 customerVrAudio.play();
+                fadeAudio(customerVrAudio, 1);
                 btn.innerHTML = '<i class="fas fa-volume-up"></i>';
             } else {
-                customerVrAudio.pause();
-                btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                fadeAudio(customerVrAudio, 0, () => {
+                    customerVrAudio.pause();
+                    btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                });
             }
         }
 

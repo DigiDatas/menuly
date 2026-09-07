@@ -1012,7 +1012,13 @@
                             <p class="text-[10px] text-gray-500 font-bold">Manage multiple 360° panoramas.</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-3">
+                        <!-- 🌟 MOVED: VR Master Switch (Auto-Saves!) -->
+                        <div class="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                            <input type="checkbox" id="set-vr" onchange="toggleVrMasterSwitch()" class="w-4 h-4 text-teal-600 rounded focus:ring-teal-500 cursor-pointer">
+                            <label for="set-vr" class="text-[10px] font-bold text-gray-700 uppercase cursor-pointer">Enable For Customers</label>
+                        </div>
+                        
                         <select id="vr-scene-selector" onchange="loadSelectedVrScene()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-bold text-gray-700 outline-none focus:border-teal-500 max-w-[150px] truncate">
                             <!-- Populated via JS -->
                         </select>
@@ -1035,6 +1041,7 @@
                         <div>
                             <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">360° Panorama Image URL *</label>
                             <div class="flex gap-2">
+                                <button type="button" onclick="openMediaLibrary('vr-image')" class="bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 transition rounded-xl px-2.5 shadow-sm" title="Browse Bucket"><i class="fas fa-folder-open"></i></button>
                                 <input type="text" id="vr-image-url" onchange="renderVrPreview()" placeholder="https://..." class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-[10px] focus:border-teal-500 outline-none bg-gray-50">
                                 <label class="bg-teal-50 text-teal-600 border border-teal-200 px-3 py-2 rounded-xl text-[10px] font-bold cursor-pointer hover:bg-teal-100 transition shadow-sm flex items-center justify-center shrink-0">
                                     <i class="fas fa-cloud-upload-alt"></i>
@@ -1047,6 +1054,7 @@
                             <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Background Audio (MP3 URL)</label>
                             <div class="flex gap-2">
                                 <button onclick="toggleAudioPreview()" id="vr-btn-play-audio" class="bg-gray-100 text-gray-600 px-3 py-2 rounded-xl hover:bg-gray-200 transition shadow-sm shrink-0"><i class="fas fa-play"></i></button>
+                                <button type="button" onclick="openMediaLibrary('vr-audio')" class="bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 transition rounded-xl px-2.5 shadow-sm" title="Browse Bucket"><i class="fas fa-folder-open"></i></button>
                                 <input type="text" id="vr-audio-url" placeholder="https://.../music.mp3" class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-[10px] focus:border-teal-500 outline-none bg-gray-50">
                                 <label class="bg-purple-50 text-purple-600 border border-purple-200 px-3 py-2 rounded-xl text-[10px] font-bold cursor-pointer hover:bg-purple-100 transition shadow-sm flex items-center justify-center shrink-0">
                                     <i class="fas fa-cloud-upload-alt"></i>
@@ -3805,42 +3813,78 @@ let currentMediaTarget = 'product';
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             
-            // SMART HIJACK: If targeting Related Items, show the Menu Database instead of Storage!
             if (target === 'related') {
                 headerTitle.innerHTML = `<i class="fas fa-utensils text-blue-500 me-2"></i> Select Related Item`;
                 gallery.innerHTML = '';
-                
                 const menuItems = allMenuItems.filter(i => i.language === currentAdminLang);
-                if (menuItems.length === 0) {
-                    gallery.innerHTML = '<span class="text-gray-400">No menu items found. Please add items first.</span>';
-                    return;
-                }
-                
+                if (menuItems.length === 0) { gallery.innerHTML = '<span class="text-gray-400">No menu items found.</span>'; return; }
                 menuItems.forEach(item => {
                     const currentEditId = document.getElementById('edit-item-id').value;
-                    if (String(item.id) === String(currentEditId)) return; // Don't show the item currently being edited
-                    
+                    if (String(item.id) === String(currentEditId)) return; 
                     const imgUrl = item.img_urls && item.img_urls.length > 0 ? item.img_urls[0] : 'https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/Placeholder.jpg';
                     const imgCard = document.createElement('div');
                     imgCard.className = "relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200 cursor-pointer hover:border-blue-500 hover:shadow-md transition group shrink-0";
-                    imgCard.innerHTML = `
-                        <img src="${imgUrl}" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition">
-                        <div class="absolute inset-0 flex flex-col items-center justify-center p-1 text-center bg-black/40 group-hover:bg-transparent transition">
-                            <span class="text-white text-[9px] font-bold truncate w-full drop-shadow-md">${item.name}</span>
-                            <span class="bg-blue-600 text-white text-[8px] px-1.5 py-0.5 rounded mt-1">${item.item_code}</span>
-                        </div>
-                    `;
+                    imgCard.innerHTML = `<img src="${imgUrl}" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition"><div class="absolute inset-0 flex flex-col items-center justify-center p-1 text-center bg-black/40 group-hover:bg-transparent transition"><span class="text-white text-[9px] font-bold truncate w-full drop-shadow-md">${item.name}</span><span class="bg-blue-600 text-white text-[8px] px-1.5 py-0.5 rounded mt-1">${item.item_code}</span></div>`;
                     imgCard.onclick = () => {
-                        if (!currentEditingRelated.includes(item.item_code)) {
-                            currentEditingRelated.push(item.item_code);
-                            renderRelatedGallery();
-                        }
+                        if (!currentEditingRelated.includes(item.item_code)) { currentEditingRelated.push(item.item_code); renderRelatedGallery(); }
                         closeMediaLibrary();
                     };
                     gallery.appendChild(imgCard);
                 });
                 return;
             }
+
+            // Normal Flow: Load Storage Bucket Images
+            headerTitle.innerHTML = `<i class="fas fa-images text-blue-500 me-2"></i> Select from Storage`;
+            gallery.innerHTML = '<div class="text-blue-500 font-bold mt-10"><i class="fas fa-spinner fa-spin text-2xl mb-2"></i><br>Loading files from bucket...</div>';
+            
+            // 🌟 SMART TARGETING: Check which bucket to load based on who clicked!
+            const bucketName = (target === 'vr-image' || target === 'vr-audio') ? 'virtual-media' : 'menu-images';
+            
+            const { data, error } = await supabaseClient.storage.from(bucketName).list(activeRestaurantId, { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
+
+            if (error) { gallery.innerHTML = `<span class="text-red-500">Error: ${error.message}</span>`; return; }
+
+            gallery.innerHTML = '';
+            if (!data || data.length === 0) { gallery.innerHTML = '<span class="text-gray-400">No files found.</span>'; return; }
+
+            data.forEach(file => {
+                if (file.name === '.emptyFolderPlaceholder') return;
+                
+                // 🌟 Filter Audio files if audio button clicked
+                if (target === 'vr-audio' && !file.name.includes('.mp3')) return;
+                if (target === 'vr-image' && file.name.includes('.mp3')) return;
+
+                const { data: publicData } = supabaseClient.storage.from(bucketName).getPublicUrl(`${activeRestaurantId}/${file.name}`);
+                const publicUrl = publicData.publicUrl;
+
+                const imgCard = document.createElement('div');
+                imgCard.className = "relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200 cursor-pointer hover:border-blue-500 hover:shadow-md transition group shrink-0 bg-gray-100 flex items-center justify-center";
+                
+                // Render icon for audio, image for everything else
+                if (file.name.includes('.mp3')) {
+                    imgCard.innerHTML = `<i class="fas fa-music text-3xl text-purple-400"></i><span class="absolute bottom-1 w-full text-center text-[8px] truncate px-1 text-gray-500">${file.name}</span>`;
+                } else {
+                    imgCard.innerHTML = `<img src="${publicUrl}" class="w-full h-full object-cover">`;
+                }
+
+                imgCard.innerHTML += `
+                    <div class="absolute inset-0 bg-blue-500/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                        <i class="fas fa-plus text-white text-2xl"></i><span class="text-white text-[10px] font-bold mt-1">Select</span>
+                    </div>
+                `;
+                
+                imgCard.onclick = () => {
+                    if (currentMediaTarget === 'product') { currentEditingImages.push(publicUrl); renderImageGallery(); }
+                    else if (currentMediaTarget === 'banner') { currentAdminBanners[currentBannerIndex].urls.push(publicUrl); renderGlobalGallery('banner', currentBannerIndex); }
+                    else if (currentMediaTarget === 'flashcard') { currentAdminFlashcards.push(publicUrl); renderGlobalGallery('flashcard'); }
+                    else if (currentMediaTarget === 'vr-image') { document.getElementById('vr-image-url').value = publicUrl; renderVrPreview(); }
+                    else if (currentMediaTarget === 'vr-audio') { document.getElementById('vr-audio-url').value = publicUrl; }
+                    closeMediaLibrary();
+                };
+                gallery.appendChild(imgCard);
+            });
+        }
 
             // Normal Flow: Load Storage Bucket Images
             headerTitle.innerHTML = `<i class="fas fa-images text-blue-500 me-2"></i> Select from Storage`;
@@ -6876,14 +6920,29 @@ function updatePosRightPanelLabels() {
             btn.innerHTML = '<i class="fas fa-save"></i> Save Scene';
         }
 
-        // 9. Delete Scene
+        // 9. Delete Scene & Scrub Storage
         async function deleteVrScene() {
             const sceneId = document.getElementById('vr-scene-id').value;
             if (!sceneId) return alert("No scene selected to delete.");
-            if (!confirm("Are you sure you want to permanently delete this room? Any hotspots linking to this room will break!")) return;
+            if (!confirm("Are you sure you want to permanently delete this room? Files will be removed from your server.")) return;
             
+            // 1. Grab URLs before deleting row
+            const imgUrl = document.getElementById('vr-image-url').value;
+            const audUrl = document.getElementById('vr-audio-url').value;
+
+            // 2. Delete row
             await supabaseClient.from('virtual_scenes').delete().eq('id', sceneId);
-            fetchVrScene();
+            
+            // 3. Clean up Storage files (Only if they belong to Supabase)
+            const filesToDelete = [];
+            if (imgUrl.includes('/virtual-media/')) filesToDelete.push(imgUrl.split('/virtual-media/')[1]);
+            if (audUrl.includes('/virtual-media/')) filesToDelete.push(audUrl.split('/virtual-media/')[1]);
+            
+            if (filesToDelete.length > 0) {
+                await supabaseClient.storage.from('virtual-media').remove(filesToDelete);
+            }
+
+            fetchVrScene(); // Reloads UI safely
         }
 
         // 10. Audio Previewer
@@ -6941,6 +7000,15 @@ function updatePosRightPanelLabels() {
             if (publicData && publicData.publicUrl) {
                 inputField.value = publicData.publicUrl;
                 if (type === 'image') renderVrPreview();
+            }
+        }
+
+async function toggleVrMasterSwitch() {
+            const isEnabled = document.getElementById('set-vr').checked;
+            // Uses the same hidden ID loaded by fetchSettings
+            const settingId = document.getElementById('setting-id').value;
+            if (settingId) {
+                await supabaseClient.from('restaurant_settings').update({ vr_enabled: isEnabled }).eq('id', settingId);
             }
         }
 
