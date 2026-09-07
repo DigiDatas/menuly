@@ -873,12 +873,7 @@
                                 <input type="checkbox" id="set-game" class="w-5 h-5 text-red-600 rounded focus:ring-red-500">
                                 <label for="set-game" class="text-sm font-bold text-gray-700">Enable Arcade Game Feature</label>
                             </div>
-			<!-- 🌟 NEW: VR Master Switch -->
-                            <div class="flex items-center gap-2 pt-5">
-                                <input type="checkbox" id="set-vr" class="w-5 h-5 text-teal-600 rounded focus:ring-teal-500">
-                                <label for="set-vr" class="text-sm font-bold text-gray-700">Enable Virtual Store</label>
-                            </div>
-                        </div>
+			 </div>
 			<!-- 🌟 NEW: Floor Plan & Tables Manager -->
                         <div class="p-4 bg-gray-50 border border-gray-200 rounded-2xl mt-6">
                             <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
@@ -4504,9 +4499,8 @@ document.getElementById('set-vr').checked = data.vr_enabled || false;
                 location_url: document.getElementById('set-map').value.trim(),
                 logo_link: document.getElementById('set-logo').value.trim(),
                 delivery_charge: document.getElementById('set-delivery').value.trim(),
-game_enabled: document.getElementById('set-game').checked,
-vr_enabled: document.getElementById('set-vr').checked, // 🌟 NEW
-social_links: adminSocials 
+                game_enabled: document.getElementById('set-game').checked,
+                social_links: adminSocials 
             };
 
             let hasError = false;
