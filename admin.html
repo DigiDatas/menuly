@@ -4391,7 +4391,12 @@ document.getElementById('set-brand').dataset.original = data.brand_name || ''; /
 
         function confirmUrlWarningStep2() {
             window.isUrlWarningConfirmed = true; // Unlock the gate
-            closeUrlWarning(); // Hide modal
+            
+            // 🌟 FIXED: Hide the modal manually here instead of calling closeUrlWarning() 
+            // so we don't accidentally reset the lock to false!
+            document.getElementById('urlWarningModal').classList.add('hidden');
+            document.getElementById('urlWarningModal').classList.remove('flex');
+            
             saveSettings(); // 🚀 Re-trigger the save function!
         }
 
