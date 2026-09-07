@@ -4651,11 +4651,15 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
         // 🌟 CUSTOMER VIRTUAL SHOWROOM ENGINE
         // ==========================================
         let customerVrScenes = [];
-        let customerVrViewer = null;
+        let currentVrViewer1 = null;
+        let currentVrViewer2 = null;
         let customerVrAudio = null;
         let currentPlayingAudioUrl = null;
+        
+        let activeVrLayer = 1; // Tracks which engine is in front
+        let isTransitioning = false;
 
-        // Helper function for cinematic audio fades
+        // Cinematic Audio Fader
         function fadeAudio(audioElement, targetVolume, callback) {
             if (!audioElement) return;
             let fadeInterval = setInterval(() => {
@@ -4668,22 +4672,40 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
                     clearInterval(fadeInterval);
                     if (callback) callback();
                 }
-            }, 50); // Small step every 50ms for smooth curve
+            }, 50); 
         }
 
         function startNewAudio(url) {
             customerVrAudio = new Audio(url);
             customerVrAudio.loop = true;
             customerVrAudio.volume = 0; // Start silent
-            customerVrAudio.play().catch(e => console.log('Audio autoplay blocked by browser'));
-            fadeAudio(customerVrAudio, 1); // Fade up to full volume
+            customerVrAudio.play().catch(e => console.log('Audio autoplay blocked'));
+            fadeAudio(customerVrAudio, 1); // Fade to full
             currentPlayingAudioUrl = url;
             
             document.getElementById('vr-audio-toggle').classList.remove('hidden');
             document.getElementById('vr-audio-toggle').innerHTML = '<i class="fas fa-volume-up"></i>';
         }
 
-        async function openVirtualStore() {
+        function handleAudioForScene(sceneData) {
+            const audioToggle = document.getElementById('vr-audio-toggle');
+            if (sceneData.audio_url && sceneData.audio_url !== currentPlayingAudioUrl) {
+                if (customerVrAudio) {
+                    fadeAudio(customerVrAudio, 0, () => {
+                        customerVrAudio.pause();
+                        startNewAudio(sceneData.audio_url);
+                    });
+                } else {
+                    startNewAudio(sceneData.audio_url);
+                }
+            } else if (!sceneData.audio_url) {
+                // Let the current music keep playing seamlessly!
+                if (customerVrAudio) audioToggle.classList.remove('hidden');
+                else audioToggle.classList.add('hidden');
+            }
+        }
+
+        async function openVirtualStore(sceneId = null) {
             const modal = document.getElementById('vrCustomerModal');
             const viewerContainer = document.getElementById('customer-panorama-viewer');
             
@@ -4691,11 +4713,16 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
             modal.classList.add('flex');
             document.body.style.overflow = 'hidden';
 
+            // Inject the Dual-Engine Layers if they don't exist
+            if (!document.getElementById('vr-layer-1')) {
+                viewerContainer.innerHTML = `
+                    <div id="vr-layer-1" class="absolute inset-0 z-20 transition-opacity duration-1000 ease-in-out opacity-100 bg-black"></div>
+                    <div id="vr-layer-2" class="absolute inset-0 z-10 transition-opacity duration-1000 ease-in-out opacity-0 bg-black"></div>
+                `;
+            }
+
             if (customerVrScenes.length === 0) {
-                viewerContainer.innerHTML = '<div class="absolute inset-0 flex flex-col items-center justify-center text-white"><i class="fas fa-spinner fa-spin text-4xl mb-4"></i><p class="font-bold tracking-widest uppercase text-xs">Entering Virtual Space...</p></div>';
-                
                 const { data } = await supabaseClient.from('virtual_scenes').select('*').eq('restaurant_id', restaurantId).order('created_at', { ascending: true });
-                
                 if (data && data.length > 0) customerVrScenes = data;
                 else {
                     customerVrScenes = [{
@@ -4707,83 +4734,109 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
                 }
             }
 
-            // Clean up old viewer if it exists
-            if (customerVrViewer) {
-                customerVrViewer.destroy();
-                customerVrViewer = null;
-            }
-            viewerContainer.innerHTML = ''; 
+            const sceneToLoad = sceneId ? customerVrScenes.find(s => s.id === sceneId) : customerVrScenes[0];
+            if (!sceneToLoad) return;
 
-            const scenesConfig = {};
+            document.getElementById('vr-customer-title').textContent = sceneToLoad.scene_name || 'Virtual Showroom';
+
+            // Reset Engines for a fresh open
+            activeVrLayer = 1;
+            document.getElementById('vr-layer-1').style.opacity = '1';
+            document.getElementById('vr-layer-1').style.zIndex = '20';
+            document.getElementById('vr-layer-2').style.opacity = '0';
+            document.getElementById('vr-layer-2').style.zIndex = '10';
+
+            if (currentVrViewer1) currentVrViewer1.destroy();
+            if (currentVrViewer2) currentVrViewer2.destroy();
+            document.getElementById('vr-layer-1').innerHTML = '';
+            document.getElementById('vr-layer-2').innerHTML = '';
+
+            // Load Engine 1
+            loadSceneIntoViewer(sceneToLoad, 1);
+            handleAudioForScene(sceneToLoad);
+        }
+
+        // The Engine Loader
+        function loadSceneIntoViewer(sceneData, layerNum) {
+            const layerId = `vr-layer-${layerNum}`;
             
-            // Build the multi-scene configuration mapping
-            customerVrScenes.forEach(scene => {
-                const mappedHotspots = (scene.hotspots || []).map(hs => {
+            const viewerConfig = {
+                "type": "equirectangular",
+                "panorama": sceneData.panorama_url,
+                "autoLoad": true,
+                "compass": false,
+                "showControls": false,
+                "crossOrigin": "anonymous",
+                "hotSpots": (sceneData.hotspots || []).map(hs => {
                     const isInfo = hs.type === 'info';
-                    if (isInfo) {
-                        return {
-                            pitch: hs.pitch, yaw: hs.yaw, type: 'info',
-                            text: hs.text || 'View Item',
-                            clickHandlerFunc: () => { if(hs.target_id) openModal(hs.target_id); }
-                        };
-                    } else {
-                        return {
-                            pitch: hs.pitch, yaw: hs.yaw, type: 'scene',
-                            text: hs.text || 'Walk to Next Room',
-                            sceneId: hs.target_id // 🌟 Pannellum handles the transition natively!
-                        };
-                    }
-                });
+                    return {
+                        pitch: hs.pitch, yaw: hs.yaw, 
+                        // Trick Pannellum into rendering the doorway arrow, but keep control of the click!
+                        type: "info", 
+                        cssClass: isInfo ? "pnlm-info" : "pnlm-scene",
+                        text: hs.text || (isInfo ? 'View Item' : 'Walk to Next Room'),
+                        clickHandlerFunc: isInfo 
+                            ? () => { if(hs.target_id) openModal(hs.target_id); } 
+                            : () => { if(hs.target_id) crossfadeToScene(hs.target_id); }
+                    };
+                })
+            };
 
-                scenesConfig[scene.id] = {
-                    "type": "equirectangular",
-                    "panorama": scene.panorama_url,
-                    "hotSpots": mappedHotspots
-                };
+            if (layerNum === 1) {
+                currentVrViewer1 = pannellum.viewer(layerId, viewerConfig);
+                return currentVrViewer1;
+            } else {
+                currentVrViewer2 = pannellum.viewer(layerId, viewerConfig);
+                return currentVrViewer2;
+            }
+        }
+
+        // The Magic Crossfade Logic
+        function crossfadeToScene(targetSceneId) {
+            if (isTransitioning) return;
+            
+            const targetScene = customerVrScenes.find(s => s.id === targetSceneId);
+            if (!targetScene) return;
+
+            isTransitioning = true;
+            document.getElementById('vr-customer-title').textContent = targetScene.scene_name || 'Virtual Showroom';
+            handleAudioForScene(targetScene);
+
+            const nextLayerNum = activeVrLayer === 1 ? 2 : 1;
+            const currentDiv = document.getElementById(`vr-layer-${activeVrLayer}`);
+            const nextDiv = document.getElementById(`vr-layer-${nextLayerNum}`);
+
+            // 1. Make the background layer fully opaque (it is hiding behind the active layer)
+            nextDiv.style.opacity = '1';
+            
+            // 2. Build the new room in the background
+            const newViewer = loadSceneIntoViewer(targetScene, nextLayerNum);
+
+            // 3. Wait for the background room's photo to 100% finish loading
+            newViewer.on('load', () => {
+                // 4. Melt the front room away!
+                currentDiv.style.opacity = '0';
+                
+                setTimeout(() => {
+                    // 5. Delete the old room entirely to free up RAM
+                    if (activeVrLayer === 1 && currentVrViewer1) {
+                        currentVrViewer1.destroy();
+                        currentVrViewer1 = null;
+                    } else if (activeVrLayer === 2 && currentVrViewer2) {
+                        currentVrViewer2.destroy();
+                        currentVrViewer2 = null;
+                    }
+                    currentDiv.innerHTML = '';
+
+                    // 6. Swap the layers so the new room is now "in front"
+                    nextDiv.style.zIndex = '20';
+                    currentDiv.style.zIndex = '10';
+                    
+                    activeVrLayer = nextLayerNum;
+                    isTransitioning = false;
+
+                }, 1000); // Wait for the 1s CSS fade to finish
             });
-
-            const firstScene = customerVrScenes[0];
-            document.getElementById('vr-customer-title').textContent = firstScene.scene_name || 'Virtual Showroom';
-
-            // Launch Pannellum Engine with ALL scenes pre-loaded for smooth crossfading
-            setTimeout(() => {
-                customerVrViewer = pannellum.viewer('customer-panorama-viewer', {
-                    "default": {
-                        "firstScene": firstScene.id,
-                        "sceneFadeDuration": 1200, // 🌟 1.2 Second Native WebGL Crossfade (No Black Screen!)
-                        "autoLoad": true,
-                        "showControls": false,
-                        "compass": false,
-                        "crossOrigin": "anonymous"
-                    },
-                    "scenes": scenesConfig
-                });
-
-                // Start the initial audio
-                if (firstScene.audio_url) {
-                    startNewAudio(firstScene.audio_url);
-                }
-
-                // 🌟 NATIVE SCENE CHANGE LISTENER
-                customerVrViewer.on('scenechange', function(newSceneId) {
-                    const targetScene = customerVrScenes.find(s => s.id === newSceneId);
-                    if (targetScene) {
-                        document.getElementById('vr-customer-title').textContent = targetScene.scene_name || 'Virtual Showroom';
-                        
-                        // Audio Logic: If it has new audio, fade it. If it doesn't, let the current music keep looping!
-                        if (targetScene.audio_url && targetScene.audio_url !== currentPlayingAudioUrl) {
-                            if (customerVrAudio) {
-                                fadeAudio(customerVrAudio, 0, () => {
-                                    customerVrAudio.pause();
-                                    startNewAudio(targetScene.audio_url);
-                                });
-                            } else {
-                                startNewAudio(targetScene.audio_url);
-                            }
-                        }
-                    }
-                });
-            }, 100);
         }
 
         function closeVirtualStore() {
@@ -4791,7 +4844,9 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
             document.getElementById('vrCustomerModal').classList.remove('flex');
             document.body.style.overflow = '';
             
-            if (customerVrViewer) { customerVrViewer.destroy(); customerVrViewer = null; }
+            if (currentVrViewer1) { currentVrViewer1.destroy(); currentVrViewer1 = null; }
+            if (currentVrViewer2) { currentVrViewer2.destroy(); currentVrViewer2 = null; }
+            
             if (customerVrAudio) { 
                 fadeAudio(customerVrAudio, 0, () => {
                     customerVrAudio.pause(); 
