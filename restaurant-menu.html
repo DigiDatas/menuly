@@ -1365,7 +1365,7 @@ let relatedItemsData = []; // (You did this perfectly!)
                     .eq('restaurant_id', restaurantId)
                     .maybeSingle(); // 🌟 Only grab the single unified row!
 
-                if (dbSettings) {
+               if (dbSettings) {
                     window.dbSettingsEn = dbSettings; 
                     
                     // Map live database directly to the app's global variables
@@ -1384,10 +1384,10 @@ let relatedItemsData = []; // (You did this perfectly!)
                         smartCurrency: dbSettings.currency,
                         social_links: dbSettings.social_links,
                         language: dbSettings.language,
-                        P: dbSettings.game_enabled ? 'true' : 'false'
-			vr_enabled: dbSettings.vr_enabled ? 'true' : 'false' // 🌟 ADD THIS!
+                        P: dbSettings.game_enabled ? 'true' : 'false',
+                        vr_enabled: dbSettings.vr_enabled ? 'true' : 'false'
                     };
-                    };
+                    
                     globalCurrency = rawBranding.smartCurrency || "";
                 } else {
                     rawBranding = {};
