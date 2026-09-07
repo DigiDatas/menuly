@@ -6819,7 +6819,7 @@ function updatePosRightPanelLabels() {
             renderVrPreview(); 
         };
 
-        // 8. Save the Scene to Supabase (FIX 2: Bulletproof Save Logic)
+        // 8. Save the Scene to Supabase
         async function saveVrScene() {
             const btn = document.getElementById('btn-save-vr');
             const sceneName = document.getElementById('vr-scene-name').value.trim();
@@ -6830,30 +6830,45 @@ function updatePosRightPanelLabels() {
 
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
             
-            const payload = {
-                restaurant_id: activeRestaurantId,
-                scene_name: sceneName,
-                panorama_url: imgUrl,
-                audio_url: document.getElementById('vr-audio-url').value.trim(),
-                hotspots: currentVrHotspots
-            };
-
             try {
+                // Gather all hotspot inputs safely using the NEW IDs
+                const newHotspots = [];
+                currentVrHotspots.forEach((hs, i) => {
+                    const pitchInput = document.getElementById(`vr-hs-pitch-${i}`);
+                    const yawInput = document.getElementById(`vr-hs-yaw-${i}`);
+                    const typeInput = document.getElementById(`vr-hs-type-${i}`);
+                    const targetInput = document.getElementById(`vr-hs-target-${i}`);
+                    const textInput = document.getElementById(`vr-hs-text-${i}`);
+                    
+                    newHotspots.push({
+                        pitch: pitchInput ? parseFloat(pitchInput.value) || 0 : hs.pitch,
+                        yaw: yawInput ? parseFloat(yawInput.value) || 0 : hs.yaw,
+                        type: typeInput ? typeInput.value : hs.type,
+                        target_id: targetInput ? targetInput.value : hs.target_id,
+                        text: textInput ? textInput.value.trim() : hs.text
+                    });
+                });
+                currentVrHotspots = newHotspots;
+
+                const payload = {
+                    restaurant_id: activeRestaurantId,
+                    scene_name: sceneName,
+                    panorama_url: imgUrl,
+                    audio_url: document.getElementById('vr-audio-url').value.trim(),
+                    hotspots: currentVrHotspots
+                };
+
                 if (sceneId && sceneId.trim() !== '') {
-                    // UPDATE existing
                     const { error } = await supabaseClient.from('virtual_scenes').update(payload).eq('id', sceneId).select();
                     if (error) throw error;
                 } else {
-                    // SAVE AS NEW
                     const { data, error } = await supabaseClient.from('virtual_scenes').insert([payload]).select();
                     if (error) throw error;
-                    if (data && data.length > 0) {
-                        document.getElementById('vr-scene-id').value = data[0].id;
-                    }
+                    if (data && data.length > 0) document.getElementById('vr-scene-id').value = data[0].id;
                 }
                 
                 alert("Scene Saved Successfully!");
-                await fetchVrScene(); // Refresh dropdown
+                await fetchVrScene(); 
             } catch (error) {
                 alert("Error saving scene: " + error.message);
             }

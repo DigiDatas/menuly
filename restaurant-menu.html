@@ -1485,9 +1485,9 @@ let relatedItemsData = []; // (You did this perfectly!)
                         gameBtn.classList.add('opacity-100');
                     }
                 }, 10000); 
-            } // 🌟 FIX: This bracket closes the Game logic here!
+            }
 
-            // 🌟 Turn on Virtual Store Button in Header (Now independent!)
+            // 🌟 Turn on Virtual Store Button in Header
             const vrBtn = document.getElementById('vr-nav-btn');
             if (rawBranding.vr_enabled === 'true' && vrBtn) {
                 vrBtn.classList.remove('hidden');
@@ -1496,30 +1496,26 @@ let relatedItemsData = []; // (You did this perfectly!)
                 vrBtn.classList.add('hidden');
                 vrBtn.classList.remove('flex');
             }            
-        } // 🌟 This bracket closes the whole applySystemSetup function
+
             document.getElementById('lang-text').textContent = currentLang === 'en' ? 'AR' : 'EN';
             
             // ==========================================
             // 🌟 CHAMELEON ENGINE: ADAPT FOR GROCERY
             // ==========================================
             if (window.businessType === 'grocery') {
-                // 1. Hide the Waiter Bell
                 const waiterBtn = document.getElementById('btn-call-waiter');
                 if (waiterBtn) waiterBtn.style.display = 'none';
 
-                // 2. Change the default fallback logo from Fork/Knife to Shopping Basket
                 const defaultLogo = document.getElementById('default-logo-icon');
                 if (defaultLogo) {
                     defaultLogo.classList.remove('fa-utensils');
                     defaultLogo.classList.add('fa-shopping-basket');
                 }
 
-                // 3. Hide the "Dine-In" button in the shopping cart and force Takeaway
                 const btnDineIn = document.getElementById('btn-type-dinein');
                 if (btnDineIn) btnDineIn.style.display = 'none';
                 if (typeof setDiningType === 'function') setDiningType('Takeaway');
 
-                // 4. Change specific text labels (Overrides the staticText object)
                 staticText.en.todaySpecial = '🌟 Special Offers';
                 staticText.ar.todaySpecial = '🌟 عروض خاصة';
                 staticText.en.specialBadge = 'Offer';
@@ -1527,7 +1523,7 @@ let relatedItemsData = []; // (You did this perfectly!)
                 staticText.en.recipe = 'Product Details';
                 staticText.ar.recipe = 'تفاصيل المنتج';
             }
-        } // 🌟 FIX: The closing brace goes HERE, at the very end!
+        } // 🌟 THIS IS THE ONLY CLOSING BRACE NEEDED!
 
         function toggleLanguage() {
             currentLang = currentLang === 'en' ? 'ar' : 'en';
