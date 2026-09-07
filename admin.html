@@ -1660,6 +1660,7 @@
             fetchSettings();
             fetchReviews();
             fetchTables();
+		fetchVrScene();
 
             graphActiveFilter = 'week';
             if (typeof setGraphFilter === 'function') setGraphFilter('week');
@@ -2988,7 +2989,7 @@ if (!graphActiveFilter) graphActiveFilter = 'week';
                     `;
                     
                     html += subItems.map(item => {
-                        const img = item.img_urls && item.img_urls.length > 0 ? item.img_urls[0] : 'https://raw.githubusercontent.com/DigiDatas/menuly/multimedia/Placeholder.jpg';
+                        const img = item.img_urls && item.img_urls.length > 0 ? item.img_urls[0] : 'https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/Placeholder.jpg';
                         const isModified = modifiedMenuIds.has(item.id) ? 'border-yellow-400 shadow-md bg-yellow-50/50' : 'border-gray-200 bg-white hover:border-red-300 hover:shadow-md';
                         
                         let stockDisplay = '';
@@ -3464,7 +3465,7 @@ const { data: existingItem } = await supabaseClient
                 
                 // FIX: onclick now passes the specific index number instead of the URL string
                 thumb.innerHTML = `
-                    <img src="${url}" class="w-full h-full object-cover pointer-events-none" onerror="this.src='https://via.placeholder.com/60?text=Error'">
+                    <img src="${url}" class="w-full h-full object-cover pointer-events-none" onerror="this.src='https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/Placeholder.jpg'">
                     <button type="button" onclick="removeImageFromGallery(${index})" 
                             class="absolute top-1 end-1 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] shadow hover:bg-red-700 transition z-10">
                         <i class="fas fa-times"></i>
@@ -3785,7 +3786,7 @@ let currentMediaTarget = 'product';
                     const currentEditId = document.getElementById('edit-item-id').value;
                     if (String(item.id) === String(currentEditId)) return; // Don't show the item currently being edited
                     
-                    const imgUrl = item.img_urls && item.img_urls.length > 0 ? item.img_urls[0] : 'https://via.placeholder.com/100';
+                    const imgUrl = item.img_urls && item.img_urls.length > 0 ? item.img_urls[0] : 'https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/Placeholder.jpg';
                     const imgCard = document.createElement('div');
                     imgCard.className = "relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200 cursor-pointer hover:border-blue-500 hover:shadow-md transition group shrink-0";
                     imgCard.innerHTML = `
@@ -4132,7 +4133,7 @@ const ordersRes = await supabaseClient
                     if (favItems.length > 0) {
                         let favCards = '';
                         favItems.forEach(item => {
-                            const img = item.img_urls && item.img_urls.length > 0 ? item.img_urls[0] : 'https://via.placeholder.com/50';
+                            const img = item.img_urls && item.img_urls.length > 0 ? item.img_urls[0] : 'https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/Placeholder.jpg';
                             favCards += `
                                 <div class="bg-red-50 border border-red-100 rounded-xl p-2 flex items-center gap-2 shadow-sm">
                                     <img src="${img}" class="w-8 h-8 rounded-md object-cover shrink-0">
@@ -4163,7 +4164,7 @@ const ordersRes = await supabaseClient
                     if (favItems.length > 0) {
                         let favCards = '';
                         favItems.forEach(item => {
-                            const img = item.img_urls && item.img_urls.length > 0 ? item.img_urls[0] : 'https://via.placeholder.com/50';
+                            const img = item.img_urls && item.img_urls.length > 0 ? item.img_urls[0] : 'https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/Placeholder.jpg';
                             favCards += `
                                 <div class="relative w-[120px] flex-shrink-0 snap-start bg-red-50 border border-red-100 rounded-xl p-2 shadow-sm flex flex-col gap-1 items-center justify-center text-center">
                                     <div class="absolute top-1 right-1 z-10 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-sm"><i class="fas fa-heart text-red-500 text-[10px]"></i></div>
@@ -4800,7 +4801,7 @@ document.getElementById('set-brand').dataset.original = data.brand_name || ''; /
                 
                 let displayHtml = '';
                 if (item) {
-                    const imgUrl = item.img_urls && item.img_urls.length > 0 ? item.img_urls[0] : 'https://via.placeholder.com/100';
+                    const imgUrl = item.img_urls && item.img_urls.length > 0 ? item.img_urls[0] : 'https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/Placeholder.jpg';
                     displayHtml = `
                         <img src="${imgUrl}" class="w-full h-full object-cover opacity-80">
                         <div class="absolute bottom-0 inset-x-0 bg-black/70 p-0.5 text-center">
@@ -5807,7 +5808,7 @@ function updatePosRightPanelLabels() {
             items = [...inCartItems, ...otherItems];
 
             grid.innerHTML = items.map(item => {
-                const img = item.img_urls && item.img_urls.length > 0 ? item.img_urls[0] : 'https://via.placeholder.com/100';
+                const img = item.img_urls && item.img_urls.length > 0 ? item.img_urls[0] : 'https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/Placeholder.jpg';
                 const isInCart = cartItemIds.includes(String(item.id));
                 
                 const borderCls = isInCart ? 'border-teal-500 bg-teal-50 shadow-md transform scale-[1.02]' : 'border-gray-100 bg-white hover:border-teal-400 hover:shadow-md';
@@ -6167,7 +6168,7 @@ function updatePosRightPanelLabels() {
                 const data = payload.payload;
                 
                 // 1. Play the Bell Sound!
-                const audio = new Audio('https://raw.githubusercontent.com/DigiDatas/menuly/multimedia/bell.mp3'); 
+                const audio = new Audio('https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/bell.mp3'); 
                 audio.play().catch(e => console.log("Audio requires user interaction first."));
 
                 const container = document.getElementById('waiter-toast-container');
@@ -6592,7 +6593,8 @@ function updatePosRightPanelLabels() {
                     "panorama": imgUrl,
                     "autoLoad": true,
                     "compass": false,
-                    "showControls": true
+                    "showControls": true,
+                    "crossOrigin": "anonymous" // 🌟 FIXED: Allows GitHub & External URLs!
                 });
             } catch (e) {
                 container.innerHTML = `<div class="text-red-500 flex flex-col items-center justify-center h-full relative z-20"><i class="fas fa-exclamation-triangle text-3xl mb-2"></i><span>Failed to load 360 image. Check URL.</span></div>`;
@@ -6611,7 +6613,7 @@ function updatePosRightPanelLabels() {
             renderVrHotspots();
         }
 
-        // 5. Render the Hotspot Inputs
+        // 5. Render the Hotspot Inputs (Upgraded with Capture Button!)
         function renderVrHotspots() {
             const container = document.getElementById('vr-hotspots-container');
             container.innerHTML = '';
@@ -6624,22 +6626,28 @@ function updatePosRightPanelLabels() {
 
             currentVrHotspots.forEach((hs, i) => {
                 container.innerHTML += `
-                    <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex flex-col gap-2 relative shadow-sm">
-                        <button onclick="removeVrHotspotRow(${i})" class="absolute top-2 right-2 w-6 h-6 bg-red-50 rounded text-red-400 hover:text-red-600 hover:bg-red-100 flex items-center justify-center transition"><i class="fas fa-times text-[10px]"></i></button>
+                    <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex flex-col gap-2 relative shadow-sm mt-2">
+                        <button onclick="removeVrHotspotRow(${i})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-100 rounded-full text-red-500 hover:text-white hover:bg-red-500 flex items-center justify-center transition shadow-sm z-10"><i class="fas fa-times text-[10px]"></i></button>
                         
-                        <div class="grid grid-cols-2 gap-3 pr-6">
+                        <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="text-[9px] font-bold text-gray-500 uppercase">Pitch (Up/Down)</label>
-                                <input type="number" step="0.1" id="vr-hs-pitch-${i}" value="${hs.pitch}" class="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-teal-500">
+                                <input type="number" step="0.1" id="vr-hs-pitch-${i}" value="${hs.pitch}" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-teal-500 bg-white shadow-inner">
                             </div>
                             <div>
                                 <label class="text-[9px] font-bold text-gray-500 uppercase">Yaw (Left/Right)</label>
-                                <input type="number" step="0.1" id="vr-hs-yaw-${i}" value="${hs.yaw}" class="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-teal-500">
+                                <input type="number" step="0.1" id="vr-hs-yaw-${i}" value="${hs.yaw}" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-teal-500 bg-white shadow-inner">
                             </div>
                         </div>
+                        
+                        <!-- 🌟 NEW: Magic Capture Button -->
+                        <button type="button" onclick="captureVrCoordinates(${i})" class="w-full bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 transition rounded-lg py-1.5 text-[10px] font-black shadow-sm flex items-center justify-center gap-1">
+                            <i class="fas fa-crosshairs"></i> Get Current Camera Position
+                        </button>
+
                         <div>
-                            <label class="text-[9px] font-bold text-gray-500 uppercase">Linked Menu Item</label>
-                            <select id="vr-hs-item-${i}" class="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-teal-500 font-bold text-gray-700">
+                            <label class="text-[9px] font-bold text-gray-500 uppercase mt-1 block">Linked Menu Item</label>
+                            <select id="vr-hs-item-${i}" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-teal-500 font-bold text-gray-700 bg-white shadow-sm">
                                 ${menuOptions.replace(`value="${hs.item_id}"`, `value="${hs.item_id}" selected`)}
                             </select>
                         </div>
@@ -6647,6 +6655,26 @@ function updatePosRightPanelLabels() {
                 `;
             });
         }
+
+        // 🌟 NEW: Helper function to grab coordinates from Pannellum
+        window.captureVrCoordinates = function(index) {
+            if (!vrPreviewViewer) return alert("Please load a 360 image first!");
+            const pitch = vrPreviewViewer.getPitch().toFixed(1);
+            const yaw = vrPreviewViewer.getYaw().toFixed(1);
+            
+            document.getElementById(`vr-hs-pitch-${index}`).value = pitch;
+            document.getElementById(`vr-hs-yaw-${index}`).value = yaw;
+            
+            // Highlight boxes briefly in green to show success
+            const pBox = document.getElementById(`vr-hs-pitch-${index}`);
+            const yBox = document.getElementById(`vr-hs-yaw-${index}`);
+            pBox.classList.add('border-green-500', 'bg-green-50');
+            yBox.classList.add('border-green-500', 'bg-green-50');
+            setTimeout(() => {
+                pBox.classList.remove('border-green-500', 'bg-green-50');
+                yBox.classList.remove('border-green-500', 'bg-green-50');
+            }, 800);
+        };
 
         // 6. Save the Scene to Supabase
         async function saveVrScene() {
