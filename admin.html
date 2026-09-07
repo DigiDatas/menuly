@@ -2097,16 +2097,20 @@ async function logoutAdmin() {
         function renderTableFilters() {
             const container = document.getElementById('table-status-filters');
             if(!container) return;
+
+            // 🌟 CHAMELEON: Adapt the label text
+            const activeStateName = window.adminBusinessType === 'grocery' ? 'Packing' : 'Cooking';
+
             const filters = [
-                { id: 'All', activeBg: 'bg-gray-800 text-white shadow-sm', inactiveBg: 'bg-transparent text-gray-400 hover:bg-gray-200' },
-                { id: 'Pending', activeBg: 'bg-orange-100 text-orange-800 shadow-sm', inactiveBg: 'bg-transparent text-gray-400 hover:bg-orange-50' },
-                { id: 'Cooking', activeBg: 'bg-yellow-100 text-yellow-800 shadow-sm', inactiveBg: 'bg-transparent text-gray-400 hover:bg-yellow-50' },
-                { id: 'Completed', activeBg: 'bg-green-100 text-green-800 shadow-sm', inactiveBg: 'bg-transparent text-gray-400 hover:bg-green-50' },
-                { id: 'Cancelled', activeBg: 'bg-red-100 text-red-800 shadow-sm', inactiveBg: 'bg-transparent text-gray-400 hover:bg-red-50' }
+                { id: 'All', label: 'All', activeBg: 'bg-gray-800 text-white shadow-sm', inactiveBg: 'bg-transparent text-gray-400 hover:bg-gray-200' },
+                { id: 'Pending', label: 'Pending', activeBg: 'bg-orange-100 text-orange-800 shadow-sm', inactiveBg: 'bg-transparent text-gray-400 hover:bg-orange-50' },
+                { id: 'Cooking', label: activeStateName, activeBg: 'bg-yellow-100 text-yellow-800 shadow-sm', inactiveBg: 'bg-transparent text-gray-400 hover:bg-yellow-50' },
+                { id: 'Completed', label: 'Completed', activeBg: 'bg-green-100 text-green-800 shadow-sm', inactiveBg: 'bg-transparent text-gray-400 hover:bg-green-50' },
+                { id: 'Cancelled', label: 'Cancelled', activeBg: 'bg-red-100 text-red-800 shadow-sm', inactiveBg: 'bg-transparent text-gray-400 hover:bg-red-50' }
             ];
             container.innerHTML = filters.map(f => {
                 const cls = tableStatusFilter === f.id ? f.activeBg : f.inactiveBg;
-                return `<button onclick="setTableFilter('${f.id}')" class="px-3 py-1.5 rounded text-[10px] font-black uppercase transition ${cls}">${f.id}</button>`;
+                return `<button onclick="setTableFilter('${f.id}')" class="px-3 py-1.5 rounded text-[10px] font-black uppercase transition ${cls}">${f.label}</button>`;
             }).join('');
         }
 
@@ -2518,7 +2522,9 @@ async function logoutAdmin() {
             document.getElementById('stat-pen-rev').innerHTML = `<span class="flex items-center gap-1">${getCurrencyHtml()} ${penRev.toFixed(2)}</span>`;
             document.getElementById('stat-pen-ord').textContent = `${penOrd} Orders Waiting`;
             document.getElementById('stat-cook-rev').innerHTML = `<span class="flex items-center gap-1">${getCurrencyHtml()} ${cookRev.toFixed(2)}</span>`;
-            document.getElementById('stat-cook-ord').textContent = `${cookOrd} Orders Cooking`;
+            // 🌟 CHAMELEON: Adapt top stats text
+            const activeStateVerb = window.adminBusinessType === 'grocery' ? 'Packing' : 'Cooking';
+            document.getElementById('stat-cook-ord').textContent = `${cookOrd} Orders ${activeStateVerb}`;
             
             // 🌟 NEW: Render Dine-In vs Takeaway Card Values
             document.getElementById('stat-dinein-rev').innerHTML = `<span class="flex items-center gap-0.5">${getCurrencyHtml()} ${dineInRev.toFixed(2)}</span>`;
@@ -2645,10 +2651,13 @@ if (!graphActiveFilter) graphActiveFilter = 'week';
 
             if (dashChartInstance) dashChartInstance.destroy();
 
+            // 🌟 CHAMELEON: Adapt Chart Labels
+            const activeStateName = window.adminBusinessType === 'grocery' ? 'PACKING' : 'COOKING';
+
             dashChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['TOTAL', 'PENDING', 'COOKING', 'COMPLETED', 'CANCELED'],
+                    labels: ['TOTAL', 'PENDING', activeStateName, 'COMPLETED', 'CANCELED'],
                     datasets: [
                         { label: 'Orders', data: [cTot, cPen, cCok, cCmp, cCan], backgroundColor: ['#1e3a8a', '#ea580c', '#ca8a04', '#16a34a', '#dc2626'], borderRadius: 4, barPercentage: 0.8, categoryPercentage: 0.4 },
                         { label: `Revenue`, data: [rTot, rPen, rCok, rCmp, rCan], backgroundColor: ['#3b82f6', '#f59e0b', '#facc15', '#84cc16', '#f472b6'], borderRadius: 4, barPercentage: 0.8, categoryPercentage: 0.4 }
