@@ -1013,7 +1013,7 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <select id="vr-scene-selector" onchange="loadSelectedVrScene()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-bold text-gray-700 outline-none focus:border-teal-500">
+                        <select id="vr-scene-selector" onchange="loadSelectedVrScene()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-bold text-gray-700 outline-none focus:border-teal-500 max-w-[150px] truncate">
                             <!-- Populated via JS -->
                         </select>
                         <button onclick="createNewVrScene()" class="bg-blue-50 text-blue-600 px-3 py-2 rounded-lg hover:bg-blue-100 font-bold text-xs transition shadow-sm border border-blue-200"><i class="fas fa-plus"></i> New Scene</button>
@@ -1046,9 +1046,10 @@
                         <div>
                             <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Background Audio (MP3 URL)</label>
                             <div class="flex gap-2">
+                                <button onclick="toggleAudioPreview()" id="vr-btn-play-audio" class="bg-gray-100 text-gray-600 px-3 py-2 rounded-xl hover:bg-gray-200 transition shadow-sm shrink-0"><i class="fas fa-play"></i></button>
                                 <input type="text" id="vr-audio-url" placeholder="https://.../music.mp3" class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-[10px] focus:border-teal-500 outline-none bg-gray-50">
                                 <label class="bg-purple-50 text-purple-600 border border-purple-200 px-3 py-2 rounded-xl text-[10px] font-bold cursor-pointer hover:bg-purple-100 transition shadow-sm flex items-center justify-center shrink-0">
-                                    <i class="fas fa-music"></i>
+                                    <i class="fas fa-cloud-upload-alt"></i>
                                     <input type="file" id="vr-audio-upload" accept="audio/mp3, audio/mpeg" class="hidden" onchange="handleVrUpload(event, 'audio')">
                                 </label>
                             </div>
@@ -1058,10 +1059,10 @@
                         
                         <div class="flex justify-between items-center bg-blue-50 p-2 rounded-lg border border-blue-100">
                             <div>
-                                <span class="block text-[10px] font-black text-blue-800 uppercase">Visual Hotspot Editor</span>
-                                <span class="block text-[9px] text-blue-600">Click canvas to place hotspot</span>
+                                <span class="block text-[10px] font-black text-blue-800 uppercase">Center Crosshair</span>
+                                <span class="block text-[9px] text-blue-600">Drag panorama, then click Add</span>
                             </div>
-                            <button id="btn-toggle-placement" onclick="toggleVrPlacementMode()" class="bg-blue-600 text-white px-3 py-1.5 rounded text-[10px] font-bold shadow-sm transition hover:bg-blue-700">Turn ON</button>
+                            <button onclick="dropHotspotAtCenter()" class="bg-blue-600 text-white px-3 py-1.5 rounded text-[10px] font-bold shadow-sm transition hover:bg-blue-700 flex items-center gap-1"><i class="fas fa-crosshairs"></i> Drop Here</button>
                         </div>
                         
                         <div id="vr-hotspots-container" class="flex flex-col gap-2">
@@ -1071,15 +1072,18 @@
 
                     <!-- Right: Live Preview Panel -->
                     <div class="flex-1 bg-gray-900 rounded-2xl shadow-inner border border-gray-200 flex flex-col items-center justify-center relative overflow-hidden group">
-                        <!-- Custom Crosshair for Placement Mode -->
-                        <div id="vr-crosshair" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none text-red-500 text-2xl drop-shadow-md">
-                            <i class="fas fa-crosshairs"></i>
+                        
+                        <!-- 🌟 NEW: The Permanent Center Crosshair -->
+                        <div id="vr-crosshair" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none text-white/80 text-3xl drop-shadow-[0_0_4px_rgba(0,0,0,1)]">
+                            <i class="fas fa-plus"></i>
                         </div>
+
                         <div id="vr-preview-empty" class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center p-6 z-10">
                             <i class="fas fa-cubes text-4xl text-gray-500 mb-3"></i>
                             <h3 class="text-white font-bold text-sm">360° Engine Preview</h3>
                             <p class="text-gray-400 text-xs mt-1 max-w-xs">Select a scene to view the interactive panorama here.</p>
                         </div>
+                        
                         <div id="admin-panorama-viewer" class="w-full h-full relative z-20 hidden"></div>
                     </div>
                 </div>
@@ -6575,16 +6579,15 @@ function updatePosRightPanelLabels() {
         }
 
 // ==========================================
-        // 🌟 VIRTUAL SHOWROOM (VR) LOGIC - MULTI SCENE & VISUAL EDITOR
+        // 🌟 VIRTUAL SHOWROOM (VR) LOGIC
         // ==========================================
-        // The universal defaults you requested!
-        const DEFAULT_VR_IMG = "https://vhrxsjfblldksnalpyio.supabase.co/storage/v1/object/public/virtual-media/RESTAURANT-PAnorama.jpg";
-        const DEFAULT_VR_AUDIO = "https://vhrxsjfblldksnalpyio.supabase.co/storage/v1/object/public/virtual-media/BGM.mp3";
+        const DEFAULT_VR_IMG = "https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/RESTAURANT-PAnorama.jpg";
+        const DEFAULT_VR_AUDIO = "https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/BGM.mp3";
         
         let allVrScenes = [];
         let currentVrHotspots = [];
         let vrPreviewViewer = null;
-        let isVrPlacementMode = false;
+        let activeVrAudio = null;
 
         // 1. Fetch ALL scenes for this restaurant
         async function fetchVrScene() {
@@ -6602,7 +6605,7 @@ function updatePosRightPanelLabels() {
                 document.getElementById('vr-scene-selector').value = allVrScenes[0].id;
                 loadSelectedVrScene();
             } else {
-                // First time user: Create a default unsaved template using your URLs
+                // First time user: Create a default template
                 createNewVrScene(true); 
             }
         }
@@ -6613,7 +6616,7 @@ function updatePosRightPanelLabels() {
             selector.innerHTML = allVrScenes.map((s, i) => `<option value="${s.id}">${s.scene_name || `Scene ${i+1}`}</option>`).join('');
         }
 
-        // 3. Create a New Blank Scene (or Default Setup)
+        // 3. Create a New Blank Scene
         function createNewVrScene(isInitial = false) {
             document.getElementById('vr-scene-selector').value = ""; // Deselect
             document.getElementById('vr-scene-id').value = "";
@@ -6627,7 +6630,7 @@ function updatePosRightPanelLabels() {
             renderVrPreview();
         }
 
-        // 4. Load a specific scene from the dropdown
+        // 4. Load a specific scene
         function loadSelectedVrScene() {
             const selectedId = document.getElementById('vr-scene-selector').value;
             const scene = allVrScenes.find(s => s.id === selectedId);
@@ -6648,29 +6651,33 @@ function updatePosRightPanelLabels() {
         function renderVrPreview() {
             const emptyState = document.getElementById('vr-preview-empty');
             const viewerContainer = document.getElementById('admin-panorama-viewer');
+            const crosshair = document.getElementById('vr-crosshair');
             const imgUrl = document.getElementById('vr-image-url').value.trim();
             
             if (!imgUrl) {
                 emptyState.classList.remove('hidden');
                 viewerContainer.classList.add('hidden');
+                crosshair.classList.add('hidden');
                 if (vrPreviewViewer) { vrPreviewViewer.destroy(); vrPreviewViewer = null; }
                 return;
             }
 
             emptyState.classList.add('hidden');
             viewerContainer.classList.remove('hidden');
+            crosshair.classList.remove('hidden'); // Always show crosshair when scene is active
             
             if (vrPreviewViewer) { vrPreviewViewer.destroy(); }
             
-            // Format hotspots for Pannellum
             const pannellumHotspots = currentVrHotspots.map((hs, i) => {
                 let displayText = hs.text || '';
-                if (hs.type === 'info') {
-                    const menuItem = allMenuItems.find(m => m.id === hs.target_id);
-                    displayText = menuItem ? menuItem.name : 'Unknown Food Item';
-                } else if (hs.type === 'scene') {
-                    const targetScene = allVrScenes.find(s => s.id === hs.target_id);
-                    displayText = targetScene ? `Walk to: ${targetScene.scene_name}` : 'Unknown Room';
+                if (!displayText) {
+                    if (hs.type === 'info') {
+                        const menuItem = allMenuItems.find(m => m.id === hs.target_id);
+                        displayText = menuItem ? menuItem.name : 'Info';
+                    } else if (hs.type === 'scene') {
+                        const targetScene = allVrScenes.find(s => s.id === hs.target_id);
+                        displayText = targetScene ? `Walk to: ${targetScene.scene_name}` : 'Door';
+                    }
                 }
 
                 return {
@@ -6678,7 +6685,7 @@ function updatePosRightPanelLabels() {
                     "yaw": hs.yaw,
                     "type": hs.type === 'scene' ? "scene" : "info",
                     "text": displayText,
-                    "id": i // Keep index as ID to link back
+                    "id": i 
                 };
             });
 
@@ -6693,63 +6700,52 @@ function updatePosRightPanelLabels() {
                     "hotSpots": pannellumHotspots
                 });
 
-                // 🌟 VISUAL PLACEMENT ENGINE: Click to Drop Hotspot!
-                viewerContainer.addEventListener('mousedown', function(e) {
-                    if (!isVrPlacementMode || !vrPreviewViewer) return;
-                    
-                    // Pannellum takes mouse coords and converts them to precise 3D Space (Pitch/Yaw)
-                    const coords = vrPreviewViewer.mouseEventToCoords(e);
-                    
-                    currentVrHotspots.push({ 
-                        pitch: coords[0].toFixed(1), 
-                        yaw: coords[1].toFixed(1), 
-                        type: 'info', // Default to food item
-                        target_id: '', 
-                        text: '' 
-                    });
-                    
-                    toggleVrPlacementMode(); // Turn off placement mode after one click
-                    renderVrHotspots();
-                    renderVrPreview(); // Refresh to show the new dot!
-                });
+                // 🌟 FIX 1: The Canvas Resize Glitch (Waits for tab to open)
+                setTimeout(() => {
+                    if (vrPreviewViewer) vrPreviewViewer.resize();
+                }, 300);
 
             } catch (e) {
                 viewerContainer.innerHTML = `<div class="text-red-500 flex flex-col items-center justify-center h-full"><i class="fas fa-exclamation-triangle text-3xl mb-2"></i><span>Failed to load image.</span></div>`;
-            }
-        }
-
-        // 6. Visual Hotspot Placement Toggle
-        function toggleVrPlacementMode() {
-            isVrPlacementMode = !isVrPlacementMode;
-            const btn = document.getElementById('btn-toggle-placement');
-            const crosshair = document.getElementById('vr-crosshair');
-            
-            if (isVrPlacementMode) {
-                btn.innerHTML = 'Cancel Placement';
-                btn.classList.replace('bg-blue-600', 'bg-red-500');
-                btn.classList.replace('hover:bg-blue-700', 'hover:bg-red-600');
-                crosshair.classList.remove('hidden');
-            } else {
-                btn.innerHTML = 'Turn ON';
-                btn.classList.replace('bg-red-500', 'bg-blue-600');
-                btn.classList.replace('hover:bg-red-600', 'hover:bg-blue-700');
                 crosshair.classList.add('hidden');
             }
         }
+
+        // 🌟 NEW: Drop Hotspot from Crosshair position
+        window.dropHotspotAtCenter = function() {
+            if (!vrPreviewViewer) return alert("Please load a 360 image first!");
+            const pitch = vrPreviewViewer.getPitch().toFixed(1);
+            const yaw = vrPreviewViewer.getYaw().toFixed(1);
+            
+            currentVrHotspots.unshift({ // Adds to the TOP of the list
+                pitch: pitch, 
+                yaw: yaw, 
+                type: 'info', 
+                target_id: '', 
+                text: '' 
+            });
+            
+            renderVrHotspots();
+            renderVrPreview(); 
+            
+            // Visual success flash
+            const block = document.querySelector('#vr-hotspots-container > div');
+            if (block) {
+                block.classList.add('border-green-500', 'bg-green-50');
+                setTimeout(() => block.classList.remove('border-green-500', 'bg-green-50'), 800);
+            }
+        };
 
         // 7. Render Hotspot Inputs Panel
         function renderVrHotspots() {
             const container = document.getElementById('vr-hotspots-container');
             container.innerHTML = '';
             
-            // Build Menu Options
             let menuOptions = '<option value="">Select Menu Item...</option>';
             allMenuItems.forEach(item => { menuOptions += `<option value="${item.id}">${item.name}</option>`; });
 
-            // Build Scene Options (for navigation links to walk between rooms)
-            let sceneOptions = '<option value="">Select Target Scene...</option>';
+            let sceneOptions = '<option value="">Select Target Room...</option>';
             allVrScenes.forEach(s => { 
-                // Don't let a scene link to itself
                 if(s.id !== document.getElementById('vr-scene-id').value) {
                     sceneOptions += `<option value="${s.id}">${s.scene_name || 'Unnamed Room'}</option>`; 
                 }
@@ -6758,35 +6754,46 @@ function updatePosRightPanelLabels() {
             currentVrHotspots.forEach((hs, i) => {
                 const isInfo = hs.type === 'info';
                 
+                let targetSelectHtml = isInfo 
+                    ? `<select id="vr-hs-target-${i}" onchange="updateVrHotspotData(${i})" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-teal-500 font-bold text-orange-600 bg-white shadow-sm mt-1">
+                         <option value="">No Menu Item Linked</option>
+                         ${allMenuItems.map(m => `<option value="${m.id}" ${hs.target_id===m.id?'selected':''}>${m.name}</option>`).join('')}
+                       </select>`
+                    : `<select id="vr-hs-target-${i}" onchange="updateVrHotspotData(${i})" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-teal-500 font-bold text-blue-600 bg-white shadow-sm mt-1">
+                         <option value="">Select Target Room...</option>
+                         ${allVrScenes.filter(s=>s.id!==document.getElementById('vr-scene-id').value).map(s => `<option value="${s.id}" ${hs.target_id===s.id?'selected':''}>${s.scene_name || 'Room'}</option>`).join('')}
+                       </select>`;
+
                 container.innerHTML += `
                     <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex flex-col gap-2 relative shadow-sm mt-2">
                         <button onclick="removeVrHotspotRow(${i})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-100 rounded-full text-red-500 hover:text-white hover:bg-red-500 flex items-center justify-center transition shadow-sm z-10"><i class="fas fa-times text-[10px]"></i></button>
                         
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="text-[9px] font-bold text-gray-500 uppercase">Hotspot Type</label>
-                                <select onchange="updateVrHotspotType(${i}, this.value)" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-teal-500 bg-white font-bold text-gray-800">
-                                    <option value="info" ${isInfo ? 'selected' : ''}>🍽️ Info / Food Menu</option>
-                                    <option value="scene" ${!isInfo ? 'selected' : ''}>🚪 Walk / Change Room</option>
+                        <div class="flex gap-2">
+                            <div class="w-1/3">
+                                <label class="text-[9px] font-bold text-gray-500 uppercase">Type</label>
+                                <select id="vr-hs-type-${i}" onchange="updateVrHotspotData(${i})" class="w-full border border-gray-200 rounded-lg px-1 py-1.5 text-[10px] outline-none font-bold text-gray-800 bg-white shadow-inner">
+                                    <option value="info" ${isInfo ? 'selected' : ''}>Info/Food</option>
+                                    <option value="scene" ${!isInfo ? 'selected' : ''}>Walk/Door</option>
                                 </select>
                             </div>
-                            <div class="flex gap-2">
-                                <div class="w-1/2">
-                                    <label class="text-[9px] font-bold text-gray-500 uppercase">Pitch</label>
-                                    <input type="number" step="0.1" id="vr-hs-pitch-${i}" value="${hs.pitch}" onchange="updateVrHotspotCoord(${i})" class="w-full border border-gray-200 rounded-lg px-1 py-1.5 text-xs outline-none text-center bg-white shadow-inner font-mono text-gray-500">
-                                </div>
-                                <div class="w-1/2">
-                                    <label class="text-[9px] font-bold text-gray-500 uppercase">Yaw</label>
-                                    <input type="number" step="0.1" id="vr-hs-yaw-${i}" value="${hs.yaw}" onchange="updateVrHotspotCoord(${i})" class="w-full border border-gray-200 rounded-lg px-1 py-1.5 text-xs outline-none text-center bg-white shadow-inner font-mono text-gray-500">
-                                </div>
+                            <div class="w-1/3">
+                                <label class="text-[9px] font-bold text-gray-500 uppercase">Pitch</label>
+                                <input type="number" step="0.1" id="vr-hs-pitch-${i}" value="${hs.pitch}" onchange="updateVrHotspotData(${i})" class="w-full border border-gray-200 rounded-lg px-1 py-1.5 text-xs outline-none text-center bg-white font-mono text-gray-500 shadow-inner">
+                            </div>
+                            <div class="w-1/3">
+                                <label class="text-[9px] font-bold text-gray-500 uppercase">Yaw</label>
+                                <input type="number" step="0.1" id="vr-hs-yaw-${i}" value="${hs.yaw}" onchange="updateVrHotspotData(${i})" class="w-full border border-gray-200 rounded-lg px-1 py-1.5 text-xs outline-none text-center bg-white font-mono text-gray-500 shadow-inner">
                             </div>
                         </div>
 
                         <div>
-                            <label class="text-[9px] font-bold text-gray-500 uppercase mt-1 block">${isInfo ? 'Link to Food Item' : 'Target Destination Room'}</label>
-                            <select id="vr-hs-target-${i}" onchange="updateVrHotspotTarget(${i}, this.value)" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-teal-500 font-bold ${isInfo ? 'text-orange-600' : 'text-blue-600'} bg-white shadow-sm">
-                                ${isInfo ? menuOptions.replace(`value="${hs.target_id}"`, `value="${hs.target_id}" selected`) : sceneOptions.replace(`value="${hs.target_id}"`, `value="${hs.target_id}" selected`)}
-                            </select>
+                            <label class="text-[9px] font-bold text-gray-500 uppercase block">Tooltip Text (Optional Override)</label>
+                            <input type="text" id="vr-hs-text-${i}" value="${hs.text || ''}" onchange="updateVrHotspotData(${i})" placeholder="e.g. Look here!" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-teal-500 bg-white shadow-inner">
+                        </div>
+
+                        <div>
+                            <label class="text-[9px] font-bold text-gray-500 uppercase block mt-1">${isInfo ? 'Link to Menu Item' : 'Target Destination Room'}</label>
+                            ${targetSelectHtml}
                         </div>
                     </div>
                 `;
@@ -6795,16 +6802,24 @@ function updatePosRightPanelLabels() {
 
         function removeVrHotspotRow(index) { currentVrHotspots.splice(index, 1); renderVrHotspots(); renderVrPreview(); }
         
-        // Auto-save changes locally so preview updates instantly
-        function updateVrHotspotType(index, val) { currentVrHotspots[index].type = val; currentVrHotspots[index].target_id = ''; renderVrHotspots(); renderVrPreview(); }
-        function updateVrHotspotCoord(index) { 
+        // Unifies data saving for the UI boxes
+        window.updateVrHotspotData = function(index) {
+            const oldType = currentVrHotspots[index].type;
+            const newType = document.getElementById(`vr-hs-type-${index}`).value;
+            
+            if (oldType !== newType) currentVrHotspots[index].target_id = ''; 
+            else currentVrHotspots[index].target_id = document.getElementById(`vr-hs-target-${index}`).value;
+            
+            currentVrHotspots[index].type = newType;
             currentVrHotspots[index].pitch = parseFloat(document.getElementById(`vr-hs-pitch-${index}`).value) || 0;
             currentVrHotspots[index].yaw = parseFloat(document.getElementById(`vr-hs-yaw-${index}`).value) || 0;
-            renderVrPreview();
-        }
-        function updateVrHotspotTarget(index, val) { currentVrHotspots[index].target_id = val; renderVrPreview(); }
+            currentVrHotspots[index].text = document.getElementById(`vr-hs-text-${index}`).value.trim();
+            
+            if (oldType !== newType) renderVrHotspots(); 
+            renderVrPreview(); 
+        };
 
-        // 8. Save the Scene to Supabase
+        // 8. Save the Scene to Supabase (FIX 2: Bulletproof Save Logic)
         async function saveVrScene() {
             const btn = document.getElementById('btn-save-vr');
             const sceneName = document.getElementById('vr-scene-name').value.trim();
@@ -6823,25 +6838,27 @@ function updatePosRightPanelLabels() {
                 hotspots: currentVrHotspots
             };
 
-            let error;
-            if (sceneId) {
-                // UPDATE existing
-                const res = await supabaseClient.from('virtual_scenes').update(payload).eq('id', sceneId);
-                error = res.error;
-            } else {
-                // SAVE AS NEW
-                const res = await supabaseClient.from('virtual_scenes').insert([payload]);
-                error = res.error;
-            }
-
-            btn.innerHTML = '<i class="fas fa-save"></i> Save Scene';
-
-            if (error) {
-                alert("Error saving scene: " + error.message);
-            } else {
+            try {
+                if (sceneId && sceneId.trim() !== '') {
+                    // UPDATE existing
+                    const { error } = await supabaseClient.from('virtual_scenes').update(payload).eq('id', sceneId).select();
+                    if (error) throw error;
+                } else {
+                    // SAVE AS NEW
+                    const { data, error } = await supabaseClient.from('virtual_scenes').insert([payload]).select();
+                    if (error) throw error;
+                    if (data && data.length > 0) {
+                        document.getElementById('vr-scene-id').value = data[0].id;
+                    }
+                }
+                
                 alert("Scene Saved Successfully!");
                 await fetchVrScene(); // Refresh dropdown
+            } catch (error) {
+                alert("Error saving scene: " + error.message);
             }
+            
+            btn.innerHTML = '<i class="fas fa-save"></i> Save Scene';
         }
 
         // 9. Delete Scene
@@ -6854,7 +6871,32 @@ function updatePosRightPanelLabels() {
             fetchVrScene();
         }
 
-        // 10. Unified Media Uploader (Handles both Images & Audio)
+        // 10. Audio Previewer
+        window.toggleAudioPreview = function() {
+            const btn = document.getElementById('vr-btn-play-audio');
+            const url = document.getElementById('vr-audio-url').value.trim();
+            
+            if (!url) return alert('Please enter an audio URL first.');
+            
+            if (activeVrAudio && !activeVrAudio.paused) {
+                activeVrAudio.pause();
+                btn.innerHTML = '<i class="fas fa-play"></i>';
+                btn.classList.remove('text-green-600', 'bg-green-100');
+            } else {
+                if (activeVrAudio) activeVrAudio.pause();
+                activeVrAudio = new Audio(url);
+                activeVrAudio.play().catch(e => alert("Could not play audio: " + e.message));
+                btn.innerHTML = '<i class="fas fa-stop"></i>';
+                btn.classList.add('text-green-600', 'bg-green-100');
+                
+                activeVrAudio.onended = () => {
+                    btn.innerHTML = '<i class="fas fa-play"></i>';
+                    btn.classList.remove('text-green-600', 'bg-green-100');
+                };
+            }
+        };
+
+        // 11. Unified Media Uploader (Handles both Images & Audio)
         async function handleVrUpload(event, type) {
             const file = event.target.files[0];
             if (!file) return;
@@ -6887,73 +6929,7 @@ function updatePosRightPanelLabels() {
             }
         }
 
-        // 🌟 NEW: Helper function to grab coordinates from Pannellum
-        window.captureVrCoordinates = function(index) {
-            if (!vrPreviewViewer) return alert("Please load a 360 image first!");
-            const pitch = vrPreviewViewer.getPitch().toFixed(1);
-            const yaw = vrPreviewViewer.getYaw().toFixed(1);
-            
-            document.getElementById(`vr-hs-pitch-${index}`).value = pitch;
-            document.getElementById(`vr-hs-yaw-${index}`).value = yaw;
-            
-            // Highlight boxes briefly in green to show success
-            const pBox = document.getElementById(`vr-hs-pitch-${index}`);
-            const yBox = document.getElementById(`vr-hs-yaw-${index}`);
-            pBox.classList.add('border-green-500', 'bg-green-50');
-            yBox.classList.add('border-green-500', 'bg-green-50');
-            setTimeout(() => {
-                pBox.classList.remove('border-green-500', 'bg-green-50');
-                yBox.classList.remove('border-green-500', 'bg-green-50');
-            }, 800);
-        };
-
-        // 6. Save the Scene to Supabase
-        async function saveVrScene() {
-            const btn = document.getElementById('btn-save-vr');
-            const imgUrl = document.getElementById('vr-image-url').value.trim();
-            
-            if (!imgUrl) return alert("You must provide a 360 Panorama URL to save the environment!");
-
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-            
-            // Gather all hotspot inputs
-            const newHotspots = [];
-            currentVrHotspots.forEach((_, i) => {
-                const pitch = parseFloat(document.getElementById(`vr-hs-pitch-${i}`).value) || 0;
-                const yaw = parseFloat(document.getElementById(`vr-hs-yaw-${i}`).value) || 0;
-                const itemId = document.getElementById(`vr-hs-item-${i}`).value;
-                newHotspots.push({ pitch, yaw, item_id: itemId });
-            });
-            currentVrHotspots = newHotspots;
-
-            const payload = {
-                restaurant_id: activeRestaurantId,
-                panorama_url: imgUrl,
-                audio_url: document.getElementById('vr-audio-url').value.trim(),
-                hotspots: currentVrHotspots
-            };
-
-            const sceneId = document.getElementById('vr-scene-id').value;
-            let error;
-
-            if (sceneId) {
-                const res = await supabaseClient.from('virtual_scenes').update(payload).eq('id', sceneId).select();
-                error = res.error;
-            } else {
-                const res = await supabaseClient.from('virtual_scenes').insert([payload]).select();
-                error = res.error;
-                if (res.data && res.data.length > 0) document.getElementById('vr-scene-id').value = res.data[0].id;
-            }
-
-            btn.innerHTML = '<i class="fas fa-save"></i> Save Environment';
-
-            if (error) {
-                alert("Error saving scene: " + error.message);
-            } else {
-                alert("Virtual Environment Saved Successfully!");
-                renderVrPreview(); 
-            }
-        }
+        
 // Single clean entry point
         window.onload = verifyAdmin;
 
