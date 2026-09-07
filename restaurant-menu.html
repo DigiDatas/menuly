@@ -4659,34 +4659,19 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
         let activeVrLayer = 1; // Tracks which engine is in front
         let isTransitioning = false;
 
-        // Inject custom CSS for doorway hotspots
+        // 🌟 FIX: Safe Native CSS Pulsing
         if (!document.getElementById('vr-custom-styles')) {
             const style = document.createElement('style');
             style.id = 'vr-custom-styles';
             style.innerHTML = `
-                .vr-door {
-                    width: 34px;
-                    height: 34px;
-                    background: rgba(255,255,255,0.9);
+                .custom-pulse-door {
                     border-radius: 50%;
-                    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
                     animation: pulseVR 2s infinite;
                 }
-                .vr-door::after {
-                    content: "➔";
-                    color: #ef4444;
-                    font-weight: 900;
-                    font-size: 18px;
-                    margin-left: 2px;
-                }
                 @keyframes pulseVR {
-                    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
-                    70% { transform: scale(1.15); box-shadow: 0 0 0 15px rgba(255,255,255,0); }
-                    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+                    0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
+                    70% { box-shadow: 0 0 0 15px rgba(255,255,255,0); }
+                    100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
                 }
             `;
             document.head.appendChild(style);
@@ -4806,15 +4791,16 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
                     const isInfo = hs.type === 'info';
                     const config = {
                         pitch: hs.pitch, yaw: hs.yaw, 
-                        type: "info", // Use 'info' so clickHandlerFunc works reliably
+                        type: "info", // Keeps clickHandler active
                         text: hs.text || (isInfo ? 'View Item' : 'Walk to Next Room'),
                         clickHandlerFunc: isInfo 
                             ? () => { if(hs.target_id) openModal(hs.target_id); } 
                             : () => { if(hs.target_id) crossfadeToScene(hs.target_id); }
                     };
                     
+                    // 🌟 NATIVE FIX: Use Pannellum's built-in doorway icon class!
                     if (!isInfo) {
-                        config.cssClass = "vr-door"; // Inject our custom pulsing arrow
+                        config.cssClass = "pnlm-scene custom-pulse-door"; 
                     }
                     return config;
                 })
