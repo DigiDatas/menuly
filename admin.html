@@ -1768,6 +1768,8 @@ async function logoutAdmin() {
                 // 1. Hide Table & Dine-In features from the POS
                 const posTablesBtn = document.getElementById('pos-mid-btn-tables');
                 if (posTablesBtn) posTablesBtn.style.display = 'none';
+		const posTableAccordion = document.getElementById('pos-table-accordion');
+                if (posTableAccordion) posTableAccordion.style.display = 'none';
                 
                 const posDineInFlt = document.getElementById('pos-flt-Dine In');
                 if (posDineInFlt) posDineInFlt.style.display = 'none';
@@ -5062,7 +5064,7 @@ document.getElementById('set-brand').dataset.original = data.brand_name || ''; /
                 
                 let statusBadge = '';
                 if(order.status === 'Pending') statusBadge = `<span class="bg-orange-100 text-orange-700 px-2 py-0.5 rounded text-[9px] font-black uppercase">Pending</span>`;
-                else if(order.status === 'Cooking') statusBadge = `<span class="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-[9px] font-black uppercase">In Kitchen</span>`;
+                else if(order.status === 'Cooking') statusBadge = `<span class="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-[9px] font-black uppercase">${window.adminBusinessType === 'grocery' ? 'Packing' : 'In Kitchen'}</span>`;
                 else if(order.status === 'Completed') statusBadge = `<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[9px] font-black uppercase">Ready</span>`;
 
                 const qtyCount = order.items ? order.items.reduce((s, i) => s + i.qty, 0) : 0;
@@ -5078,6 +5080,10 @@ document.getElementById('set-brand').dataset.original = data.brand_name || ''; /
                     ? `<span class="text-[9px] font-black text-gray-500 bg-gray-100 border border-gray-200 px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm"><i class="fas fa-users text-[8px]"></i> ${order.guest_count || 1}</span>` 
                     : '';
 
+                // 🌟 CHAMELEON: Adapt buttons for POS
+                const activeStateName = window.adminBusinessType === 'grocery' ? 'Packing Active' : 'Cooking Active';
+                const activeStateAction = window.adminBusinessType === 'grocery' ? 'Pack' : 'Cook';
+
                 let expandedHtml = '';
                 if (isSelected) {
                     let cookActionHtml = '';
@@ -5085,10 +5091,10 @@ document.getElementById('set-brand').dataset.original = data.brand_name || ''; /
                         cookActionHtml = `
                             <div class="flex gap-1 items-stretch col-span-2">
                                 <input type="number" id="pos-cook-time-${order.id}" value="15" class="w-12 text-center text-[10px] font-black rounded border border-yellow-300 bg-white focus:outline-none focus:border-yellow-500 shadow-inner" onclick="event.stopPropagation()">
-                                <button onclick="updateStatus('${order.id}', 'Cooking', event, document.getElementById('pos-cook-time-${order.id}').value)" class="flex-1 py-1.5 text-[10px] font-black uppercase rounded bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 transition shadow-sm">Cook</button>
+                                <button onclick="updateStatus('${order.id}', 'Cooking', event, document.getElementById('pos-cook-time-${order.id}').value)" class="flex-1 py-1.5 text-[10px] font-black uppercase rounded bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 transition shadow-sm">${activeStateAction}</button>
                             </div>`;
                     } else {
-                        cookActionHtml = `<button onclick="updateStatus('${order.id}', 'Cooking', event)" class="col-span-2 py-1.5 text-[10px] font-black uppercase rounded bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 transition shadow-sm opacity-50 cursor-not-allowed">Cooking Active</button>`;
+                        cookActionHtml = `<button onclick="updateStatus('${order.id}', 'Cooking', event)" class="col-span-2 py-1.5 text-[10px] font-black uppercase rounded bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 transition shadow-sm opacity-50 cursor-not-allowed">${activeStateName}</button>`;
                     }
 
                     expandedHtml = `
@@ -5972,7 +5978,12 @@ function updatePosRightPanelLabels() {
             await origVerify();
             setTimeout(() => {
                 renderPosOrderLine();
-                setPosMiddleView('tables'); 
+                // 🌟 FIX: Grocery stores skip the Tables map and open straight to the Menu!
+                if (window.adminBusinessType === 'grocery') {
+                    setPosMiddleView('menu');
+                } else {
+                    setPosMiddleView('tables'); 
+                }
             }, 1000);
         };
 
