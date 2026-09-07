@@ -4659,6 +4659,39 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
         let activeVrLayer = 1; // Tracks which engine is in front
         let isTransitioning = false;
 
+        // Inject custom CSS for doorway hotspots
+        if (!document.getElementById('vr-custom-styles')) {
+            const style = document.createElement('style');
+            style.id = 'vr-custom-styles';
+            style.innerHTML = `
+                .vr-door {
+                    width: 34px;
+                    height: 34px;
+                    background: rgba(255,255,255,0.9);
+                    border-radius: 50%;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    animation: pulseVR 2s infinite;
+                }
+                .vr-door::after {
+                    content: "➔";
+                    color: #ef4444;
+                    font-weight: 900;
+                    font-size: 18px;
+                    margin-left: 2px;
+                }
+                @keyframes pulseVR {
+                    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
+                    70% { transform: scale(1.15); box-shadow: 0 0 0 15px rgba(255,255,255,0); }
+                    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
         // Cinematic Audio Fader
         function fadeAudio(audioElement, targetVolume, callback) {
             if (!audioElement) return;
@@ -4722,6 +4755,8 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
             }
 
             if (customerVrScenes.length === 0) {
+                document.getElementById('vr-layer-1').innerHTML = '<div class="absolute inset-0 flex flex-col items-center justify-center text-white"><i class="fas fa-spinner fa-spin text-4xl mb-4"></i><p class="font-bold tracking-widest uppercase text-xs">Entering Virtual Space...</p></div>';
+                
                 const { data } = await supabaseClient.from('virtual_scenes').select('*').eq('restaurant_id', restaurantId).order('created_at', { ascending: true });
                 if (data && data.length > 0) customerVrScenes = data;
                 else {
@@ -4769,16 +4804,19 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
                 "crossOrigin": "anonymous",
                 "hotSpots": (sceneData.hotspots || []).map(hs => {
                     const isInfo = hs.type === 'info';
-                    return {
+                    const config = {
                         pitch: hs.pitch, yaw: hs.yaw, 
-                        // Trick Pannellum into rendering the doorway arrow, but keep control of the click!
-                        type: "info", 
-                        cssClass: isInfo ? "pnlm-info" : "pnlm-scene",
+                        type: "info", // Use 'info' so clickHandlerFunc works reliably
                         text: hs.text || (isInfo ? 'View Item' : 'Walk to Next Room'),
                         clickHandlerFunc: isInfo 
                             ? () => { if(hs.target_id) openModal(hs.target_id); } 
                             : () => { if(hs.target_id) crossfadeToScene(hs.target_id); }
                     };
+                    
+                    if (!isInfo) {
+                        config.cssClass = "vr-door"; // Inject our custom pulsing arrow
+                    }
+                    return config;
                 })
             };
 
@@ -4812,31 +4850,32 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
             // 2. Build the new room in the background
             const newViewer = loadSceneIntoViewer(targetScene, nextLayerNum);
 
-            // 3. Wait for the background room's photo to 100% finish loading
-            newViewer.on('load', () => {
-                // 4. Melt the front room away!
+            // 3. Trigger the fade once the background is fully rendered
+            let loadFired = false;
+            const triggerFade = () => {
+                if (loadFired) return;
+                loadFired = true;
+                
+                // 4. Melt the front room away to reveal the fully-loaded room behind it!
                 currentDiv.style.opacity = '0';
                 
                 setTimeout(() => {
                     // 5. Delete the old room entirely to free up RAM
-                    if (activeVrLayer === 1 && currentVrViewer1) {
-                        currentVrViewer1.destroy();
-                        currentVrViewer1 = null;
-                    } else if (activeVrLayer === 2 && currentVrViewer2) {
-                        currentVrViewer2.destroy();
-                        currentVrViewer2 = null;
-                    }
+                    if (activeVrLayer === 1 && currentVrViewer1) { currentVrViewer1.destroy(); currentVrViewer1 = null; } 
+                    else if (activeVrLayer === 2 && currentVrViewer2) { currentVrViewer2.destroy(); currentVrViewer2 = null; }
                     currentDiv.innerHTML = '';
 
-                    // 6. Swap the layers so the new room is now "in front"
+                    // 6. Swap the layer stacking
                     nextDiv.style.zIndex = '20';
                     currentDiv.style.zIndex = '10';
                     
                     activeVrLayer = nextLayerNum;
                     isTransitioning = false;
+                }, 1000); // Matches the 1s CSS transition duration
+            };
 
-                }, 1000); // Wait for the 1s CSS fade to finish
-            });
+            newViewer.on('load', triggerFade);
+            setTimeout(triggerFade, 1500); // Fail-safe to ensure we don't get permanently stuck
         }
 
         function closeVirtualStore() {
