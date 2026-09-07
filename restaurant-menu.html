@@ -15,7 +15,9 @@
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+    <!-- 360 Panorama Engine -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -75,6 +77,11 @@
                     </button>
                     
                     <div class="flex items-center gap-1.5 sm:gap-2">
+                        <!-- 🌟 NEW: VR Header Button -->
+                        <button id="vr-nav-btn" onclick="openVirtualStore()" class="hidden items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-purple-100 hover:bg-purple-200 text-purple-600 transition shadow-sm border border-purple-200" title="Virtual Store">
+                            <i class="fas fa-vr-cardboard text-xs sm:text-sm"></i>
+                        </button>
+                        
                         <button id="btn-call-waiter" onclick="openWaiterModal()" class="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-yellow-100 hover:bg-yellow-200 text-yellow-600 transition shadow-sm border border-yellow-200">
                             <i class="fas fa-concierge-bell text-xs sm:text-sm"></i>
                         </button>
@@ -882,6 +889,25 @@
             </div>
         </div>
     </div>
+    <!-- 🌟 Virtual Showroom Modal (PASTE THIS HERE!) -->
+    <div id="vrCustomerModal" class="fixed inset-0 z-[200] hidden flex-col bg-black">
+        <!-- Header/Controls -->
+        <div class="absolute top-0 inset-x-0 z-30 flex justify-between items-center p-4 bg-gradient-to-b from-black/70 to-transparent pointer-events-none">
+            <div class="flex items-center gap-3 pointer-events-auto">
+                <button onclick="closeVirtualStore()" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur text-white flex items-center justify-center transition shadow-sm border border-white/30">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 id="vr-customer-title" class="text-white font-black text-lg drop-shadow-md">Virtual Showroom</h2>
+            </div>
+            <button id="vr-audio-toggle" onclick="toggleVrAudio()" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur text-white flex items-center justify-center transition shadow-sm border border-white/30 pointer-events-auto hidden">
+                <i class="fas fa-volume-up"></i>
+            </button>
+        </div>
+        
+        <!-- Pannellum Container -->
+        <div id="customer-panorama-viewer" class="w-full h-full"></div>
+    </div>
+
     <script>
 
 // 1. Grab the ?menu=slug parameter from the browser URL
@@ -1359,6 +1385,8 @@ let relatedItemsData = []; // (You did this perfectly!)
                         social_links: dbSettings.social_links,
                         language: dbSettings.language,
                         P: dbSettings.game_enabled ? 'true' : 'false'
+			vr_enabled: dbSettings.vr_enabled ? 'true' : 'false' // 🌟 ADD THIS!
+                    };
                     };
                     globalCurrency = rawBranding.smartCurrency || "";
                 } else {
@@ -1457,7 +1485,18 @@ let relatedItemsData = []; // (You did this perfectly!)
                         gameBtn.classList.add('opacity-100');
                     }
                 }, 10000); 
-            }
+            } // 🌟 FIX: This bracket closes the Game logic here!
+
+            // 🌟 Turn on Virtual Store Button in Header (Now independent!)
+            const vrBtn = document.getElementById('vr-nav-btn');
+            if (rawBranding.vr_enabled === 'true' && vrBtn) {
+                vrBtn.classList.remove('hidden');
+                vrBtn.classList.add('flex');
+            } else if (vrBtn) {
+                vrBtn.classList.add('hidden');
+                vrBtn.classList.remove('flex');
+            }            
+        } // 🌟 This bracket closes the whole applySystemSetup function
             document.getElementById('lang-text').textContent = currentLang === 'en' ? 'AR' : 'EN';
             
             // ==========================================
@@ -4611,6 +4650,118 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
                     .catch(err => console.error('PWA Registration failed:', err));
             });
         }
+
+// ==========================================
+        // 🌟 CUSTOMER VIRTUAL SHOWROOM ENGINE
+        // ==========================================
+        let customerVrScenes = [];
+        let customerVrViewer = null;
+        let customerVrAudio = null;
+
+        async function openVirtualStore(sceneId = null) {
+            const modal = document.getElementById('vrCustomerModal');
+            const viewerContainer = document.getElementById('customer-panorama-viewer');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+
+            // 1. Fetch Scenes from database
+            if (customerVrScenes.length === 0) {
+                viewerContainer.innerHTML = '<div class="absolute inset-0 flex flex-col items-center justify-center text-white"><i class="fas fa-spinner fa-spin text-4xl mb-4"></i><p class="font-bold tracking-widest uppercase text-xs">Entering Virtual Space...</p></div>';
+                
+                const { data } = await supabaseClient
+                    .from('virtual_scenes')
+                    .select('*')
+                    .eq('restaurant_id', restaurantId)
+                    .order('created_at', { ascending: true });
+                
+                if (data && data.length > 0) customerVrScenes = data;
+                else {
+                    // Universal Fallback if they enabled it but built nothing
+                    customerVrScenes = [{
+                        id: 'sample', scene_name: 'Main Entrance',
+                        panorama_url: 'https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/RESTAURANT-PAnorama.jpg',
+                        audio_url: 'https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/BGM.mp3',
+                        hotspots: []
+                    }];
+                }
+            }
+
+            // 2. Select specific room or the first room
+            const sceneToLoad = sceneId ? customerVrScenes.find(s => s.id === sceneId) : customerVrScenes[0];
+            if (!sceneToLoad) return;
+
+            document.getElementById('vr-customer-title').textContent = sceneToLoad.scene_name || 'Virtual Showroom';
+
+            // 3. Mount Audio
+            if (customerVrAudio) { customerVrAudio.pause(); customerVrAudio = null; }
+            const audioToggle = document.getElementById('vr-audio-toggle');
+            
+            if (sceneToLoad.audio_url) {
+                customerVrAudio = new Audio(sceneToLoad.audio_url);
+                customerVrAudio.loop = true;
+                customerVrAudio.play().catch(e => console.log('Audio autoplay blocked by browser'));
+                audioToggle.classList.remove('hidden');
+                audioToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
+            } else {
+                audioToggle.classList.add('hidden');
+            }
+
+            // 4. Mount Pannellum & Wire Hotspots to Food Cards!
+            if (customerVrViewer) customerVrViewer.destroy();
+            viewerContainer.innerHTML = ''; 
+
+            const mappedHotspots = (sceneToLoad.hotspots || []).map(hs => {
+                const isInfo = hs.type === 'info';
+                
+                return {
+                    pitch: hs.pitch,
+                    yaw: hs.yaw,
+                    type: isInfo ? 'info' : 'scene',
+                    text: hs.text || (isInfo ? 'View Item' : 'Walk to Next Room'),
+                    clickHandlerFunc: isInfo ? () => {
+                        if(hs.target_id) openModal(hs.target_id); 
+                    } : () => {
+                        if(hs.target_id) openVirtualStore(hs.target_id);
+                    }
+                };
+            });
+
+            setTimeout(() => {
+                customerVrViewer = pannellum.viewer('customer-panorama-viewer', {
+                    "type": "equirectangular",
+                    "panorama": sceneToLoad.panorama_url,
+                    "autoLoad": true,
+                    "compass": false,
+                    "showControls": false,
+                    "crossOrigin": "anonymous",
+                    "hotSpots": mappedHotspots
+                });
+            }, 100);
+        }
+
+        function closeVirtualStore() {
+            document.getElementById('vrCustomerModal').classList.add('hidden');
+            document.getElementById('vrCustomerModal').classList.remove('flex');
+            document.body.style.overflow = '';
+            
+            if (customerVrViewer) { customerVrViewer.destroy(); customerVrViewer = null; }
+            if (customerVrAudio) { customerVrAudio.pause(); customerVrAudio = null; }
+        }
+
+        function toggleVrAudio() {
+            if (!customerVrAudio) return;
+            const btn = document.getElementById('vr-audio-toggle');
+            if (customerVrAudio.paused) {
+                customerVrAudio.play();
+                btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            } else {
+                customerVrAudio.pause();
+                btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            }
+        }
+
     </script>
 </body>
 </html>
