@@ -121,8 +121,8 @@
                                 <tr class="border-b border-gray-200 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50/80">
                                     <th class="p-4">Business Name</th>
                                     <th class="p-4">Plan Tier</th>
+                                    <th class="p-4 text-center">Storage Control & Capacity (MB)</th>
                                     <th class="p-4">Status</th>
-                                    <th class="p-4">Expiry Date</th>
                                     <th class="p-4 text-end">Actions (Impersonate / Edit)</th>
                                 </tr>
                             </thead>
@@ -304,13 +304,52 @@
                        </button>`
                     : '';
 
+                // --- STORAGE CALCULATOR ---
+                // Safely handle nulls and convert bytes to MB
+                const usedBytes = parseInt(tenant.storage_used_bytes) || 0;
+                const limitBytes = parseInt(tenant.storage_limit_bytes) || 524288000;
+                
+                const usedMB = (usedBytes / (1024 * 1024)).toFixed(1);
+                const limitMB = Math.round(limitBytes / (1024 * 1024));
+                
+                const isNearingLimit = usedBytes > (limitBytes * 0.85); // 85% full warning
+                const storageColor = isNearingLimit ? 'text-red-600 font-black' : 'text-gray-600';
+                
+                // Toggle Button State
+                const canUpload = tenant.uploads_enabled !== false; // Defaults to true
+                const toggleClass = canUpload ? 'bg-green-500 justify-end' : 'bg-gray-300 justify-start';
+                const toggleDot = canUpload ? 'bg-white border-green-500' : 'bg-white border-gray-300';
+                // -------------------------
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50/50 transition border-b border-gray-100";
                 tr.innerHTML = `
                     <td class="p-4 font-bold text-gray-900">${rawName} <span class="block text-[10px] text-gray-400 font-mono font-normal">ID: ${tenant.id}</span></td>
                     <td class="p-4"><span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${planColor}">${tenant.plan_tier || 'basic'}</span></td>
+                    
+                    <!-- 🌟 NEW STORAGE CONTROL COLUMN -->
+                    <td class="p-4">
+                        <div class="flex items-center justify-center gap-4 bg-gray-50 p-2 rounded-xl border border-gray-100 w-fit mx-auto">
+                            <!-- Capacity Input -->
+                            <div class="flex flex-col items-start gap-1">
+                                <span class="text-[9px] font-bold uppercase text-gray-400 tracking-wider">Used: <span class="${storageColor}">${usedMB} MB</span></span>
+                                <div class="flex items-center gap-1">
+                                    <input type="number" id="limit-input-${tenant.id}" value="${limitMB}" class="w-16 bg-white border border-gray-200 rounded px-1.5 py-1 text-xs font-bold text-center focus:outline-none focus:border-indigo-500">
+                                    <button onclick="updateStorageLimit('${tenant.id}')" class="bg-indigo-50 text-indigo-600 p-1.5 rounded hover:bg-indigo-100 transition shadow-sm" title="Save New Limit"><i class="fas fa-save text-[10px]"></i></button>
+                                </div>
+                            </div>
+                            
+                            <!-- Master Upload Switch -->
+                            <div class="flex flex-col items-center gap-1 border-l border-gray-200 pl-4">
+                                <span class="text-[9px] font-bold uppercase text-gray-400 tracking-wider text-center">Uploads</span>
+                                <button onclick="toggleTenantUploads('${tenant.id}', ${!canUpload})" class="w-10 h-5 rounded-full flex items-center p-0.5 transition-all duration-300 shadow-inner ${toggleClass}">
+                                    <div class="w-4 h-4 rounded-full border shadow-sm ${toggleDot}"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+
                     <td class="p-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${badgeColor}">${tenant.status || 'pending'}</span></td>
-                    <td class="p-4 text-gray-500">${tenant.plan_expiry ? tenant.plan_expiry.split('T')[0] : 'Never'}</td>
                     <td class="p-4 text-end space-x-2">
                         ${approveBtn}
                         <button onclick="impersonateTenant('${tenant.id}', '${safeName}')" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-1.5 rounded-lg font-bold text-[10px] transition" title="Login into their dashboard">
@@ -360,6 +399,39 @@
             const query = document.getElementById('search-tenant').value.toLowerCase();
             const filtered = tenantsCache.filter(t => (t.restaurant_name || '').toLowerCase().includes(query));
             renderTenantsTable(filtered);
+        }
+
+// 🌟 NEW: Storage Control Functions
+        async function updateStorageLimit(tenantId) {
+            const inputVal = document.getElementById(`limit-input-${tenantId}`).value;
+            const newLimitMB = parseInt(inputVal);
+            
+            if (isNaN(newLimitMB) || newLimitMB < 1) return alert("Please enter a valid number greater than 0.");
+            
+            // Convert MB back to Bytes for the database!
+            const bytesLimit = newLimitMB * 1024 * 1024;
+
+            const { error } = await supabaseClient.from('tenants').update({ storage_limit_bytes: bytesLimit }).eq('id', tenantId);
+            
+            if (error) {
+                alert("Failed to update capacity limit: " + error.message);
+            } else {
+                alert(`Capacity successfully updated to ${newLimitMB} MB!`);
+                fetchTenantsData(); // Refresh UI instantly
+            }
+        }
+
+        async function toggleTenantUploads(tenantId, turnOn) {
+            const actionText = turnOn ? "ENABLE" : "DISABLE";
+            if (!confirm(`Are you sure you want to ${actionText} storage uploads for this account?`)) return;
+
+            const { error } = await supabaseClient.from('tenants').update({ uploads_enabled: turnOn }).eq('id', tenantId);
+            
+            if (error) {
+                alert("Failed to toggle upload access: " + error.message);
+            } else {
+                fetchTenantsData(); // Refresh UI instantly
+            }
         }
 
         // Modal Controls
