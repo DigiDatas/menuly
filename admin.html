@@ -963,6 +963,35 @@
                             </div>
                         </div>
 
+                        <!-- 🌟 NEW: AI Voice Assistant Manager -->
+                        <div class="p-4 bg-gray-50 border border-gray-200 rounded-2xl relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 opacity-10 rounded-bl-full pointer-events-none"></div>
+                            <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3 relative z-10">
+                                <div>
+                                    <h3 class="font-bold text-gray-800 text-sm"><i class="fas fa-robot text-indigo-600 me-2"></i>AI Voice Assistant</h3>
+                                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">ElevenLabs AI Sales Agent</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="set-ai-agent" class="sr-only peer">
+                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="space-y-3 relative z-10">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Agent ID or Widget Code</label>
+                                    <textarea id="set-ai-agent-id" rows="2" placeholder='Paste "agent_123..." or entire <elevenlabs-convai> code here...' class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 bg-white font-mono placeholder-gray-300"></textarea>
+                                </div>
+                                
+                                <button type="button" onclick="testAIAgent()" id="btn-test-ai" class="w-full bg-indigo-50 text-indigo-600 border border-indigo-200 font-bold py-2 rounded-xl text-xs hover:bg-indigo-100 transition shadow-sm flex items-center justify-center gap-2">
+                                    <i class="fas fa-play-circle"></i> Test Agent Live
+                                </button>
+
+                                <!-- Container for the dynamic widget preview -->
+                                <div id="ai-agent-preview-container" class="hidden"></div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -4427,6 +4456,46 @@ const ordersRes = await supabaseClient
             }
         }
 
+// ==========================================
+        // 🌟 AI VOICE AGENT LOGIC
+        // ==========================================
+        function extractAIAgentId(input) {
+            if (!input) return '';
+            // Smart Regex: Matches "agent_" followed by any letters/numbers
+            const match = input.match(/agent_[a-zA-Z0-9]+/);
+            return match ? match[0] : input.trim();
+        }
+
+        function testAIAgent() {
+            const rawInput = document.getElementById('set-ai-agent-id').value;
+            const agentId = extractAIAgentId(rawInput);
+            
+            if (!agentId) return alert("Please paste a valid Agent ID or Widget code first.");
+
+            // Instantly clean the input box so the user sees only the ID!
+            document.getElementById('set-ai-agent-id').value = agentId;
+
+            const container = document.getElementById('ai-agent-preview-container');
+            container.innerHTML = ''; 
+            
+            // Build the widget dynamically
+            const widget = document.createElement('elevenlabs-convai');
+            widget.setAttribute('agent-id', agentId);
+            container.appendChild(widget);
+
+            // Inject the ElevenLabs script if it's not already in the document
+            if (!document.getElementById('elevenlabs-script')) {
+                const script = document.createElement('script');
+                script.id = 'elevenlabs-script';
+                script.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
+                script.async = true;
+                script.type = 'text/javascript';
+                document.body.appendChild(script);
+            }
+
+            alert("Agent preview loaded! Check the bottom corner of your screen to test it.");
+        }
+
         async function fetchSettings() {
             const { data, error } = await supabaseClient
                 .from('restaurant_settings')
@@ -4473,6 +4542,8 @@ document.getElementById('set-brand').dataset.original = data.brand_name || ''; /
                 document.getElementById('set-logo').value = data.logo_link || '';
                 document.getElementById('set-delivery').value = data.delivery_charge || '';
                 document.getElementById('set-game').checked = data.game_enabled || false;
+                document.getElementById('set-ai-agent').checked = data.ai_agent_enabled || false; // 🌟 NEW
+                document.getElementById('set-ai-agent-id').value = data.ai_agent_id || '';          // 🌟 NEW
 document.getElementById('set-vr').checked = data.vr_enabled || false;
                 
                 const savedSocials = data.social_links || [];
@@ -4551,6 +4622,8 @@ document.getElementById('set-vr').checked = data.vr_enabled || false;
                 logo_link: document.getElementById('set-logo').value.trim(),
                 delivery_charge: document.getElementById('set-delivery').value.trim(),
                 game_enabled: document.getElementById('set-game').checked,
+                ai_agent_enabled: document.getElementById('set-ai-agent').checked, // 🌟 NEW
+                ai_agent_id: extractAIAgentId(document.getElementById('set-ai-agent-id').value), // 🌟 NEW (Auto-cleans before saving)
                 social_links: adminSocials 
             };
 
