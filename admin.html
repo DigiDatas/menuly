@@ -4476,6 +4476,7 @@ const ordersRes = await supabaseClient
             document.getElementById('set-ai-agent-id').value = agentId;
 
             const container = document.getElementById('ai-agent-preview-container');
+            container.classList.remove('hidden'); // 🌟 THE FIX: Removes the invisibility cloak!
             container.innerHTML = ''; 
             
             // Build the widget dynamically
@@ -4493,7 +4494,7 @@ const ordersRes = await supabaseClient
                 document.body.appendChild(script);
             }
 
-            alert("Agent preview loaded! Check the bottom corner of your screen to test it.");
+            alert("Agent preview loaded! Check the bottom right corner of your screen to test it.");
         }
 
         async function fetchSettings() {
