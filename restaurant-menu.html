@@ -1300,6 +1300,13 @@ let relatedItemsData = []; // (You did this perfectly!)
                 script.type = 'text/javascript';
                 document.body.appendChild(script);
             }
+
+            // 🌟 THE FIX: Push the "Back to Top" arrow up to make room for the AI Orb!
+            const backToTopBtn = document.getElementById('back-to-top-btn');
+            if (backToTopBtn) {
+                backToTopBtn.classList.remove('bottom-6');
+                backToTopBtn.classList.add('bottom-[100px]'); 
+            }
         }
 
         async function init() {
