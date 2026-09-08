@@ -1223,6 +1223,16 @@
                         <li><i id="plan-feat-pos" class="fas fa-times text-gray-300 me-2 transition-colors"></i> Cashier POS & Tables <span class="text-[9px] text-gray-400 ml-1">(Pro+)</span></li>
                         <li><i id="plan-feat-tv" class="fas fa-times text-gray-300 me-2 transition-colors"></i> Digital Signage (TV) <span class="text-[9px] text-gray-400 ml-1">(Premium)</span></li>
                     </ul>
+		<!-- 🌟 NEW: Storage Usage Progress Bar -->
+                    <div class="mb-5 bg-gray-50 border border-gray-200 p-3 rounded-xl shadow-sm">
+                        <div class="flex justify-between items-end mb-1.5">
+                            <span class="text-[9px] font-black uppercase tracking-widest text-gray-500"><i class="fas fa-cloud text-indigo-400 me-1"></i> Storage Used</span>
+                            <span id="bill-storage-text" class="text-[10px] font-bold text-gray-700">0.0 MB / 500 MB</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden border border-gray-300">
+                            <div id="bill-storage-bar" class="bg-indigo-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
 
                    <!-- Pending Alert -->
                     <div id="plan-pending-alert" class="hidden mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 shadow-sm">
@@ -1712,7 +1722,7 @@
             
             // 🌟 1. Fetch FRESH Tenant Plan AND Settings from database simultaneously
             const [tenantRes, settingsRes] = await Promise.all([
-                supabaseClient.from('tenants').select('plan_tier').eq('id', activeRestaurantId).single(),
+                supabaseClient.from('tenants').select('plan_tier, storage_used_bytes, storage_limit_bytes').eq('id', activeRestaurantId).single(),
                 supabaseClient.from('restaurant_settings').select('contact, email').eq('restaurant_id', activeRestaurantId).limit(1).maybeSingle()
             ]);
 
@@ -1725,7 +1735,31 @@
             const settings = settingsRes.data;
             document.getElementById('bill-phone').value = settings?.contact || '';
             document.getElementById('bill-email').value = settings?.email || currentUser?.email || '';
-            
+		// 🌟 NEW: Calculate and fill the Storage Progress Bar
+            if (tenantRes.data) {
+                const used = parseInt(tenantRes.data.storage_used_bytes) || 0;
+                const limit = parseInt(tenantRes.data.storage_limit_bytes) || 524288000;
+                
+                const usedMB = (used / (1024 * 1024)).toFixed(1);
+                const limitMB = Math.round(limit / (1024 * 1024));
+                const percent = Math.min((used / limit) * 100, 100).toFixed(1);
+                
+                const textEl = document.getElementById('bill-storage-text');
+                const barEl = document.getElementById('bill-storage-bar');
+                
+                textEl.innerText = `${usedMB} MB / ${limitMB} MB (${percent}%)`;
+                barEl.style.width = `${percent}%`;
+                
+                // Turn red if they are dangerously close to the limit (90%+)
+                if (percent > 90) {
+                    barEl.classList.replace('bg-indigo-500', 'bg-red-500');
+                    textEl.classList.add('text-red-600');
+                } else {
+                    barEl.classList.replace('bg-red-500', 'bg-indigo-500');
+                    textEl.classList.remove('text-red-600');
+                }
+            }            
+
             // 3. Set current plan visually
             document.getElementById('bill-current-plan').textContent = currentTenantPlan || 'Basic';
             
@@ -3553,6 +3587,23 @@ const { data: existingItem } = await supabaseClient
 
     const fileInputLabel = event.target.parentElement;
     const originalLabelHtml = fileInputLabel.innerHTML;
+    fileInputLabel.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Checking storage...`;
+
+    // 🌟 NEW: Pre-Upload Storage Check!
+    const totalSize = files.reduce((acc, file) => acc + file.size, 0);
+    const { data: tData } = await supabaseClient.from('tenants').select('storage_used_bytes, storage_limit_bytes, uploads_enabled').eq('id', activeRestaurantId).single();
+    
+    if (tData) {
+        if (tData.uploads_enabled === false) {
+            fileInputLabel.innerHTML = originalLabelHtml;
+            return alert("Uploads are temporarily disabled by the Administrator.");
+        }
+        if ((parseInt(tData.storage_used_bytes) || 0) + totalSize > (parseInt(tData.storage_limit_bytes) || 524288000)) {
+            fileInputLabel.innerHTML = originalLabelHtml;
+            return alert("Storage limit exceeded! You do not have enough space for these files. Please delete old media or upgrade your plan.");
+        }
+    }
+
     fileInputLabel.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading ${files.length} images...`;
 
     for (const file of files) {
@@ -6937,6 +6988,23 @@ function updatePosRightPanelLabels() {
             }
 
             const inputField = type === 'image' ? document.getElementById('vr-image-url') : document.getElementById('vr-audio-url');
+            const originalText = inputField.value;
+            inputField.value = "Checking storage...";
+
+            // 🌟 NEW: Pre-Upload Storage Check!
+            const { data: tData } = await supabaseClient.from('tenants').select('storage_used_bytes, storage_limit_bytes, uploads_enabled').eq('id', activeRestaurantId).single();
+            
+            if (tData) {
+                if (tData.uploads_enabled === false) {
+                    inputField.value = originalText;
+                    return alert("Uploads are temporarily disabled by the Administrator.");
+                }
+                if ((parseInt(tData.storage_used_bytes) || 0) + file.size > (parseInt(tData.storage_limit_bytes) || 524288000)) {
+                    inputField.value = originalText;
+                    return alert("Storage limit exceeded! You do not have enough space for this panorama. Please delete old media.");
+                }
+            }
+
             inputField.value = "Uploading...";
 
             const fileExt = file.name.split('.').pop();
