@@ -1278,6 +1278,30 @@ let relatedItemsData = []; // (You did this perfectly!)
             }
         };
 
+        // ==========================================
+        // 🌟 AI VOICE AGENT INJECTOR
+        // ==========================================
+        function injectCustomerAIAgent(agentId) {
+            // Safety check to prevent duplicates
+            if (document.getElementById('elevenlabs-customer-widget')) return;
+
+            // 1. Build the widget tag
+            const widget = document.createElement('elevenlabs-convai');
+            widget.id = 'elevenlabs-customer-widget';
+            widget.setAttribute('agent-id', agentId);
+            document.body.appendChild(widget);
+
+            // 2. Load the ElevenLabs system script
+            if (!document.getElementById('elevenlabs-script')) {
+                const script = document.createElement('script');
+                script.id = 'elevenlabs-script';
+                script.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
+                script.async = true;
+                script.type = 'text/javascript';
+                document.body.appendChild(script);
+            }
+        }
+
         async function init() {
             try {
                 // 🌟 SLUG TO UUID LOOKUP BRIDGE
@@ -1367,6 +1391,11 @@ let relatedItemsData = []; // (You did this perfectly!)
 
                if (dbSettings) {
                     window.dbSettingsEn = dbSettings; 
+                    
+                    // 🌟 INJECT AI VOICE AGENT IF ENABLED!
+                    if (dbSettings.ai_agent_enabled && dbSettings.ai_agent_id) {
+                        injectCustomerAIAgent(dbSettings.ai_agent_id);
+                    } 
                     
                     // Map live database directly to the app's global variables
                     rawBranding = {
