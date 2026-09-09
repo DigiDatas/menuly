@@ -20,10 +20,21 @@
         
         /* 🌟 SURGICAL MOBILE UI OVERRIDES 🌟 */
         @media (max-width: 1024px) {
-            /* 1. Fix Sidebar Icon & Text Alignment */
-            #admin-sidebar span.absolute { opacity: 1 !important; left: 3.5rem !important; }
-            #admin-sidebar div.absolute { left: 1rem !important; transform: translateX(0) !important; }
+            /* 1. Fix Sidebar Visibility - Force everything to "open" state layout */
+            #admin-sidebar .opacity-0 { opacity: 1 !important; }
             
+            /* Sidebar Header (Admin Suite & Logo) */
+            #admin-sidebar > div > div.h-16 > div.absolute { left: 1rem !important; transform: translateX(0) !important; }
+            #admin-sidebar > div > div.h-16 > h1.absolute { left: 4rem !important; }
+            
+            /* Sidebar Nav Links */
+            #admin-sidebar nav .absolute:first-child { left: 1rem !important; transform: translateX(0) !important; }
+            #admin-sidebar nav .absolute:last-child { left: 3rem !important; }
+            
+            /* Sidebar Profile Footer */
+            #admin-sidebar > div.p-3 > div.relative > div.absolute:first-child { left: 0.25rem !important; transform: translateX(0) !important; }
+            #admin-sidebar > div.p-3 > div.relative > div.absolute:last-child { left: 2.75rem !important; }
+
             /* 2. Allow Tabs to expand inside the scrollable Main container */
             .tab-section { height: max-content !important; min-height: 100% !important; padding-bottom: 80px !important; }
             .tab-section > div.h-full { height: max-content !important; }
@@ -33,6 +44,9 @@
             
             /* 4. Fix Modals */
             #billingModal > div, #menuModal > div { max-height: 95vh !important; }
+            
+            /* 5. Lock Header to Top (Prevents Hamburger from disappearing) */
+            header { position: sticky !important; top: 0 !important; z-index: 50 !important; background: white !important; }
         }
     </style>
 </head>
@@ -2496,7 +2510,7 @@ async function logoutAdmin() {
                     
                     if (isLate) {
                         timeColor = 'text-red-600 animate-pulse';
-                        warningMarquee = `<marquee scrollamount="3" class="text-[9px] text-red-600 font-black bg-red-50 px-2 py-0.5 rounded shadow-sm w-35 ml-2 border border-red-0 tracking-wider">⚠️ DELAYED ORDER</marquee>`;
+                        warningMarquee = `<marquee scrollamount="3" class="text-[9px] text-red-600 font-black bg-red-50 px-2 py-0.5 rounded shadow-sm w-28 ml-2 border border-red-200 tracking-wider">⚠️ DELAYED ORDER</marquee>`;
                     }
                 }
 
