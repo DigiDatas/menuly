@@ -347,7 +347,7 @@ tbody tr:nth-child(even) td.hi-col{background:#FBDACB;}
         <span class="badge"><i class="fa-solid fa-store"></i>Retail</span>
       </div>
       <h1>Small business. <em>Star treatment.</em></h1>
-      <p class="hero-sub">You don't need a corporate budget to look and feel like the big brands. Menuly digitizes your restaurant, grocery, or retail store in under 2 minutes with live QR ordering, real-time kitchen alerts, and seamless multi-tenant management.</p>
+      <p class="hero-sub">You don't need a corporate budget to look and feel like the big brands. Menuly digitizes your restaurant, cafe, or grocery store in under 2 minutes with live QR ordering, real-time alerts, and seamless multi-tenant management.</p>
       <div class="hero-actions">
         <button onclick="openLoginModal()" class="btn btn-primary"><i class="fab fa-google"></i>Get Started Free</button>
         <a href="#problem" class="btn btn-ghost">See the problem we solve</a>
@@ -544,35 +544,39 @@ tbody tr:nth-child(even) td.hi-col{background:#FBDACB;}
   </div>
 </section>
 
-<!-- ================= STEPS ================= -->
-<section class="steps section-pad" id="steps">
-  <div class="wrap">
-    <div class="section-head" data-reveal style="margin-left:auto; margin-right:auto; text-align:center;">
-      <span class="eyebrow" style="color:var(--pine)">Getting started</span>
-      <h2>Launch your app in 3 simple steps</h2>
-      <p style="margin-left:auto; margin-right:auto;">No coding, no complicated dashboard. We handle the infrastructure — you focus on the food.</p>
+<!-- ================= PREMIUM NEXT LEVEL ================= -->
+<section class="premium-features section-pad" style="background: var(--ink); color: #fff; overflow: hidden; position: relative; border-radius: 40px; margin: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+  <!-- Decorative background -->
+  <div style="position:absolute; top:-50%; left:-20%; width:100%; height:100%; background:radial-gradient(circle, var(--plumhue) 0%, transparent 60%); opacity:0.15; z-index:0;"></div>
+  
+  <div class="wrap" style="position: relative; z-index: 1;">
+    <div class="section-head" data-reveal style="text-align: center; margin: 0 auto 60px;">
+      <span class="eyebrow" style="color: var(--gold);">Unlock The Future</span>
+      <h2 style="color: #fff;">Take your business to the next level.</h2>
+      <p style="color: #A79C89;">Premium features designed to give your customers an unforgettable, high-tech experience.</p>
     </div>
-    <div class="steps-grid">
-      <div class="steps-line"></div>
-      <div class="step-card" data-reveal>
-        <div class="step-num" style="background:var(--pine-tint); color:var(--pine)"><i class="fa-solid fa-list-check"></i></div>
-        <h3>1. Create &amp; Update Data</h3>
-        <p>Easily upload your menu items, prices, weights, and product photos right from our sleek admin panel.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px;">
+      <!-- VR Feature -->
+      <div data-reveal style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 40px; text-align: center; backdrop-filter: blur(10px); transition: transform 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
+        <div style="width: 80px; height: 80px; background: var(--pine-tint); color: var(--pine); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 24px; box-shadow: 0 0 30px rgba(31,92,70,0.4);">
+          <i class="fas fa-vr-cardboard animate-pulse"></i>
+        </div>
+        <h3 style="font-size: 24px; margin-bottom: 12px;">360° Virtual Showroom</h3>
+        <p style="color: #A79C89; font-size: 15px; line-height: 1.6;">Let your customers walk through your restaurant or mart digitally. They can click interactive hotspots to view items, open menus, and place orders directly inside the virtual environment!</p>
       </div>
-      <div class="step-card" data-reveal>
-        <div class="step-num" style="background:var(--flame-tint); color:var(--flame-dark)"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-        <h3>2. Publish &amp; Customize</h3>
-        <p>Apply your logo and branding. Your menu is instantly published to your unique link or QR code.</p>
-      </div>
-      <div class="step-card" data-reveal>
-        <div class="step-num" style="background:var(--cobalt-tint); color:var(--cobalt)"><i class="fa-brands fa-whatsapp"></i></div>
-        <h3>3. Get Orders &amp; Analytics</h3>
-        <p>Receive live orders directly on WhatsApp, and track your performance with fully trackable analytics.</p>
+
+      <!-- AI Agent Feature -->
+      <div data-reveal style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 40px; text-align: center; backdrop-filter: blur(10px); transition: transform 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
+        <div style="width: 80px; height: 80px; background: var(--plum-tint); color: var(--plumhue); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 24px; box-shadow: 0 0 30px rgba(138,59,132,0.4);">
+          <i class="fas fa-robot animate-bounce" style="animation-duration: 2s;"></i>
+        </div>
+        <h3 style="font-size: 24px; margin-bottom: 12px;">AI Sales Agent</h3>
+        <p style="color: #A79C89; font-size: 15px; line-height: 1.6;">Deploy a conversational AI voice assistant right on your digital catalog. It acts as a virtual salesman—answering questions, recommending products, and upselling automatically.</p>
       </div>
     </div>
   </div>
 </section>
-
 <!-- ================= COMPARE / PLANS ================= -->
 <section class="compare section-pad" id="plans">
   <div class="wrap">
@@ -664,36 +668,35 @@ tbody tr:nth-child(even) td.hi-col{background:#FBDACB;}
   </div>
 </section>
 
-<!-- ================= UNIFIED LOGIN MODAL ================= -->
+<!-- ================= UNIFIED ALL-IN-ONE LOGIN MODAL ================= -->
 <div id="loginModal" class="modal-overlay">
-  <div class="modal-box" style="max-width: 550px;">
+  <div class="modal-box" style="max-width: 580px;">
     <button onclick="closeLoginModal()" class="modal-close"><i class="fas fa-times"></i></button>
 
     <div class="modal-step active" style="text-align: center;">
       <div class="m-icon" style="background:var(--cobalt-tint); color:var(--cobalt);"><i class="fas fa-store"></i></div>
       <h2 style="margin-bottom: 8px;">What are you building?</h2>
-      <p style="margin-bottom: 24px;">Select your primary business type to tailor your dashboard.</p>
+      <p style="margin-bottom: 24px; font-size: 14px;">Select your business and click <strong style="color: var(--ink);">Continue with Google</strong> to register your new store.</p>
       
-      <!-- All-in-One Selection Grid -->
-      <div class="modal-grid" style="grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px;">
-        <button onclick="setBusinessType('restaurant', this)" class="modal-cat-btn type-btn" style="padding: 16px 8px;">
-          <i class="fas fa-utensils"></i>
-          <span style="font-size: 12px;">Restaurant</span>
+      <!-- 1. Main Category Tabs -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+        <button id="btn-main-food" onclick="switchMainType('restaurant')" style="padding: 14px; border: 2px solid var(--cobalt); background: var(--cobalt-tint); border-radius: 12px; font-weight: bold; color: var(--cobalt); font-size: 14px; transition: all 0.2s;">
+          <i class="fas fa-utensils" style="margin-right: 6px;"></i> Food & Beverage
         </button>
-        <button onclick="setBusinessType('restaurant', this)" class="modal-cat-btn type-btn" style="padding: 16px 8px;">
-          <i class="fas fa-coffee"></i>
-          <span style="font-size: 12px;">Cafe & Coffee</span>
-        </button>
-        <button onclick="setBusinessType('grocery', this)" class="modal-cat-btn type-btn" style="padding: 16px 8px;">
-          <i class="fas fa-shopping-basket"></i>
-          <span style="font-size: 12px;">Grocery & Mart</span>
+        <button id="btn-main-grocery" onclick="switchMainType('grocery')" style="padding: 14px; border: 2px solid var(--line); background: #fff; border-radius: 12px; font-weight: bold; color: var(--ink-soft); font-size: 14px; transition: all 0.2s;">
+          <i class="fas fa-shopping-basket" style="margin-right: 6px;"></i> Grocery & Mart
         </button>
       </div>
+
+      <!-- 2. Sub Category Grid (Injected by JS) -->
+      <div id="sub-cat-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 28px; text-align: left;">
+        <!-- Buttons go here -->
+      </div>
       
-      <button onclick="loginWithGoogle()" class="btn-google">
+      <button onclick="loginWithGoogle()" class="btn-google" style="box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 16px; font-size: 15px;">
         <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google"> Continue with Google
       </button>
-      <p class="modal-legal">By continuing, you agree to our Terms of Service.</p>
+      <p class="modal-legal" style="margin-top:16px;">By continuing, you agree to our Terms of Service.</p>
     </div>
 
   </div>
@@ -753,47 +756,84 @@ const storyObserver = new IntersectionObserver((entries) => {
 }, { threshold:0.5, rootMargin:"-15% 0px -15% 0px" });
 blocks.forEach(b => storyObserver.observe(b));
 
-// --- UNIFIED MODAL & AUTH SCRIPTS ---
+// --- UNIFIED ALL-IN-ONE MODAL SCRIPTS ---
 const SUPABASE_URL = "https://vhrxsjfblldksnalpyio.supabase.co";
 const SUPABASE_KEY = "sb_publishable_we3X4oxc_1R2mQVtlSuJVA_gGcQoQ-k";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const businessTypes = {
+    restaurant: [
+        { label: 'Arabian Food', icon: 'fas fa-star-and-crescent' },
+        { label: 'Asian Food', icon: 'fas fa-bowl-rice' },
+        { label: 'Shawarma & Grills', icon: 'fas fa-fire-burner' },
+        { label: 'Broasted / Fried Chicken', icon: 'fas fa-drumstick-bite' },
+        { label: 'Cloud Kitchen', icon: 'fas fa-cloud' },
+        { label: 'Coffee Shop & Cafe', icon: 'fas fa-coffee' }
+    ],
+    grocery: [
+        { label: 'Supermarket', icon: 'fas fa-shopping-cart' },
+        { label: 'Mini Mart', icon: 'fas fa-store' },
+        { label: 'Specialty Foods', icon: 'fas fa-leaf' },
+        { label: 'Fresh Produce', icon: 'fas fa-apple-whole' }
+    ]
+};
+
 function openLoginModal() {
-    const modal = document.getElementById('loginModal');
-    modal.classList.add('open');
-    
-    // Default selection
-    const firstBtn = document.querySelector('.type-btn');
-    if (firstBtn) setBusinessType('restaurant', firstBtn);
+    document.getElementById('loginModal').classList.add('open');
+    // Initialize the default view
+    switchMainType('restaurant');
 }
 
 function closeLoginModal() {
-    const modal = document.getElementById('loginModal');
-    modal.classList.remove('open');
+    document.getElementById('loginModal').classList.remove('open');
 }
 
-// 🌟 NEW: Handles selection highlights and saves to memory in one click!
-function setBusinessType(type, btnElement) {
-    // Save to memory so the Admin Dashboard knows what to build
+// Switches the top tabs and rebuilds the sub-categories below
+function switchMainType(type) {
+    const isFood = type === 'restaurant';
     localStorage.setItem('pending_business_type', type);
+
+    // Update Main Buttons
+    document.getElementById('btn-main-food').style.borderColor = isFood ? 'var(--cobalt)' : 'var(--line)';
+    document.getElementById('btn-main-food').style.background = isFood ? 'var(--cobalt-tint)' : '#fff';
+    document.getElementById('btn-main-food').style.color = isFood ? 'var(--cobalt)' : 'var(--ink-soft)';
+
+    document.getElementById('btn-main-grocery').style.borderColor = !isFood ? 'var(--cobalt)' : 'var(--line)';
+    document.getElementById('btn-main-grocery').style.background = !isFood ? 'var(--cobalt-tint)' : '#fff';
+    document.getElementById('btn-main-grocery').style.color = !isFood ? 'var(--cobalt)' : 'var(--ink-soft)';
+
+    // Build Sub-Categories
+    const container = document.getElementById('sub-cat-grid');
+    container.innerHTML = '';
     
-    // Reset all buttons
-    document.querySelectorAll('.type-btn').forEach(btn => {
+    businessTypes[type].forEach((sub) => {
+        container.innerHTML += `
+            <button onclick="selectSubCat(this)" class="sub-cat-btn" style="padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: all 0.2s; text-align: left; cursor: pointer; font-family: var(--font-body);">
+                <i class="${sub.icon}" style="color: var(--ink-faint); font-size: 16px; width: 20px; text-align: center; transition: color 0.2s;"></i> ${sub.label}
+            </button>
+        `;
+    });
+
+    // Auto-select the first sub-category in the list
+    const firstSubBtn = container.querySelector('.sub-cat-btn');
+    if (firstSubBtn) selectSubCat(firstSubBtn);
+}
+
+// Highlights the selected sub-category
+function selectSubCat(btnElement) {
+    document.querySelectorAll('.sub-cat-btn').forEach(btn => {
         btn.style.borderColor = 'var(--line)';
         btn.style.background = '#fff';
         btn.querySelector('i').style.color = 'var(--ink-faint)';
-        btn.querySelector('span').style.color = 'var(--ink)';
     });
     
-    // Highlight selected button
-    btnElement.style.borderColor = 'var(--cobalt)';
-    btnElement.style.background = 'var(--cobalt-tint)';
-    btnElement.querySelector('i').style.color = 'var(--cobalt)';
-    btnElement.querySelector('span').style.color = 'var(--cobalt)';
+    btnElement.style.borderColor = 'var(--flame)';
+    btnElement.style.background = 'var(--flame-tint)';
+    btnElement.querySelector('i').style.color = 'var(--flame)';
 }
 
 async function loginWithGoogle() {
-    // Failsafe in case they didn't click a button
+    // Safety fallback
     if (!localStorage.getItem('pending_business_type')) {
         localStorage.setItem('pending_business_type', 'restaurant');
     }
