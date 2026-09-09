@@ -20,32 +20,24 @@
         
         /* 🌟 SURGICAL MOBILE UI OVERRIDES 🌟 */
         @media (max-width: 1024px) {
-            /* 1. Fix Sidebar Visibility - Force everything to "open" state layout */
-            #admin-sidebar .opacity-0 { opacity: 1 !important; }
+            /* 1. Unblock Native Pull-to-Refresh */
+            body, html { overflow-y: auto !important; overscroll-behavior-y: auto !important; }
+            .h-screen { height: auto !important; min-height: 100vh !important; }
+            .flex-1.overflow-hidden { overflow-y: visible !important; overflow-x: hidden !important; }
             
-            /* Sidebar Header (Admin Suite & Logo) */
-            #admin-sidebar > div > div.h-16 > div.absolute { left: 1rem !important; transform: translateX(0) !important; }
-            #admin-sidebar > div > div.h-16 > h1.absolute { left: 4rem !important; }
+            /* 2. Fix Sidebar Icon & Text Alignment */
+            #admin-sidebar span.absolute { opacity: 1 !important; left: 3.5rem !important; }
+            #admin-sidebar div.absolute { left: 1rem !important; transform: translateX(0) !important; }
             
-            /* Sidebar Nav Links */
-            #admin-sidebar nav .absolute:first-child { left: 1rem !important; transform: translateX(0) !important; }
-            #admin-sidebar nav .absolute:last-child { left: 3rem !important; }
-            
-            /* Sidebar Profile Footer */
-            #admin-sidebar > div.p-3 > div.relative > div.absolute:first-child { left: 0.25rem !important; transform: translateX(0) !important; }
-            #admin-sidebar > div.p-3 > div.relative > div.absolute:last-child { left: 2.75rem !important; }
-
-            /* 2. Allow Tabs to expand inside the scrollable Main container */
+            /* 3. Allow Tabs to expand inside the scrollable Main container */
             .tab-section { height: max-content !important; min-height: 100% !important; padding-bottom: 80px !important; }
             .tab-section > div.h-full { height: max-content !important; }
-            
-            /* 3. Prevent cards from crushing */
             .tab-section .bg-white.rounded-2xl { flex-shrink: 0 !important; }
             
-            /* 4. Fix Modals */
-            #billingModal > div, #menuModal > div { max-height: 95vh !important; }
+            /* 4. Fix Modals (Profile & Billing Scroll) */
+            #billingModal > div, #menuModal > div { max-height: 90vh !important; overflow-y: auto !important; }
             
-            /* 5. Lock Header to Top (Prevents Hamburger from disappearing) */
+            /* 5. Lock Header to Top */
             header { position: sticky !important; top: 0 !important; z-index: 50 !important; background: white !important; }
         }
     </style>
@@ -573,7 +565,8 @@
 
                     <div id="flashcard-preview-gallery" class="flex flex-wrap gap-2 mb-3 min-h-[60px] p-2 bg-gray-50 border border-gray-200 rounded-xl"></div>
                     
-                    <div class="flex gap-2">
+                    <!-- 🌟 FIX: Allow stacking on mobile -->
+                    <div class="flex flex-col sm:flex-row gap-2">
                         <button type="button" onclick="openMediaLibrary('flashcard')" class="bg-blue-50 text-blue-600 border border-blue-200 rounded-xl px-3 py-1.5 text-[11px] font-bold hover:bg-blue-100 transition shadow-sm whitespace-nowrap">
                             <i class="fas fa-folder-open"></i> Browse
                         </button>
@@ -640,12 +633,12 @@
     </div>
 <!-- ================= TAB 7: CASHIER POS (UNIFIED 3-PANE WORKSTATION) ================= -->
         <section id="section-pos" class="tab-section hidden h-full flex flex-col p-2 bg-gray-100">
-            <!-- 🌟 FIX: Allow stacking on mobile -->
             <div class="flex flex-col lg:flex-row gap-4 h-full min-h-0">
                 
                 <!-- ================= LEFT PANE: ORDER LINE ================= -->
                 <!-- 🌟 FIX: Full width on mobile -->
-                <div class="w-full lg:w-[280px] xl:w-[320px] flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 shrink-0 overflow-hidden min-h-[400px] lg:min-h-0">                    <div class="p-4 border-b border-gray-100">
+                <div class="w-[85vw] lg:w-[280px] xl:w-[320px] flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 shrink-0 overflow-hidden min-h-[500px] lg:min-h-0 snap-center">
+                    <div class="p-4 border-b border-gray-100">
                         <div class="flex justify-between items-center mb-3">
                             <h2 class="text-lg font-black text-gray-800">Order Line</h2>
                             <button onclick="fetchDashboardData(this, false)" class="text-gray-400 hover:text-blue-500 transition"><i class="fas fa-sync-alt"></i></button>
@@ -665,7 +658,7 @@
 
                 <!-- ================= MIDDLE PANE: DYNAMIC (TABLES / MENU) ================= -->
                 <!-- 🌟 FIX: Stack on mobile with minimum height so tables show clearly -->
-                <div class="w-full lg:w-auto flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px] lg:min-h-0 mt-4 lg:mt-0">
+                <div class="w-[90vw] lg:w-auto flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px] lg:min-h-0 snap-center shrink-0 lg:shrink">
                     <!-- Middle Header Toggle -->
                     <div class="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
                         <div class="flex bg-gray-200 p-1 rounded-lg">
@@ -722,7 +715,7 @@
 
                 <!-- ================= RIGHT PANE: CART & RECEIPT ================= -->
                 <!-- 🌟 FIX: Full width on mobile -->
-                <div class="w-full lg:w-[280px] xl:w-[320px] flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 shrink-0 overflow-hidden relative min-h-[500px] lg:min-h-0 mt-4 lg:mt-0">
+                <div class="w-[85vw] lg:w-[280px] xl:w-[320px] flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 shrink-0 overflow-hidden relative min-h-[500px] lg:min-h-0 snap-center">
                     
                     <div class="p-4 border-b border-gray-100 bg-teal-50/30 shrink-0 flex justify-between items-start">
                         <div>
@@ -1076,17 +1069,18 @@
 
             <!-- 🌟 PREMIUM SCREEN (The Actual VR Manager) -->
             <div id="vr-manager-screen" class="hidden flex-col h-full w-full min-h-0">
-                <div class="flex justify-between items-center mb-4 shrink-0 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-teal-100 text-teal-600 rounded-lg flex items-center justify-center text-lg"><i class="fas fa-vr-cardboard"></i></div>
+                <!-- 🌟 FIX: Wrap header and allow horizontal button scrolling -->
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 shrink-0 bg-white p-3 rounded-xl border border-gray-200 shadow-sm gap-3">
+                    <div class="flex items-center gap-3 shrink-0 w-full lg:w-auto border-b lg:border-b-0 border-gray-100 pb-3 lg:pb-0">
+                        <div class="w-10 h-10 bg-teal-100 text-teal-600 rounded-lg flex items-center justify-center text-lg shrink-0"><i class="fas fa-vr-cardboard"></i></div>
                         <div>
                             <h2 class="text-base font-black text-gray-900 leading-tight">Virtual Showroom Editor</h2>
                             <p class="text-[10px] text-gray-500 font-bold">Manage multiple 360° panoramas.</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar w-full lg:w-auto pb-1">
                         <!-- 🌟 MOVED: VR Master Switch (Auto-Saves!) -->
-                        <div class="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                        <div class="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 shrink-0">
                             <input type="checkbox" id="set-vr" onchange="toggleVrMasterSwitch()" class="w-4 h-4 text-teal-600 rounded focus:ring-teal-500 cursor-pointer">
                             <label for="set-vr" class="text-[10px] font-bold text-gray-700 uppercase cursor-pointer">Enable For Customers</label>
                         </div>
@@ -1151,7 +1145,7 @@
                     </div>
 
                     <!-- Right: Live Preview Panel -->
-                    <div class="flex-1 bg-gray-900 rounded-2xl shadow-inner border border-gray-200 flex flex-col items-center justify-center relative overflow-hidden group">
+                    <div class="w-full lg:w-auto flex-1 min-h-[350px] lg:min-h-0 bg-gray-900 rounded-2xl shadow-inner border border-gray-200 flex flex-col items-center justify-center relative overflow-hidden group mt-4 lg:mt-0">
                         
                         <!-- 🌟 NEW: The Permanent Center Crosshair -->
                         <div id="vr-crosshair" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none text-white/80 text-3xl drop-shadow-[0_0_4px_rgba(0,0,0,1)]">
@@ -1208,7 +1202,7 @@
                     </button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 overflow-hidden">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 overflow-y-auto lg:overflow-hidden pb-20 lg:pb-0">
                     <!-- Add Media Form -->
                     <div class="bg-gray-800 p-5 rounded-2xl border border-gray-700 h-fit">
                         <h3 id="tv-form-title" class="text-lg font-bold text-white mb-4">Add to TV Loop</h3>
@@ -4971,7 +4965,8 @@ document.getElementById('set-vr').checked = data.vr_enabled || false;
                             </div>
                         </div>
                         <div id="banner-preview-gallery-${i}" class="flex flex-wrap gap-2 mb-3 min-h-[60px] p-2 bg-white border border-gray-200 rounded-xl"></div>
-                        <div class="flex gap-2">
+                        <!-- 🌟 FIX: Allow stacking on mobile -->
+                        <div class="flex flex-col sm:flex-row gap-2">
                             <button type="button" onclick="openMediaLibrary('banner', ${i})" class="bg-blue-50 text-blue-600 border border-blue-200 rounded-xl px-4 py-2 text-xs font-bold hover:bg-blue-100 transition shadow-sm whitespace-nowrap">
                                 <i class="fas fa-folder-open"></i> Browse
                             </button>
