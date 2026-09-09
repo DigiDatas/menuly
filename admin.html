@@ -18,26 +18,21 @@
         body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f3f4f6; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* 🌟 ULTIMATE MOBILE UI OVERHAUL CSS 🌟 */
+        /* 🌟 SURGICAL MOBILE UI OVERRIDES 🌟 */
         @media (max-width: 1024px) {
             /* 1. Fix Sidebar Icon & Text Alignment */
             #admin-sidebar span.absolute { opacity: 1 !important; left: 3.5rem !important; }
             #admin-sidebar div.absolute { left: 1rem !important; transform: translateX(0) !important; }
             
-            /* 2. Force Global Mobile Scrolling */
-            .tab-section { height: auto !important; min-height: 100vh !important; overflow-y: visible !important; display: flex !important; flex-direction: column !important; }
-            .overflow-hidden { overflow: visible !important; }
-            main.overflow-y-auto { overflow-x: hidden !important; padding-bottom: 120px !important; }
+            /* 2. Allow Tabs to expand inside the scrollable Main container */
+            .tab-section { height: max-content !important; min-height: 100% !important; padding-bottom: 80px !important; }
+            .tab-section > div.h-full { height: max-content !important; }
             
-            /* 3. Free ALL Inner Tab Columns (Fixes Offers, Settings, VR overlaps) */
-            .min-h-0 { min-height: max-content !important; }
-            .flex-1.bg-white.rounded-2xl, .w-full.bg-white.rounded-2xl { min-height: 450px !important; } 
+            /* 3. Prevent cards from crushing */
+            .tab-section .bg-white.rounded-2xl { flex-shrink: 0 !important; }
             
-            /* 4. Fix Profile/Billing Modal Cropping */
-            #billingModal > div { height: 95vh !important; overflow-y: auto !important; }
-
-            /* 5. Lock Header to Top (Prevents Hamburger from disappearing) */
-            header { position: sticky !important; top: 0 !important; z-index: 50 !important; background: white !important; }
+            /* 4. Fix Modals */
+            #billingModal > div, #menuModal > div { max-height: 95vh !important; }
         }
     </style>
 </head>
@@ -503,7 +498,7 @@
                 </div>
 
             </div>
-            
+            </div>
         </section>
 
 <!-- ================= TAB 5: OFFERS, BANNERS & FLASHCARDS ================= -->
