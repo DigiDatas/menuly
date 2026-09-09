@@ -546,34 +546,66 @@ tbody tr:nth-child(even) td.hi-col{background:#FBDACB;}
 
 <!-- ================= PREMIUM NEXT LEVEL ================= -->
 <section class="premium-features section-pad" style="background: var(--ink); color: #fff; overflow: hidden; position: relative; border-radius: 40px; margin: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+  <!-- CSS Animations for Motion Graphics -->
+  <style>
+    @keyframes panVr { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    @keyframes pulseHotspot { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.8); } 70% { box-shadow: 0 0 0 12px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
+    @keyframes aiWave { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.5); opacity: 0; } }
+    @keyframes aiPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+  </style>
+
   <!-- Decorative background -->
   <div style="position:absolute; top:-50%; left:-20%; width:100%; height:100%; background:radial-gradient(circle, var(--plumhue) 0%, transparent 60%); opacity:0.15; z-index:0;"></div>
   
   <div class="wrap" style="position: relative; z-index: 1;">
-    <div class="section-head" data-reveal style="text-align: center; margin: 0 auto 60px;">
+    <div class="section-head" data-reveal style="text-align: center; margin: 0 auto 50px;">
       <span class="eyebrow" style="color: var(--gold);">Unlock The Future</span>
-      <h2 style="color: #fff;">Take your business to the next level.</h2>
-      <p style="color: #A79C89;">Premium features designed to give your customers an unforgettable, high-tech experience.</p>
+      <h2 style="color: #fff; font-size: 38px; margin-bottom: 16px;">Take your business to the next level.</h2>
+      <p style="color: #A79C89; max-width: 600px; margin: 0 auto;">Premium features designed to give your customers an unforgettable, high-tech experience.</p>
     </div>
 
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px;">
-      <!-- VR Feature -->
-      <div data-reveal style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 40px; text-align: center; backdrop-filter: blur(10px); transition: transform 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
-        <div style="width: 80px; height: 80px; background: var(--pine-tint); color: var(--pine); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 24px; box-shadow: 0 0 30px rgba(31,92,70,0.4);">
-          <i class="fas fa-vr-cardboard animate-pulse"></i>
+      
+      <!-- VR Feature Card with Motion Graphic -->
+      <div data-reveal style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 32px; text-align: center; backdrop-filter: blur(10px); display: flex; flex-col; gap: 20px;">
+        <!-- VR Mockup Window -->
+        <div style="width: 100%; height: 160px; border-radius: 16px; overflow: hidden; position: relative; border: 4px solid #333; margin-bottom: 24px;">
+            <!-- Panning Panorama Background -->
+            <div style="position: absolute; inset: 0; background-image: url('https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/RESTAURANT-PAnorama.jpg'); background-size: cover; animation: panVr 20s infinite linear;"></div>
+            <!-- Pulsing Hotspot -->
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; background: rgba(255,255,255,0.9); border: 2px solid var(--flame); border-radius: 50%; animation: pulseHotspot 2s infinite; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-arrow-up text-white" style="font-size: 10px; color: var(--flame);"></i>
+            </div>
+            <!-- UI Overlay -->
+            <div style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; color: white; display: flex; items-center; gap: 4px;">
+                <i class="fas fa-vr-cardboard"></i> 360° Live View
+            </div>
         </div>
-        <h3 style="font-size: 24px; margin-bottom: 12px;">360° Virtual Showroom</h3>
-        <p style="color: #A79C89; font-size: 15px; line-height: 1.6;">Let your customers walk through your restaurant or mart digitally. They can click interactive hotspots to view items, open menus, and place orders directly inside the virtual environment!</p>
+        <h3 style="font-size: 22px; margin-bottom: 12px; color: white;">360° Virtual Showroom</h3>
+        <p style="color: #A79C89; font-size: 14.5px; line-height: 1.6;">Let your customers walk through your restaurant or mart digitally. They can click interactive hotspots to view items, open menus, and place orders directly inside the virtual environment!</p>
       </div>
 
-      <!-- AI Agent Feature -->
-      <div data-reveal style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 40px; text-align: center; backdrop-filter: blur(10px); transition: transform 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
-        <div style="width: 80px; height: 80px; background: var(--plum-tint); color: var(--plumhue); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 24px; box-shadow: 0 0 30px rgba(138,59,132,0.4);">
-          <i class="fas fa-robot animate-bounce" style="animation-duration: 2s;"></i>
+      <!-- AI Agent Feature Card with Motion Graphic -->
+      <div data-reveal style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 32px; text-align: center; backdrop-filter: blur(10px);">
+        <!-- AI Voice Mockup Window -->
+        <div style="width: 100%; height: 160px; border-radius: 16px; background: #000; position: relative; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+            <!-- Expanding Voice Waves -->
+            <div style="position: absolute; width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--plumhue); animation: aiWave 2s infinite linear;"></div>
+            <div style="position: absolute; width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--cobalt); animation: aiWave 2s infinite linear; animation-delay: 0.6s;"></div>
+            <div style="position: absolute; width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--flame); animation: aiWave 2s infinite linear; animation-delay: 1.2s;"></div>
+            <!-- Core AI Orb -->
+            <div style="position: relative; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--cobalt), var(--plumhue)); box-shadow: 0 0 20px var(--plumhue); display: flex; align-items: center; justify-content: center; animation: aiPulse 2s infinite ease-in-out;">
+                <i class="fas fa-microphone text-white" style="font-size: 24px; color: white;"></i>
+            </div>
+            <!-- UI Overlay -->
+            <div style="position: absolute; bottom: 8px; right: 8px; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; color: white; display: flex; items-center; gap: 4px;">
+                <i class="fas fa-wave-square"></i> Voice Active
+            </div>
         </div>
-        <h3 style="font-size: 24px; margin-bottom: 12px;">AI Sales Agent</h3>
-        <p style="color: #A79C89; font-size: 15px; line-height: 1.6;">Deploy a conversational AI voice assistant right on your digital catalog. It acts as a virtual salesman—answering questions, recommending products, and upselling automatically.</p>
+        <h3 style="font-size: 22px; margin-bottom: 12px; color: white;">AI Sales Agent</h3>
+        <p style="color: #A79C89; font-size: 14.5px; line-height: 1.6;">Deploy a conversational AI voice assistant right on your digital catalog. It acts as a virtual salesman—answering questions, recommending products, and upselling automatically.</p>
       </div>
+
     </div>
   </div>
 </section>
@@ -668,31 +700,69 @@ tbody tr:nth-child(even) td.hi-col{background:#FBDACB;}
   </div>
 </section>
 
-<!-- ================= UNIFIED ALL-IN-ONE LOGIN MODAL ================= -->
+<!-- ================= UNIFIED TREE-LAYOUT LOGIN MODAL ================= -->
 <div id="loginModal" class="modal-overlay">
-  <div class="modal-box" style="max-width: 580px;">
+  <!-- Increased max-width to cleanly fit two columns -->
+  <div class="modal-box" style="max-width: 680px; padding: 40px;">
     <button onclick="closeLoginModal()" class="modal-close"><i class="fas fa-times"></i></button>
 
     <div class="modal-step active" style="text-align: center;">
-      <div class="m-icon" style="background:var(--cobalt-tint); color:var(--cobalt);"><i class="fas fa-store"></i></div>
-      <h2 style="margin-bottom: 8px;">What are you building?</h2>
-      <p style="margin-bottom: 24px; font-size: 14px;">Select your business and click <strong style="color: var(--ink);">Continue with Google</strong> to register your new store.</p>
+      <h2 style="margin-bottom: 8px; font-size: 28px;">What are you building?</h2>
+      <p style="margin-bottom: 32px; font-size: 14px; color: var(--ink-soft);">Select your business type and click <strong style="color: var(--ink);">Continue with Google</strong> to register your new store.</p>
       
-      <!-- 1. Main Category Tabs -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-        <button id="btn-main-food" onclick="switchMainType('restaurant')" style="padding: 14px; border: 2px solid var(--cobalt); background: var(--cobalt-tint); border-radius: 12px; font-weight: bold; color: var(--cobalt); font-size: 14px; transition: all 0.2s;">
-          <i class="fas fa-utensils" style="margin-right: 6px;"></i> Food & Beverage
-        </button>
-        <button id="btn-main-grocery" onclick="switchMainType('grocery')" style="padding: 14px; border: 2px solid var(--line); background: #fff; border-radius: 12px; font-weight: bold; color: var(--ink-soft); font-size: 14px; transition: all 0.2s;">
-          <i class="fas fa-shopping-basket" style="margin-right: 6px;"></i> Grocery & Mart
-        </button>
-      </div>
+      <!-- Split Two-Column "Tree" Layout -->
+      <div style="display: flex; gap: 24px; margin-bottom: 32px; text-align: left;">
+        
+        <!-- LEFT COLUMN: Restaurant (Flame Colored) -->
+        <div style="flex: 1; border-right: 1px solid var(--line); padding-right: 24px;">
+            <div style="display: flex; items-center; gap: 8px; margin-bottom: 16px; color: var(--flame-dark);">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--flame-tint); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <h3 style="font-size: 16px; font-family: var(--font-body); align-self: center;">Food & Beverage</h3>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button onclick="selectSubCat('restaurant', this)" class="sub-cat-btn" style="padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink-soft); font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: all 0.2s; cursor: pointer;">
+                    <i class="fas fa-star-and-crescent" style="color: var(--ink-faint); width: 20px; text-align: center;"></i> Arabian Food
+                </button>
+                <button onclick="selectSubCat('restaurant', this)" class="sub-cat-btn" style="padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink-soft); font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: all 0.2s; cursor: pointer;">
+                    <i class="fas fa-bowl-rice" style="color: var(--ink-faint); width: 20px; text-align: center;"></i> Asian Food
+                </button>
+                <button onclick="selectSubCat('restaurant', this)" class="sub-cat-btn" style="padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink-soft); font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: all 0.2s; cursor: pointer;">
+                    <i class="fas fa-fire-burner" style="color: var(--ink-faint); width: 20px; text-align: center;"></i> Shawarma & Grills
+                </button>
+                <button onclick="selectSubCat('restaurant', this)" class="sub-cat-btn" style="padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink-soft); font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: all 0.2s; cursor: pointer;">
+                    <i class="fas fa-coffee" style="color: var(--ink-faint); width: 20px; text-align: center;"></i> Coffee Shop & Cafe
+                </button>
+            </div>
+        </div>
 
-      <!-- 2. Sub Category Grid (Injected by JS) -->
-      <div id="sub-cat-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 28px; text-align: left;">
-        <!-- Buttons go here -->
+        <!-- RIGHT COLUMN: Grocery (Pine Colored) -->
+        <div style="flex: 1; padding-left: 4px;">
+            <div style="display: flex; items-center; gap: 8px; margin-bottom: 16px; color: var(--pine);">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--pine-tint); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-shopping-basket"></i>
+                </div>
+                <h3 style="font-size: 16px; font-family: var(--font-body); align-self: center;">Grocery & Mart</h3>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button onclick="selectSubCat('grocery', this)" class="sub-cat-btn" style="padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink-soft); font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: all 0.2s; cursor: pointer;">
+                    <i class="fas fa-shopping-cart" style="color: var(--ink-faint); width: 20px; text-align: center;"></i> Supermarket
+                </button>
+                <button onclick="selectSubCat('grocery', this)" class="sub-cat-btn" style="padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink-soft); font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: all 0.2s; cursor: pointer;">
+                    <i class="fas fa-store" style="color: var(--ink-faint); width: 20px; text-align: center;"></i> Mini Mart
+                </button>
+                <button onclick="selectSubCat('grocery', this)" class="sub-cat-btn" style="padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink-soft); font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: all 0.2s; cursor: pointer;">
+                    <i class="fas fa-leaf" style="color: var(--ink-faint); width: 20px; text-align: center;"></i> Specialty Foods
+                </button>
+            </div>
+        </div>
+
       </div>
       
+      <!-- Google Auth Button -->
       <button onclick="loginWithGoogle()" class="btn-google" style="box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 16px; font-size: 15px;">
         <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google"> Continue with Google
       </button>
@@ -756,80 +826,48 @@ const storyObserver = new IntersectionObserver((entries) => {
 }, { threshold:0.5, rootMargin:"-15% 0px -15% 0px" });
 blocks.forEach(b => storyObserver.observe(b));
 
-// --- UNIFIED ALL-IN-ONE MODAL SCRIPTS ---
+// --- UNIFIED TREE-LAYOUT MODAL SCRIPTS ---
 const SUPABASE_URL = "https://vhrxsjfblldksnalpyio.supabase.co";
 const SUPABASE_KEY = "sb_publishable_we3X4oxc_1R2mQVtlSuJVA_gGcQoQ-k";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const businessTypes = {
-    restaurant: [
-        { label: 'Arabian Food', icon: 'fas fa-star-and-crescent' },
-        { label: 'Asian Food', icon: 'fas fa-bowl-rice' },
-        { label: 'Shawarma & Grills', icon: 'fas fa-fire-burner' },
-        { label: 'Broasted / Fried Chicken', icon: 'fas fa-drumstick-bite' },
-        { label: 'Cloud Kitchen', icon: 'fas fa-cloud' },
-        { label: 'Coffee Shop & Cafe', icon: 'fas fa-coffee' }
-    ],
-    grocery: [
-        { label: 'Supermarket', icon: 'fas fa-shopping-cart' },
-        { label: 'Mini Mart', icon: 'fas fa-store' },
-        { label: 'Specialty Foods', icon: 'fas fa-leaf' },
-        { label: 'Fresh Produce', icon: 'fas fa-apple-whole' }
-    ]
-};
-
 function openLoginModal() {
     document.getElementById('loginModal').classList.add('open');
-    // Initialize the default view
-    switchMainType('restaurant');
+    
+    // Auto-select the first restaurant option by default to guide the user
+    const firstFoodBtn = document.querySelector('.sub-cat-btn');
+    if (firstFoodBtn) selectSubCat('restaurant', firstFoodBtn);
 }
 
 function closeLoginModal() {
     document.getElementById('loginModal').classList.remove('open');
 }
 
-// Switches the top tabs and rebuilds the sub-categories below
-function switchMainType(type) {
-    const isFood = type === 'restaurant';
-    localStorage.setItem('pending_business_type', type);
+// Highlights the selected sub-category and color-codes it perfectly!
+function selectSubCat(mainType, btnElement) {
+    // 1. Save the main business type to memory for the database
+    localStorage.setItem('pending_business_type', mainType);
 
-    // Update Main Buttons
-    document.getElementById('btn-main-food').style.borderColor = isFood ? 'var(--cobalt)' : 'var(--line)';
-    document.getElementById('btn-main-food').style.background = isFood ? 'var(--cobalt-tint)' : '#fff';
-    document.getElementById('btn-main-food').style.color = isFood ? 'var(--cobalt)' : 'var(--ink-soft)';
-
-    document.getElementById('btn-main-grocery').style.borderColor = !isFood ? 'var(--cobalt)' : 'var(--line)';
-    document.getElementById('btn-main-grocery').style.background = !isFood ? 'var(--cobalt-tint)' : '#fff';
-    document.getElementById('btn-main-grocery').style.color = !isFood ? 'var(--cobalt)' : 'var(--ink-soft)';
-
-    // Build Sub-Categories
-    const container = document.getElementById('sub-cat-grid');
-    container.innerHTML = '';
-    
-    businessTypes[type].forEach((sub) => {
-        container.innerHTML += `
-            <button onclick="selectSubCat(this)" class="sub-cat-btn" style="padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: all 0.2s; text-align: left; cursor: pointer; font-family: var(--font-body);">
-                <i class="${sub.icon}" style="color: var(--ink-faint); font-size: 16px; width: 20px; text-align: center; transition: color 0.2s;"></i> ${sub.label}
-            </button>
-        `;
-    });
-
-    // Auto-select the first sub-category in the list
-    const firstSubBtn = container.querySelector('.sub-cat-btn');
-    if (firstSubBtn) selectSubCat(firstSubBtn);
-}
-
-// Highlights the selected sub-category
-function selectSubCat(btnElement) {
+    // 2. Reset ALL buttons to neutral gray
     document.querySelectorAll('.sub-cat-btn').forEach(btn => {
         btn.style.borderColor = 'var(--line)';
         btn.style.background = '#fff';
+        btn.style.color = 'var(--ink-soft)';
         btn.querySelector('i').style.color = 'var(--ink-faint)';
     });
     
-    btnElement.style.borderColor = 'var(--flame)';
-    btnElement.style.background = 'var(--flame-tint)';
-    btnElement.querySelector('i').style.color = 'var(--flame)';
+    // 3. Highlight the clicked button based on its parent category
+    if (mainType === 'restaurant') {
+        btnElement.style.borderColor = 'var(--flame)';
+        btnElement.style.background = 'var(--flame-tint)';
+        btnElement.style.color = 'var(--flame-dark)';
+        btnElement.querySelector('i').style.color = 'var(--flame)';
+    } else {
+        btnElement.style.borderColor = 'var(--pine)';
+        btnElement.style.background = 'var(--pine-tint)';
+        btnElement.style.color = 'var(--pine)';
+        btnElement.querySelector('i').style.color = 'var(--pine)';
+    }
 }
 
 async function loginWithGoogle() {
