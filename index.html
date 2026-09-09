@@ -326,7 +326,7 @@ tbody tr:nth-child(even) td.hi-col{background:#FBDACB;}
       <a href="#plans">Plans</a>
       <a href="#faq">FAQ</a>
     </div>
-    <button onclick="openLoginModal()" class="nav-cta hidden-mobile">Business Login</button>
+    <button onclick="openLoginModal('login')" class="nav-cta hidden-mobile">Business Login</button>
     <button class="nav-toggle" id="navToggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
   </div>
   <div class="mobile-menu" id="mobileMenu">
@@ -335,7 +335,7 @@ tbody tr:nth-child(even) td.hi-col{background:#FBDACB;}
     <a href="#steps">How it works</a>
     <a href="#plans">Plans</a>
     <a href="#faq">FAQ</a>
-    <button onclick="openLoginModal()" class="nav-cta" style="margin-top:10px; width:100%;">Business Login</button>
+    <button onclick="openLoginModal('login')" class="nav-cta" style="margin-top:10px; width:100%;">Business Login</button>
   </div>
 </nav>
 
@@ -700,13 +700,18 @@ tbody tr:nth-child(even) td.hi-col{background:#FBDACB;}
 
 <!-- ================= UNIFIED TREE-LAYOUT LOGIN MODAL ================= -->
 <div id="loginModal" class="modal-overlay">
-  <!-- Increased max-width to cleanly fit two columns -->
-  <div class="modal-box" style="max-width: 680px; padding: 40px;">
+  <!-- Added id="auth-modal-box" -->
+  <div id="auth-modal-box" class="modal-box" style="max-width: 680px; padding: 40px; transition: max-width 0.3s ease;">
     <button onclick="closeLoginModal()" class="modal-close"><i class="fas fa-times"></i></button>
 
     <div class="modal-step active" style="text-align: center;">
-      <h2 style="margin-bottom: 8px; font-size: 28px;">What are you building?</h2>
-      <p style="margin-bottom: 32px; font-size: 14px; color: var(--ink-soft);">Select your business type and click <strong style="color: var(--ink);">Continue with Google</strong> to register your new store.</p>
+      <!-- Added id="modal-auth-title" -->
+      <h2 id="modal-auth-title" style="margin-bottom: 8px; font-size: 28px;">What are you building?</h2>
+      <!-- Added id="modal-auth-desc" -->
+      <p id="modal-auth-desc" style="margin-bottom: 32px; font-size: 14px; color: var(--ink-soft);">Select your business type and click <strong style="color: var(--ink);">Continue with Google</strong> to register your new store.</p>
+      
+      <!-- Split Two-Column "Tree" Layout (Added id="modal-tree-layout") -->
+      <div id="modal-tree-layout" style="display: flex; gap: 24px; margin-bottom: 32px; text-align: left;">
       
       <!-- Split Two-Column "Tree" Layout -->
       <div style="display: flex; gap: 24px; margin-bottom: 32px; text-align: left;">
@@ -829,12 +834,36 @@ const SUPABASE_URL = "https://vhrxsjfblldksnalpyio.supabase.co";
 const SUPABASE_KEY = "sb_publishable_we3X4oxc_1R2mQVtlSuJVA_gGcQoQ-k";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function openLoginModal() {
-    document.getElementById('loginModal').classList.add('open');
-    
-    // Auto-select the first restaurant option by default to guide the user
-    const firstFoodBtn = document.querySelector('.sub-cat-btn');
-    if (firstFoodBtn) selectSubCat('restaurant', firstFoodBtn);
+function openLoginModal(mode = 'signup') {
+    const modal = document.getElementById('loginModal');
+    const box = document.getElementById('auth-modal-box');
+    const title = document.getElementById('modal-auth-title');
+    const desc = document.getElementById('modal-auth-desc');
+    const treeLayout = document.getElementById('modal-tree-layout');
+
+    // 🌟 SMART CHAMELEON MODAL LOGIC
+    if (mode === 'login') {
+        // Shrink the modal and hide the selection tree for existing users
+        box.style.maxWidth = '420px';
+        title.textContent = 'Welcome Back';
+        desc.innerHTML = 'Sign in to securely access your business dashboard.';
+        treeLayout.style.display = 'none';
+        
+        // Failsafe: Ensures existing users don't overwrite their DB type on login
+        localStorage.removeItem('pending_business_type'); 
+    } else {
+        // Expand the modal and show the selection tree for new users
+        box.style.maxWidth = '680px';
+        title.textContent = 'What are you building?';
+        desc.innerHTML = 'Select your business type and click <strong style="color: var(--ink);">Continue with Google</strong> to register your new store.';
+        treeLayout.style.display = 'flex';
+        
+        // Auto-select the first restaurant option by default to guide new users
+        const firstFoodBtn = document.querySelector('.sub-cat-btn');
+        if (firstFoodBtn) selectSubCat('restaurant', firstFoodBtn);
+    }
+
+    modal.classList.add('open');
 }
 
 function closeLoginModal() {
