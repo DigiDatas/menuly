@@ -17,6 +17,11 @@
         /* Restored original sleek system fonts */
         body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f3f4f6; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* 🌟 NEW: Forces sidebar text to be visible on mobile */
+        @media (max-width: 1024px) {
+            #admin-sidebar span.absolute, #admin-sidebar div.absolute { opacity: 1 !important; }
+        }
     </style>
 </head>
 <body class="flex h-screen bg-gray-100 font-sans antialiased overflow-hidden text-gray-800">
@@ -29,8 +34,11 @@
         <button onclick="window.location.href='index.html'" class="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-lg font-bold transition">Return to Main Menu</button>
     </div>
 
+    <!-- 🌟 NEW: Mobile Sidebar Backdrop -->
+    <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-[55] hidden lg:hidden backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+
     <!-- ================= LEFT SIDEBAR ================= -->
-    <aside class="w-[72px] hover:w-64 bg-gray-900 text-white transition-all duration-300 flex flex-col justify-between group relative z-50 shrink-0 shadow-2xl overflow-x-hidden">
+    <aside id="admin-sidebar" class="fixed lg:relative top-0 left-0 h-full w-64 lg:w-[72px] lg:hover:w-64 bg-gray-900 text-white transition-transform lg:transition-all duration-300 flex flex-col justify-between group z-[60] lg:z-50 shrink-0 shadow-2xl overflow-x-hidden transform -translate-x-full lg:translate-x-0">
         <div>
             <!-- Branding (Flawless Absolute Centering) -->
             <div class="h-16 relative flex items-center w-full border-b border-gray-800 cursor-default">
@@ -112,10 +120,15 @@
     <div class="flex-1 flex flex-col h-screen overflow-hidden relative bg-gray-100">
         
         <!-- Top Action Bar -->
-        <header class="h-16 bg-white shadow-sm border-b border-gray-200 flex justify-between items-center px-6 shrink-0 z-40">
+        <header class="h-16 bg-white shadow-sm border-b border-gray-200 flex justify-between items-center px-4 lg:px-6 shrink-0 z-40 w-full">
             
+            <!-- 🌟 NEW: Mobile Hamburger Button -->
+            <button onclick="toggleSidebar()" class="lg:hidden text-gray-700 hover:text-red-600 text-xl mr-3 p-1 transition">
+                <i class="fas fa-bars"></i>
+            </button>
+
             <!-- 🌟 NEW: Dynamic Tab Headers -->
-            <div id="top-header-titles" class="flex flex-col justify-center flex-1 mr-4">
+            <div id="top-header-titles" class="flex flex-col justify-center flex-1 mr-2 lg:mr-4 overflow-hidden">
                 <h2 id="th-title" class="text-lg font-black text-gray-800 leading-tight">Dashboard</h2>
                 <p id="th-desc" class="text-[10px] text-gray-500 font-bold hidden sm:block">Overview of your Business performance.</p>
             </div>
@@ -159,11 +172,12 @@
         </div>
 
         <!-- Scrollable Main Content -->
-        <main class="flex-1 overflow-hidden p-4 sm:p-6 lg:p-8 relative">
+        <main class="flex-1 overflow-y-auto lg:overflow-hidden p-3 sm:p-6 lg:p-8 relative w-full">
             
             <section id="section-dashboard" class="tab-section">
 
-                <div class="grid grid-cols-1 lg:grid-cols-4 gap-3 h-[calc(100vh-85px)] mb-0">
+                <!-- 🌟 FIX: Removed strict height on mobile so cards can stack! -->
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-3 h-auto lg:h-[calc(100vh-85px)] mb-6 lg:mb-0 pb-20 lg:pb-0">
                     
                     <!-- LEFT COLUMN (Span 3) -->
                     <div class="lg:col-span-3 flex flex-col gap-3 min-h-0">
@@ -214,7 +228,7 @@
                                 <div class="grid grid-cols-1 xl:grid-cols-4 gap-3 items-stretch flex-1">
                                     
                                     <!-- NEW: Most Urgent Orders Wrapper Card -->
-                                    <div id="urgent-orders-wrapper" class="xl:col-span-3 bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col h-full relative overflow-hidden">
+                                    <div id="urgent-orders-wrapper" class="xl:col-span-3 bg-white p-3 lg:p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col min-h-[250px] lg:h-full relative overflow-hidden">
                                         <h3 class="text-sm font-black text-gray-800 mb-3 uppercase tracking-wider shrink-0"><i class="fas fa-exclamation-circle text-red-500 me-2"></i> Most Urgent Orders</h3>
                                         <div id="urgent-orders-container" class="grid grid-cols-2 md:grid-cols-4 gap-2 flex-1 content-start overflow-y-auto hide-scrollbar">
                                             <!-- Cards injected via JS -->
@@ -247,7 +261,7 @@
                         </div> <!-- End Master Grid -->
 
                         <!-- Orders Table with Exact Colored Filters -->
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1 min-h-0">
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1 min-h-[350px] lg:min-h-0 mt-3 lg:mt-0">
                             <div class="bg-gray-50 px-5 py-4 border-b border-gray-200 flex flex-col xl:flex-row justify-between items-start xl:items-center shrink-0 gap-3">
                                 <h3 class="font-black text-gray-800 text-base flex items-center shrink-0"><i class="fas fa-list-ul text-gray-400 me-2"></i> Recent Orders</h3>
                                 <div class="flex gap-1 overflow-x-auto w-full xl:w-auto hide-scrollbar" id="table-status-filters">
@@ -1568,6 +1582,23 @@
         let allMenuItems = [];
         let allOrders = [];
 	let currentUser = null;
+// 🌟 NEW: Mobile Sidebar Logic
+        function toggleSidebar() {
+            const sidebar = document.getElementById('admin-sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                // Open Sidebar
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+                setTimeout(() => backdrop.classList.remove('opacity-0'), 10);
+            } else {
+                // Close Sidebar
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('opacity-0');
+                setTimeout(() => backdrop.classList.add('hidden'), 300);
+            }
+        }
 
         let livePollingTimer = null;
         let lastKnownOrderCount = 0;
@@ -2055,6 +2086,8 @@ async function logoutAdmin() {
 
         // 🌟 UPGRADED: BULLETPROOF TABS ENGINE WITH LOCK INTERCEPTOR
         function switchTab(tabId) {
+            // Close mobile sidebar if open
+            if (window.innerWidth <= 1024) toggleSidebar();
             // 1. Intercept Locked Tabs & Trigger Upsell Modal
             if (tabId === 'pos' && currentTenantPlan === 'basic') {
                 openBillingModal();
