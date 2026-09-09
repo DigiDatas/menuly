@@ -18,9 +18,26 @@
         body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f3f4f6; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* 🌟 NEW: Forces sidebar text to be visible on mobile */
+        /* 🌟 ULTIMATE MOBILE UI OVERHAUL CSS 🌟 */
         @media (max-width: 1024px) {
-            #admin-sidebar span.absolute, #admin-sidebar div.absolute { opacity: 1 !important; }
+            /* 1. Fix Sidebar Icon & Text Alignment */
+            #admin-sidebar span.absolute { opacity: 1 !important; left: 3.5rem !important; }
+            #admin-sidebar div.absolute { left: 1rem !important; transform: translateX(0) !important; }
+            
+            /* 2. Force Global Mobile Scrolling */
+            .tab-section { height: auto !important; min-height: 100vh !important; overflow-y: visible !important; display: flex !important; flex-direction: column !important; }
+            .overflow-hidden { overflow: visible !important; }
+            main.overflow-y-auto { overflow-x: hidden !important; padding-bottom: 120px !important; }
+            
+            /* 3. Free ALL Inner Tab Columns (Fixes Offers, Settings, VR overlaps) */
+            .min-h-0 { min-height: max-content !important; }
+            .flex-1.bg-white.rounded-2xl, .w-full.bg-white.rounded-2xl { min-height: 450px !important; } 
+            
+            /* 4. Fix Profile/Billing Modal Cropping */
+            #billingModal > div { height: 95vh !important; overflow-y: auto !important; }
+
+            /* 5. Lock Header to Top (Prevents Hamburger from disappearing) */
+            header { position: sticky !important; top: 0 !important; z-index: 50 !important; background: white !important; }
         }
     </style>
 </head>
@@ -119,22 +136,24 @@
     <!-- ================= MAIN CONTENT WRAPPER ================= -->
     <div class="flex-1 flex flex-col h-screen overflow-hidden relative bg-gray-100">
         
-        <!-- Top Action Bar -->
-        <header class="h-16 bg-white shadow-sm border-b border-gray-200 flex justify-between items-center px-4 lg:px-6 shrink-0 z-40 w-full">
+        <!-- Top Action Bar (Fixed for Mobile Wrapping) -->
+        <header class="h-auto min-h-[64px] py-2 lg:py-0 bg-white shadow-sm border-b border-gray-200 flex flex-wrap lg:flex-nowrap justify-between items-center px-4 lg:px-6 shrink-0 z-40 w-full">
             
-            <!-- 🌟 NEW: Mobile Hamburger Button -->
-            <button onclick="toggleSidebar()" class="lg:hidden text-gray-700 hover:text-red-600 text-xl mr-3 p-1 transition">
-                <i class="fas fa-bars"></i>
-            </button>
+            <div class="flex items-center w-full lg:w-auto flex-1">
+                <!-- 🌟 NEW: Mobile Hamburger Button -->
+                <button onclick="toggleSidebar()" class="lg:hidden text-gray-700 hover:text-red-600 text-2xl mr-4 p-2 transition z-50">
+                    <i class="fas fa-bars"></i>
+                </button>
 
-            <!-- 🌟 NEW: Dynamic Tab Headers -->
-            <div id="top-header-titles" class="flex flex-col justify-center flex-1 mr-2 lg:mr-4 overflow-hidden">
-                <h2 id="th-title" class="text-lg font-black text-gray-800 leading-tight">Dashboard</h2>
-                <p id="th-desc" class="text-[10px] text-gray-500 font-bold hidden sm:block">Overview of your Business performance.</p>
+                <!-- 🌟 NEW: Dynamic Tab Headers -->
+                <div id="top-header-titles" class="flex flex-col justify-center flex-1 mr-2 lg:mr-4 overflow-hidden">
+                    <h2 id="th-title" class="text-lg lg:text-xl font-black text-gray-800 leading-tight">Dashboard</h2>
+                    <p id="th-desc" class="text-[10px] text-gray-500 font-bold hidden sm:block">Overview of your Business performance.</p>
+                </div>
             </div>
 
-            <!-- Dynamic Date Filters -->
-            <div class="flex gap-1.5 items-center bg-gray-50 p-1 rounded-lg border border-gray-200 overflow-x-auto hide-scrollbar max-w-[50%]" id="time-filter-container">
+            <!-- Dynamic Date Filters (Drops down on mobile) -->
+            <div class="flex gap-1.5 items-center bg-gray-50 p-1 rounded-lg border border-gray-200 overflow-x-auto hide-scrollbar w-full lg:w-auto lg:max-w-[50%] mt-2 lg:mt-0 order-last lg:order-none" id="time-filter-container">
                 <!-- JS WILL INJECT MONTHS HERE -->
             </div>
 
@@ -346,13 +365,13 @@
         <section id="section-menu" class="tab-section hidden h-full flex flex-col p-4 bg-gray-100">
             
             <!-- Action Bar -->
-            <div class="flex justify-between items-center mb-4 shrink-0 bg-white p-2.5 rounded-xl border border-gray-200 shadow-sm">
-                <div class="flex bg-gray-100 p-1 rounded-lg">
-                    <button onclick="switchAdminLanguage('en')" id="filter-lang-en" class="px-4 py-1.5 rounded-md text-[11px] font-bold bg-white shadow-sm text-gray-800 transition">English (EN)</button>
-                    <button onclick="switchAdminLanguage('ar')" id="filter-lang-ar" class="px-4 py-1.5 rounded-md text-[11px] font-bold text-gray-500 hover:text-gray-800 transition">Arabic (AR)</button>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 shrink-0 bg-white p-2.5 rounded-xl border border-gray-200 shadow-sm gap-3 sm:gap-0">
+                <div class="flex bg-gray-100 p-1 rounded-lg w-full sm:w-auto justify-center">
+                    <button onclick="switchAdminLanguage('en')" id="filter-lang-en" class="flex-1 sm:flex-none px-4 py-1.5 rounded-md text-[11px] font-bold bg-white shadow-sm text-gray-800 transition">English (EN)</button>
+                    <button onclick="switchAdminLanguage('ar')" id="filter-lang-ar" class="flex-1 sm:flex-none px-4 py-1.5 rounded-md text-[11px] font-bold text-gray-500 hover:text-gray-800 transition">Arabic (AR)</button>
                 </div>
 
-                <div class="flex gap-2">
+                <div class="flex flex-wrap justify-end gap-2 w-full sm:w-auto">
                     <button onclick="saveMenuOrder()" id="btn-save-order" class="hidden bg-green-500 text-white px-4 py-1.5 rounded-lg shadow-sm hover:bg-green-600 font-bold text-xs transition items-center gap-1.5 animate-pulse">
                         <i class="fas fa-save"></i> Save Ordering
                     </button>
@@ -363,14 +382,14 @@
                     <button onclick="openMenuModal('add')" class="bg-red-600 text-white px-4 py-1.5 rounded-lg shadow-sm hover:bg-red-700 font-bold text-xs transition flex items-center gap-1.5">
                         <i class="fas fa-plus"></i> Add Item
                     </button>
-                    <button onclick="openJsonModal()" class="bg-gray-800 text-white px-4 py-1.5 rounded-lg shadow-sm hover:bg-gray-900 font-bold text-xs transition flex items-center gap-1.5">
+                    <button onclick="openJsonModal()" class="hidden lg:flex bg-gray-800 text-white px-4 py-1.5 rounded-lg shadow-sm hover:bg-gray-900 font-bold text-xs transition items-center gap-1.5">
                         <i class="fas fa-file-code"></i> JSON
                     </button>
                 </div>
             </div>
 
             <!-- Two Column Layout -->
-            <div class="flex flex-col lg:flex-row gap-4 flex-1 min-h-0 overflow-hidden">
+            <div class="flex flex-col-reverse lg:flex-row gap-4 flex-1 min-h-0">
                 
                 <!-- LEFT COLUMN: CATEGORIES -->
                 <div class="w-full lg:w-64 flex flex-col bg-white shadow-sm border border-gray-200 shrink-0 overflow-hidden rounded-xl">
@@ -403,6 +422,9 @@
                     <i class="fas fa-sync-alt text-red-500 transition-all duration-300"></i> Refresh
                 </button>
             </div>
+
+            <!-- 🌟 NEW: Reversing Wrapper for Mobile -->
+            <div class="flex flex-col-reverse lg:flex-col gap-4 flex-1">
 
             <!-- 🌟 PHASE 1: CUSTOMER ANALYTICS DASHBOARD (Kept Safe!) -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 shrink-0" id="customer-analytics-grid">
@@ -481,7 +503,7 @@
                 </div>
 
             </div>
-            <!-- 🌟 END SPLIT SCREEN -->
+            </div>
         </section>
 
 <!-- ================= TAB 5: OFFERS, BANNERS & FLASHCARDS ================= -->
@@ -609,11 +631,12 @@
     </div>
 <!-- ================= TAB 7: CASHIER POS (UNIFIED 3-PANE WORKSTATION) ================= -->
         <section id="section-pos" class="tab-section hidden h-full flex flex-col p-2 bg-gray-100">
-            <div class="flex gap-4 h-full min-h-0">
+            <!-- 🌟 FIX: Allow stacking on mobile -->
+            <div class="flex flex-col lg:flex-row gap-4 h-full min-h-0">
                 
                 <!-- ================= LEFT PANE: ORDER LINE ================= -->
-                <div class="w-[280px] xl:w-[320px] flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 shrink-0 overflow-hidden">
-                    <div class="p-4 border-b border-gray-100">
+                <!-- 🌟 FIX: Full width on mobile -->
+                <div class="w-full lg:w-[280px] xl:w-[320px] flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 shrink-0 overflow-hidden min-h-[400px] lg:min-h-0">                    <div class="p-4 border-b border-gray-100">
                         <div class="flex justify-between items-center mb-3">
                             <h2 class="text-lg font-black text-gray-800">Order Line</h2>
                             <button onclick="fetchDashboardData(this, false)" class="text-gray-400 hover:text-blue-500 transition"><i class="fas fa-sync-alt"></i></button>
@@ -632,7 +655,8 @@
                 </div>
 
                 <!-- ================= MIDDLE PANE: DYNAMIC (TABLES / MENU) ================= -->
-                <div class="flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <!-- 🌟 FIX: Stack on mobile with minimum height so tables show clearly -->
+                <div class="w-full lg:w-auto flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px] lg:min-h-0 mt-4 lg:mt-0">
                     <!-- Middle Header Toggle -->
                     <div class="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
                         <div class="flex bg-gray-200 p-1 rounded-lg">
@@ -688,7 +712,8 @@
                 </div>
 
                 <!-- ================= RIGHT PANE: CART & RECEIPT ================= -->
-                <div class="w-[280px] xl:w-[320px] flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 shrink-0 overflow-hidden relative">
+                <!-- 🌟 FIX: Full width on mobile -->
+                <div class="w-full lg:w-[280px] xl:w-[320px] flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 shrink-0 overflow-hidden relative min-h-[500px] lg:min-h-0 mt-4 lg:mt-0">
                     
                     <div class="p-4 border-b border-gray-100 bg-teal-50/30 shrink-0 flex justify-between items-start">
                         <div>
@@ -3118,7 +3143,7 @@ if (!graphActiveFilter) graphActiveFilter = 'week';
                             <h3 class="text-sm font-black text-gray-800 uppercase"><i class="fas fa-folder text-red-500 mr-1.5"></i> ${mk} <i class="fas fa-chevron-right text-[10px] mx-1 text-gray-400"></i> <span class="text-red-600">${sk}</span></h3>
                             <span class="text-[10px] font-bold text-gray-500 bg-gray-200 px-2 py-0.5 rounded">${subItems.length} Items</span>
                         </div>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 mb-8 section-grid min-h-[50px]" data-main="${mk}" data-sub="${sk}">
+                       <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 mb-8 section-grid min-h-[50px]" data-main="${mk}" data-sub="${sk}">
                     `;
                     
                     html += subItems.map(item => {
