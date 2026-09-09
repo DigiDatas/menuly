@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <!-- Supabase JS Client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 <style>
 :root{
   --ink:#181511;
@@ -547,21 +549,8 @@ tbody tr:nth-child(even) td.hi-col{background:#FBDACB;}
 <!-- ================= PREMIUM NEXT LEVEL ================= -->
 <section class="premium-features section-pad" style="background: var(--ink); color: #fff; overflow: hidden; position: relative; border-radius: 40px; margin: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
   <!-- CSS Animations for Motion Graphics -->
+  <!-- CSS Animations for Motion Graphics -->
   <style>
-    .vr-mockup-container .vr-bg-image {
-        position: absolute;
-        inset: 0;
-        background-image: url('https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/RESTAURANT-PAnorama.jpg');
-        background-size: cover;
-        background-position: center;
-        transition: background-size 0.8s ease-in-out;
-    }
-    .vr-mockup-container:hover .vr-bg-image {
-        background-size: auto 260%; /* Zooms in on hover */
-        animation: panVrHover 5s linear infinite alternate;
-    }
-
-    @keyframes panVrHover { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
     @keyframes pulseHotspot { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.8); } 70% { box-shadow: 0 0 0 12px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
     @keyframes aiWave { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.5); opacity: 0; } }
     @keyframes aiPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
@@ -581,16 +570,12 @@ tbody tr:nth-child(even) td.hi-col{background:#FBDACB;}
       
       <!-- VR Feature Card with Motion Graphic -->
       <div data-reveal style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 32px; text-align: center; backdrop-filter: blur(10px); transition: transform 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
-        <!-- VR Mockup Window -->
-        <div class="vr-mockup-container" style="width: 100%; height: 160px; border-radius: 16px; overflow: hidden; position: relative; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1);">
-            <!-- Panning Panorama Background -->
-            <div class="vr-bg-image"></div>
-            <!-- Pulsing Hotspot -->
-            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; background: rgba(255,255,255,0.9); border: 2px solid var(--flame); border-radius: 50%; animation: pulseHotspot 2s infinite; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-arrow-up" style="font-size: 10px; color: var(--flame);"></i>
-            </div>
+        <!-- 🌟 REAL VR Engine Window -->
+        <div style="width: 100%; height: 160px; border-radius: 16px; overflow: hidden; position: relative; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); pointer-events: none;">
+            <div id="marketing-vr-viewer" style="width: 100%; height: 100%;"></div>
+            
             <!-- UI Overlay -->
-            <div style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; color: white; display: flex; align-items: center; gap: 4px;">
+            <div style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; color: white; display: flex; align-items: center; gap: 4px; z-index: 10;">
                 <i class="fas fa-vr-cardboard"></i> 360° Live View
             </div>
         </div>
@@ -895,6 +880,21 @@ async function loginWithGoogle() {
     });
     if (error) alert("Login Error: " + error.message);
 }
+// 🌟 Initialize Real 360 VR on Marketing Page
+window.addEventListener('load', () => {
+    if (typeof pannellum !== 'undefined') {
+        pannellum.viewer('marketing-vr-viewer', {
+            "type": "equirectangular",
+            "panorama": "https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/RESTAURANT-PAnorama.jpg",
+            "autoLoad": true,
+            "showControls": false,
+            "mouseZoom": false,
+            "keyboardZoom": false,
+            "disableKeyboardCtrl": true,
+            "autoRotate": -2  // Rotates slowly right to left
+        });
+    }
+});
 </script>
 </body>
 </html>

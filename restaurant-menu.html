@@ -394,6 +394,9 @@
 
                 <div id="modalCategoryBadge" class="absolute bottom-3 start-3 bg-white/95 backdrop-blur px-3 py-1.5 rounded-lg text-sm font-bold text-red-600 shadow-sm z-20"></div>
                 
+                <!-- 🌟 NEW: Expanded Modal Sizes Badge -->
+                <div id="modalOptionsBadge" class="hidden absolute bottom-3 end-3 bg-blue-600/95 backdrop-blur px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold text-white shadow-sm z-20 items-center gap-1 border border-blue-400 max-w-[50%]"></div>
+                
                 <div id="modalTodaySpecialBadge" class="hidden absolute top-3 start-3 md:end-12 md:start-auto bg-gradient-to-r from-orange-400 to-red-500 px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold text-white shadow-lg flex items-center gap-1 z-20">
                     <i class="fas fa-star text-yellow-200"></i> <span id="label-modal-special">Today's Special</span>
                 </div>
@@ -2437,10 +2440,11 @@ let badgeHtml = '';
                 else if(item.isTodaySpecial) badgeHtml = `<div class="absolute top-2 end-2 bg-gradient-to-r from-orange-400 to-red-500 px-2 py-1 rounded-lg text-[8px] sm:text-[10px] font-bold text-white shadow-sm z-10"><i class="fas fa-star text-[8px]"></i> Special</div>`;
                 else if(item.video) badgeHtml = `<div class="absolute top-2 end-2 bg-black/70 backdrop-blur px-2 py-1 rounded-lg text-[10px] sm:text-xs font-bold text-white shadow-sm flex items-center gap-1 z-10"><i class="fas fa-play"></i> Video</div>`;
 
-                // 🌟 NEW: Sizes / Options Indication Badge!
+                // 🌟 UPDATED: Dynamically injects actual sizes!
                 let optionsBadge = '';
                 if (item.variations && item.variations.length > 0) {
-                    optionsBadge = `<div class="absolute bottom-2 start-2 bg-blue-600/90 backdrop-blur px-2 py-1 rounded-lg text-[8px] sm:text-[10px] font-bold text-white shadow-sm z-20 flex items-center gap-1 border border-blue-400"><i class="fas fa-tags text-[8px]"></i> Options</div>`;
+                    const sizeNames = item.variations.map(v => v.name).join(' / ');
+                    optionsBadge = `<div class="absolute bottom-2 start-2 bg-blue-600/90 backdrop-blur px-2 py-1 rounded-lg text-[8px] sm:text-[10px] font-bold text-white shadow-sm z-20 flex items-center gap-1 border border-blue-400 max-w-[85%]"><i class="fas fa-tags text-[8px] shrink-0"></i> <span class="truncate">${sizeNames}</span></div>`;
                 }
 
                 const urls = item.imgUrls || [item.img];
@@ -2585,6 +2589,18 @@ let badgeHtml = '';
             document.getElementById('modalCategoryBadge').textContent = item.subCat;
             document.getElementById('modalTitle').textContent = item.name;
             document.getElementById('modalDesc').textContent = item.desc;
+            
+            // 🌟 NEW: Fill the Modal Options Badge
+            const optionsBadgeEl = document.getElementById('modalOptionsBadge');
+            if (item.variations && item.variations.length > 0) {
+                const sizeNames = item.variations.map(v => v.name).join(' / ');
+                optionsBadgeEl.innerHTML = `<i class="fas fa-tags text-[10px] shrink-0"></i> <span class="truncate">${sizeNames}</span>`;
+                optionsBadgeEl.classList.remove('hidden');
+                optionsBadgeEl.classList.add('flex');
+            } else {
+                optionsBadgeEl.classList.add('hidden');
+                optionsBadgeEl.classList.remove('flex');
+            }
             
             const specialBadge = document.getElementById('modalTodaySpecialBadge');
             if(item.isTodaySpecial) {
@@ -3828,10 +3844,11 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
                 if(item.isTodaySpecial) badgeHtml = `<div class="absolute top-2 end-2 bg-gradient-to-r from-orange-400 to-red-500 px-2 py-1 rounded-lg text-[8px] sm:text-[10px] font-bold text-white shadow-sm z-10"><i class="fas fa-star text-[8px]"></i> Special</div>`;
                 else if(item.video) badgeHtml = `<div class="absolute top-2 end-2 bg-black/70 backdrop-blur px-2 py-1 rounded-lg text-[8px] sm:text-[10px] font-bold text-white shadow-sm flex items-center gap-1 z-10"><i class="fas fa-play"></i> Video</div>`;
 
-                // 🌟 NEW: Sizes / Options Indication Badge!
+                // 🌟 UPDATED: Dynamically injects actual sizes!
                 let optionsBadge = '';
                 if (item.variations && item.variations.length > 0) {
-                    optionsBadge = `<div class="absolute bottom-2 start-2 bg-blue-600/90 backdrop-blur px-2 py-1 rounded-lg text-[8px] sm:text-[10px] font-bold text-white shadow-sm z-20 flex items-center gap-1 border border-blue-400"><i class="fas fa-tags text-[8px]"></i> Options</div>`;
+                    const sizeNames = item.variations.map(v => v.name).join(' / ');
+                    optionsBadge = `<div class="absolute bottom-2 start-2 bg-blue-600/90 backdrop-blur px-2 py-1 rounded-lg text-[8px] sm:text-[10px] font-bold text-white shadow-sm z-20 flex items-center gap-1 border border-blue-400 max-w-[85%]"><i class="fas fa-tags text-[8px] shrink-0"></i> <span class="truncate">${sizeNames}</span></div>`;
                 }
 
                 const urls = item.imgUrls || [item.img];
