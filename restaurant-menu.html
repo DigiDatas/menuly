@@ -170,13 +170,29 @@
             <h3 id="empty-text" class="text-xl font-medium text-gray-500">No items found.</h3>
         </div>
     </main>
-    <!-- FIX: Responsive Game Button (Icon on mobile, Text on desktop) -->
-    <button id="game-trigger-btn" onclick="openGameModal()" class="flex opacity-0 pointer-events-none transition-all duration-500 fixed bottom-6 start-4 sm:start-6 z-50 bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-3 sm:px-4 sm:py-2 rounded-full items-center gap-0 sm:gap-3 shadow-2xl hover:scale-105 animate-bounce cursor-pointer border-2 border-white/20 group">
-        <div class="bg-white/20 p-2 sm:p-1.5 rounded-full group-hover:rotate-12 transition-transform flex items-center justify-center">
-            <i class="fas fa-gamepad text-xl sm:text-lg"></i>
+    <!-- 🌟 FIX: Combined Smart Action Menu (Bottom Left) -->
+    <div id="smart-action-menu" class="fixed bottom-6 start-4 sm:start-6 z-[100] flex flex-col-reverse items-center gap-3 transition-opacity duration-500 opacity-0 pointer-events-none">
+        
+        <!-- Main Toggle Button -->
+        <button onclick="toggleActionMenu()" class="w-12 h-12 bg-gray-900 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform border-2 border-white/20">
+            <i id="action-menu-icon" class="fas fa-sparkles text-lg"></i>
+        </button>
+        
+        <!-- Expanded Items Stack (Hidden by default) -->
+        <div id="action-menu-items" class="flex flex-col items-center gap-3 transition-all duration-300 origin-bottom scale-y-0 opacity-0 pointer-events-none mb-1">
+            
+            <!-- Game Button -->
+            <button id="game-trigger-btn" onclick="openGameModal(); toggleActionMenu()" class="hidden w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-full items-center justify-center shadow-lg hover:scale-110 transition-transform" title="Play & Win">
+                <i class="fas fa-gamepad"></i>
+            </button>
+
+            <!-- AI Agent Container -->
+            <div id="ai-agent-wrapper" class="w-10 h-10 relative flex items-center justify-center rounded-full bg-white shadow-lg overflow-hidden hidden">
+                <!-- ElevenLabs widget injects here -->
+            </div>
+            
         </div>
-        <span class="hidden sm:block font-bold text-sm pr-1">Play & Win!</span>
-    </button>
+    </div>
 
     <!-- Game Arcade Modal -->
     <div id="gameModal" class="fixed inset-0 z-[80] hidden items-center justify-center p-4 sm:p-6">
@@ -1284,15 +1300,30 @@ let relatedItemsData = []; // (You did this perfectly!)
         // ==========================================
         // 🌟 AI VOICE AGENT INJECTOR
         // ==========================================
+        // ==========================================
+        // 🌟 AI VOICE AGENT INJECTOR
+        // ==========================================
         function injectCustomerAIAgent(agentId) {
-            // Safety check to prevent duplicates
             if (document.getElementById('elevenlabs-customer-widget')) return;
+
+            const wrapper = document.getElementById('ai-agent-wrapper');
+            if (!wrapper) return;
+
+            // Make the wrapper visible now that we have an AI agent
+            wrapper.classList.remove('hidden');
 
             // 1. Build the widget tag
             const widget = document.createElement('elevenlabs-convai');
             widget.id = 'elevenlabs-customer-widget';
             widget.setAttribute('agent-id', agentId);
-            document.body.appendChild(widget);
+            
+            // Force the widget to perfectly fill our tiny container!
+            widget.style.position = 'absolute';
+            widget.style.inset = '0';
+            widget.style.width = '100%';
+            widget.style.height = '100%';
+            
+            wrapper.appendChild(widget);
 
             // 2. Load the ElevenLabs system script
             if (!document.getElementById('elevenlabs-script')) {
@@ -1303,14 +1334,25 @@ let relatedItemsData = []; // (You did this perfectly!)
                 script.type = 'text/javascript';
                 document.body.appendChild(script);
             }
-
-            // 🌟 THE FIX: Push the "Back to Top" arrow up to make room for the AI Orb!
-            const backToTopBtn = document.getElementById('back-to-top-btn');
-            if (backToTopBtn) {
-                backToTopBtn.classList.remove('bottom-6');
-                backToTopBtn.classList.add('bottom-[100px]', 'md:bottom-6'); 
-            }
         }
+
+        // 🌟 NEW: Toggle Logic for the Action Menu
+        let isActionMenuOpen = false;
+        window.toggleActionMenu = function() {
+            isActionMenuOpen = !isActionMenuOpen;
+            const items = document.getElementById('action-menu-items');
+            const icon = document.getElementById('action-menu-icon');
+            
+            if (isActionMenuOpen) {
+                items.classList.remove('scale-y-0', 'opacity-0', 'pointer-events-none');
+                items.classList.add('scale-y-100', 'opacity-100', 'pointer-events-auto');
+                icon.classList.replace('fa-sparkles', 'fa-times');
+            } else {
+                items.classList.add('scale-y-0', 'opacity-0', 'pointer-events-none');
+                items.classList.remove('scale-y-100', 'opacity-100', 'pointer-events-auto');
+                icon.classList.replace('fa-times', 'fa-sparkles');
+            }
+        };
 
         async function init() {
             try {
@@ -1517,13 +1559,20 @@ let relatedItemsData = []; // (You did this perfectly!)
 
             isGameTriggerEnabled = (String(rawBranding.P || "").trim().toLowerCase() === 'true');
             const gameBtn = document.getElementById('game-trigger-btn');
+            const actionMenu = document.getElementById('smart-action-menu');
+            
             if (isGameTriggerEnabled && gameBtn) {
-                setTimeout(() => {
-                    if (!uiScrollTimeout) {
-                        gameBtn.classList.remove('opacity-0', 'pointer-events-none');
-                        gameBtn.classList.add('opacity-100');
-                    }
-                }, 10000); 
+                gameBtn.classList.remove('hidden');
+                gameBtn.classList.add('flex');
+            }
+            
+            // Show the action menu container 2 seconds after load (if features are active)
+            setTimeout(() => {
+                if (!uiScrollTimeout && actionMenu && (isGameTriggerEnabled || rawBranding.ai_agent_enabled)) {
+                    actionMenu.classList.remove('opacity-0', 'pointer-events-none');
+                    actionMenu.classList.add('opacity-100', 'pointer-events-auto');
+                }
+            }, 2000); 
             }
 
             // 🌟 Turn on Virtual Store Button in Header
@@ -2207,58 +2256,47 @@ function setupVerticalDraggable(elementId) {
             }
             // -----------------------------------------
 
-            // --- NEW: Smart Hide/Show Logic for Floating Buttons ---
+            // --- NEW: Smart Hide/Show Logic for ALL Floating Buttons ---
             const backToTopBtn = document.getElementById('back-to-top-btn');
-            const gameBtn = document.getElementById('game-trigger-btn');
-            const aiWidget = document.getElementById('elevenlabs-customer-widget'); // 🌟 NEW: Target the AI Agent
+            const actionMenu = document.getElementById('smart-action-menu');
             
-            // 1. As soon as the user scrolls, smoothly fade buttons out to clear the screen
+            // 1. As soon as the user scrolls, smoothly fade buttons out
             if (backToTopBtn) {
                 backToTopBtn.classList.add('opacity-0', 'pointer-events-none');
                 backToTopBtn.classList.remove('opacity-100');
             }
-            if (gameBtn && isGameTriggerEnabled) {
-                gameBtn.classList.add('opacity-0', 'pointer-events-none');
-                gameBtn.classList.remove('opacity-100');
-            }
-            if (aiWidget) {
-                aiWidget.style.transition = 'opacity 0.3s ease';
-                aiWidget.style.opacity = '0';
-                aiWidget.style.pointerEvents = 'none';
+            if (actionMenu) {
+                actionMenu.classList.add('opacity-0', 'pointer-events-none');
+                actionMenu.classList.remove('opacity-100', 'pointer-events-auto');
+                // Auto-collapse the menu if they start scrolling while it's open
+                if (typeof isActionMenuOpen !== 'undefined' && isActionMenuOpen) {
+                    toggleActionMenu();
+                }
             }
 
-            // 2. Clear the previous timer because they are still scrolling
             clearTimeout(uiScrollTimeout);
 
-            // 3. Start a fast timer. Once scrolling stops, fade everything back in!
+            // 2. Start timer. Fade them back in when scrolling stops!
             uiScrollTimeout = setTimeout(() => {
                 
-                // Calculate if they have scrolled past 50% of the entire page
                 const totalPageHeight = document.documentElement.scrollHeight - window.innerHeight;
                 const scrollPercentage = (currentScrollY / totalPageHeight) * 100;
 
-                // Show Top Button ONLY if past 50%
+                // Show Top Button ONLY if past 50% of the page
                 if (backToTopBtn && scrollPercentage >= 50) {
                     backToTopBtn.classList.remove('opacity-0', 'pointer-events-none');
                     backToTopBtn.classList.add('opacity-100');
                 }
 
-                // Show Game Button
-                if (gameBtn && isGameTriggerEnabled) {
-                    gameBtn.classList.remove('opacity-0', 'pointer-events-none');
-                    gameBtn.classList.add('opacity-100');
-                }
-
-                // Show AI Agent
-                if (aiWidget) {
-                    aiWidget.style.opacity = '1';
-                    aiWidget.style.pointerEvents = 'auto';
+                // Show Action Menu ALWAYS when stopped (if features exist)
+                if (actionMenu && (isGameTriggerEnabled || (window.dbSettingsEn && window.dbSettingsEn.ai_agent_enabled))) {
+                    actionMenu.classList.remove('opacity-0', 'pointer-events-none');
+                    actionMenu.classList.add('opacity-100', 'pointer-events-auto');
                 }
                 
-                // Reset timer state
                 uiScrollTimeout = null;
 
-            }, 800); // 🌟 TWEAKED: Snappy 800ms delay after scroll stops!
+            }, 800); // Snappy 800ms delay after scroll stops
 
         }, {passive: true});
 
