@@ -185,7 +185,7 @@
             <i class="fas fa-search text-5xl text-gray-300 mb-4"></i>
             <h3 id="empty-text" class="text-xl font-medium text-gray-500">No items found.</h3>
         </div>
-    </main>
+    
     <!-- 🌟 FIX: Animated Action Hub (Bottom Left) -->
     <div id="smart-action-menu" class="fixed bottom-6 start-4 sm:start-6 z-[100] flex flex-col-reverse items-center gap-3 transition-opacity duration-500 opacity-0 pointer-events-none">
         
@@ -2301,12 +2301,18 @@ function setupVerticalDraggable(elementId) {
             // --- NEW: Smart Hide/Show Logic for ALL Floating Buttons ---
             const backToTopBtn = document.getElementById('back-to-top-btn');
             const actionMenu = document.getElementById('smart-action-menu');
+            const aiWidget = document.getElementById('elevenlabs-customer-widget'); // 🌟 NEW: Grab the AI widget
             
             // 1. As soon as the user scrolls, smoothly fade buttons out
             if (backToTopBtn) {
                 backToTopBtn.classList.add('opacity-0', 'pointer-events-none');
                 backToTopBtn.classList.remove('opacity-100');
+                
+                // 🌟 FIX: Drop the arrow back to its default bottom position!
+                backToTopBtn.classList.remove('bottom-[100px]');
+                backToTopBtn.classList.add('bottom-6');
             }
+            
             if (actionMenu) {
                 actionMenu.classList.add('opacity-0', 'pointer-events-none');
                 actionMenu.classList.remove('opacity-100', 'pointer-events-auto');
@@ -2314,6 +2320,11 @@ function setupVerticalDraggable(elementId) {
                 if (typeof isActionMenuOpen !== 'undefined' && isActionMenuOpen) {
                     toggleActionMenu();
                 }
+            }
+
+            // 🌟 FIX: Instantly hide the AI Widget when scrolling starts
+            if (aiWidget && aiWidget.style.display === 'block') {
+                aiWidget.style.display = 'none';
             }
 
             clearTimeout(uiScrollTimeout);
