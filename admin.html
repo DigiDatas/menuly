@@ -3813,15 +3813,19 @@ async function handleVrUpload(event) {
                 ? ['ITM-001', 'en', 'Fresh Apples 1kg', 'Fruits', 'Fresh', '15', '1', '', 'TRUE', 'https://example.com/apple.jpg', '', '', '1kg=15|2kg=28', 'Farm fresh organic apples']
                 : ['ITM-001', 'en', 'Spicy Chicken Burger', 'Burgers', 'Chicken', '25', '450', '1', '', 'FALSE', 'https://example.com/burger.jpg', '', '', 'Combo=35|Spicy=26', 'Chicken, lettuce, spicy mayo'];
             
-            // Sample AR Data (Updated ID to 002)
+            // Sample AR Data
             const dummyRowAr = isGrocery 
-                ? ['ITM-002', 'ar', 'تفاح طازج 1 كجم', 'فواكه', 'طازج', '15', '1', '', 'TRUE', 'https://example.com/apple.jpg', '', '', '1kg=15|2kg=28', 'تفاح عضوي طازج من المزرعة']
-                : ['ITM-002', 'ar', 'برجر دجاج حار', 'برجر', 'دجاج', '25', '450', '1', '', 'FALSE', 'https://example.com/burger.jpg', '', '', 'Combo=35|Spicy=26', 'دجاج، خس، مايونيز حار'];
+                ? ['ITM-001', 'ar', 'تفاح طازج 1 كجم', 'فواكه', 'طازج', '15', '1', '', 'TRUE', 'https://example.com/apple.jpg', '', '', '1kg=15|2kg=28', 'تفاح عضوي طازج من المزرعة']
+                : ['ITM-001', 'ar', 'برجر دجاج حار', 'برجر', 'دجاج', '25', '450', '1', '', 'FALSE', 'https://example.com/burger.jpg', '', '', 'Combo=35|Spicy=26', 'دجاج، خس، مايونيز حار'];
 
-            // 🌟 FIX: Use \n instead of \\n so Excel correctly breaks the rows!
-            let csvContent = "\uFEFF" + headers.join(',') + '\n' + 
-                             dummyRowEn.map(v => `"${v}"`).join(',') + '\n' + 
-                             dummyRowAr.map(v => `"${v}"`).join(',');
+            // 🌟 BULLETPROOF FIX: Use Arrays to force real newlines!
+            const rows = [];
+            rows.push(headers.join(','));
+            rows.push(dummyRowEn.map(v => `"${v}"`).join(','));
+            rows.push(dummyRowAr.map(v => `"${v}"`).join(','));
+            
+            // Join the rows with a real Javascript line break
+            const csvContent = "\uFEFF" + rows.join("\n");
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
@@ -3895,9 +3899,12 @@ async function handleVrUpload(event) {
             const errorMsg = document.getElementById('csv-error-msg');
             errorMsg.classList.add('hidden');
 
-            try {
+           try {
+                // 🌟 FIX: Clean up broken \n characters if they uploaded the old template
+                let cleanText = uploadedCsvText.replace(/\\n/g, '\n').replace(/\\uFEFF/g, '');
+                
                 // Split lines, accounting for Mac/Windows hidden characters
-                const lines = uploadedCsvText.split(/\\r?\\n/).filter(l => l.trim() !== '');
+                const lines = cleanText.split(/\r?\n/).filter(l => l.trim() !== '');
                 if (lines.length < 2) throw new Error("CSV file is empty or missing data rows.");
 
                 // Parse headers dynamically
