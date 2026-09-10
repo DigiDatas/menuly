@@ -1439,7 +1439,7 @@ let relatedItemsData = []; // (You did this perfectly!)
                 
                 restaurantId = tenantData.id; 
                 window.businessType = tenantData.business_type || 'restaurant'; // 🌟 Save globally!
-                document.title = (tenantData.slug || "Digital Menu") + " - Order Online";
+                document.title = (tenantData.restaurant_name || "Digital Menu") + " - Order Online";
                 // Load favorites now that we know the ID
                 likedItems = new Set(JSON.parse(localStorage.getItem('likedItems_' + restaurantId)) || []);
 
@@ -1447,7 +1447,7 @@ let relatedItemsData = []; // (You did this perfectly!)
                 waiterChannel = supabaseClient.channel('waiter-alerts-' + restaurantId);
                 waiterChannel.subscribe();
                 loadCustomerTables();
-// ==========================================
+		// ==========================================
                 // 🌟 NEW: FETCH BRAND NAMES FROM SETTINGS
                 // ==========================================
                 const { data: settingsData, error: settingsError } = await supabaseClient
@@ -1461,6 +1461,9 @@ let relatedItemsData = []; // (You did this perfectly!)
                     // Save the data to our global variables
                     brandNameEn = settingsData.brand_name || "Our Restaurant";
                     brandNameAr = settingsData.brand_name_ar || brandNameEn; 
+                    
+                    // 🌟 ADD THIS ONE LINE RIGHT HERE! 🌟
+                    document.title = brandNameEn + " - Order Online";
                     
                     // Update the screen immediately
                     if (typeof updateBrandNamesUI === "function") {
