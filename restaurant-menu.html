@@ -170,12 +170,12 @@
             <h3 id="empty-text" class="text-xl font-medium text-gray-500">No items found.</h3>
         </div>
     </main>
-    <!-- FIX: Replaced 'hidden' with smooth opacity transitions. Added flex by default but invisible. -->
-    <button id="game-trigger-btn" onclick="openGameModal()" class="flex opacity-0 pointer-events-none transition-opacity duration-500 fixed bottom-6 start-6 z-50 bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-2 py-1 rounded-full items-center gap-3 shadow-2xl hover:scale-105 animate-bounce cursor-pointer border-2 border-white/20 group">
-        <div class="bg-white/20 p-2 rounded-full group-hover:rotate-12 transition-transform">
-            <i class="fas fa-gamepad text-xl"></i>
+    <!-- FIX: Responsive Game Button (Icon on mobile, Text on desktop) -->
+    <button id="game-trigger-btn" onclick="openGameModal()" class="flex opacity-0 pointer-events-none transition-all duration-500 fixed bottom-6 start-4 sm:start-6 z-50 bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-3 sm:px-4 sm:py-2 rounded-full items-center gap-0 sm:gap-3 shadow-2xl hover:scale-105 animate-bounce cursor-pointer border-2 border-white/20 group">
+        <div class="bg-white/20 p-2 sm:p-1.5 rounded-full group-hover:rotate-12 transition-transform flex items-center justify-center">
+            <i class="fas fa-gamepad text-xl sm:text-lg"></i>
         </div>
-        <span class="font-bold text-sm pr-1">Play & Win!</span>
+        <span class="hidden sm:block font-bold text-sm pr-1">Play & Win!</span>
     </button>
 
     <!-- Game Arcade Modal -->
@@ -1308,7 +1308,7 @@ let relatedItemsData = []; // (You did this perfectly!)
             const backToTopBtn = document.getElementById('back-to-top-btn');
             if (backToTopBtn) {
                 backToTopBtn.classList.remove('bottom-6');
-                backToTopBtn.classList.add('bottom-[100px]'); 
+                backToTopBtn.classList.add('bottom-[100px]', 'md:bottom-6'); 
             }
         }
 
@@ -2210,8 +2210,9 @@ function setupVerticalDraggable(elementId) {
             // --- NEW: Smart Hide/Show Logic for Floating Buttons ---
             const backToTopBtn = document.getElementById('back-to-top-btn');
             const gameBtn = document.getElementById('game-trigger-btn');
+            const aiWidget = document.getElementById('elevenlabs-customer-widget'); // 🌟 NEW: Target the AI Agent
             
-            // 1. As soon as the user scrolls, smoothly fade BOTH buttons out
+            // 1. As soon as the user scrolls, smoothly fade buttons out to clear the screen
             if (backToTopBtn) {
                 backToTopBtn.classList.add('opacity-0', 'pointer-events-none');
                 backToTopBtn.classList.remove('opacity-100');
@@ -2220,11 +2221,16 @@ function setupVerticalDraggable(elementId) {
                 gameBtn.classList.add('opacity-0', 'pointer-events-none');
                 gameBtn.classList.remove('opacity-100');
             }
+            if (aiWidget) {
+                aiWidget.style.transition = 'opacity 0.3s ease';
+                aiWidget.style.opacity = '0';
+                aiWidget.style.pointerEvents = 'none';
+            }
 
             // 2. Clear the previous timer because they are still scrolling
             clearTimeout(uiScrollTimeout);
 
-            // 3. Start a 3-second timer. If it finishes without being interrupted by another scroll, show the buttons!
+            // 3. Start a fast timer. Once scrolling stops, fade everything back in!
             uiScrollTimeout = setTimeout(() => {
                 
                 // Calculate if they have scrolled past 50% of the entire page
@@ -2237,16 +2243,22 @@ function setupVerticalDraggable(elementId) {
                     backToTopBtn.classList.add('opacity-100');
                 }
 
-                // Show Game Button (always shows when stopped, if enabled)
+                // Show Game Button
                 if (gameBtn && isGameTriggerEnabled) {
                     gameBtn.classList.remove('opacity-0', 'pointer-events-none');
                     gameBtn.classList.add('opacity-100');
+                }
+
+                // Show AI Agent
+                if (aiWidget) {
+                    aiWidget.style.opacity = '1';
+                    aiWidget.style.pointerEvents = 'auto';
                 }
                 
                 // Reset timer state
                 uiScrollTimeout = null;
 
-            }, 1000); // 3-second delay after scroll stops
+            }, 800); // 🌟 TWEAKED: Snappy 800ms delay after scroll stops!
 
         }, {passive: true});
 
