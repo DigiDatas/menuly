@@ -43,7 +43,7 @@
             /* 5. Lock Header to Top */
             header { position: sticky !important; top: 0 !important; z-index: 50 !important; background: white !important; }
         }
-    /* 🌟 POS TABLE MISSING CLASSES FIX 🌟 */
+    /* 🌟 POS TABLE & CHAIR SHAPE FIX 🌟 */
         .rounded-t-full { border-top-left-radius: 9999px !important; border-top-right-radius: 9999px !important; }
         .rounded-b-full { border-bottom-left-radius: 9999px !important; border-bottom-right-radius: 9999px !important; }
         .hover\:scale-125:hover { transform: scale(1.25) !important; }
@@ -51,6 +51,15 @@
         @media (min-width: 1024px) {
             .lg\:gap-14 { gap: 3.5rem !important; }
         }
+
+        /* 🌟 MISSING CHAIR COLORS FIX 🌟 */
+        .bg-gray-300 { background-color: #d1d5db !important; }
+        .hover\:bg-teal-300:hover { background-color: #5eead4 !important; }
+        .bg-teal-500 { background-color: #14b8a6 !important; }
+
+        /* 🌟 LOGO OVERLAP FIX 🌟 */
+        #admin-brand-logo:not(.hidden) + #admin-default-icon { display: none !important; }
+        div:has(> #admin-brand-logo:not(.hidden)) { background-color: transparent !important; box-shadow: none !important; }
     </style>
 </head>
 <body class="flex h-screen bg-gray-100 font-sans antialiased overflow-hidden text-gray-800">
