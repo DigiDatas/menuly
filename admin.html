@@ -43,6 +43,14 @@
             /* 5. Lock Header to Top */
             header { position: sticky !important; top: 0 !important; z-index: 50 !important; background: white !important; }
         }
+    /* 🌟 POS TABLE MISSING CLASSES FIX 🌟 */
+        .rounded-t-full { border-top-left-radius: 9999px !important; border-top-right-radius: 9999px !important; }
+        .rounded-b-full { border-bottom-left-radius: 9999px !important; border-bottom-right-radius: 9999px !important; }
+        .hover\:scale-125:hover { transform: scale(1.25) !important; }
+        
+        @media (min-width: 1024px) {
+            .lg\:gap-14 { gap: 3.5rem !important; }
+        }
     </style>
 </head>
 <body class="flex h-screen bg-gray-100 font-sans antialiased overflow-hidden text-gray-800">
