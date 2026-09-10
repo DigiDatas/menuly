@@ -51,8 +51,18 @@
 
         /* Image Loading Animation */
         .img-loading { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: loading 1.5s infinite; }
-        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+       @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        
+        /* 🌟 NEW: Action Hub Sliding Animation */
+        @keyframes slideSwap {
+            0%, 40% { transform: translateX(0); opacity: 1; }
+            45%, 50% { transform: translateX(100%); opacity: 0; }
+            55% { transform: translateX(-100%); opacity: 0; }
+            60%, 100% { transform: translateX(0); opacity: 1; }
+        }
+        .animate-slide-swap-1 { animation: slideSwap 6s infinite ease-in-out; }
+        .animate-slide-swap-2 { animation: slideSwap 6s infinite ease-in-out; animation-delay: 3s; opacity: 0; }
     </style>
 </head>
 <body class="text-gray-800 antialiased transition-colors duration-300" ondragstart="return false;" onselectstart="return false;">
@@ -170,26 +180,33 @@
             <h3 id="empty-text" class="text-xl font-medium text-gray-500">No items found.</h3>
         </div>
     </main>
-    <!-- 🌟 FIX: Combined Smart Action Menu (Bottom Left) -->
+    <!-- 🌟 NEW: Animated Action Hub (Bottom Left) -->
     <div id="smart-action-menu" class="fixed bottom-6 start-4 sm:start-6 z-[100] flex flex-col-reverse items-center gap-3 transition-opacity duration-500 opacity-0 pointer-events-none">
         
-        <!-- Main Toggle Button -->
-        <button onclick="toggleActionMenu()" class="w-12 h-12 bg-gray-900 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform border-2 border-white/20">
-            <i id="action-menu-icon" class="fas fa-sparkles text-lg"></i>
+        <!-- Main Animated Toggle Button -->
+        <button onclick="toggleActionMenu()" class="w-14 h-14 bg-gray-900 text-white rounded-full shadow-2xl overflow-hidden border-2 border-white/20 hover:scale-105 transition-transform relative">
+            
+            <div id="action-icon-slider" class="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
+                <!-- Sliding Icons -->
+                <i class="fas fa-gamepad text-2xl text-purple-400 absolute animate-slide-swap-1"></i>
+                <i class="fas fa-robot text-2xl text-teal-400 absolute animate-slide-swap-2"></i>
+            </div>
+            
+            <i id="action-menu-close" class="fas fa-times text-xl absolute inset-0 m-auto flex items-center justify-center opacity-0 transition-opacity duration-300 scale-50"></i>
         </button>
         
-        <!-- Expanded Items Stack (Hidden by default) -->
+        <!-- Expanded Items Stack (Pops UP) -->
         <div id="action-menu-items" class="flex flex-col items-center gap-3 transition-all duration-300 origin-bottom scale-y-0 opacity-0 pointer-events-none mb-1">
             
-            <!-- Game Button -->
-            <button id="game-trigger-btn" onclick="openGameModal(); toggleActionMenu()" class="hidden w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-full items-center justify-center shadow-lg hover:scale-110 transition-transform" title="Play & Win">
-                <i class="fas fa-gamepad"></i>
+            <!-- AI Agent Trigger Button -->
+            <button id="ai-trigger-btn" onclick="activateAIAgent(); toggleActionMenu()" class="hidden w-12 h-12 bg-gradient-to-r from-teal-400 to-emerald-500 text-white rounded-full items-center justify-center shadow-lg hover:scale-110 transition-transform" title="Call AI Agent">
+                <i class="fas fa-microphone text-lg"></i>
             </button>
 
-            <!-- AI Agent Container -->
-            <div id="ai-agent-wrapper" class="w-10 h-10 relative flex items-center justify-center rounded-full bg-white shadow-lg overflow-hidden hidden">
-                <!-- ElevenLabs widget injects here -->
-            </div>
+            <!-- Game Trigger Button -->
+            <button id="game-trigger-btn" onclick="openGameModal(); toggleActionMenu()" class="hidden w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-full items-center justify-center shadow-lg hover:scale-110 transition-transform" title="Play & Win">
+                <i class="fas fa-gamepad text-lg"></i>
+            </button>
             
         </div>
     </div>
@@ -592,7 +609,7 @@
         </div>
     </div>
   <!-- FIX: Replaced 'hidden' with smooth opacity transitions. -->
-    <button id="back-to-top-btn" onclick="scrollToTop()" class="flex opacity-0 pointer-events-none transition-all duration-500 fixed bottom-6 end-6 z-40 bg-gray-800 text-white w-10 h-10 rounded-full items-center justify-center shadow-lg hover:bg-red-500">
+    <button id="back-to-top-btn" onclick="scrollToTop()" class="flex opacity-0 pointer-events-none transition-all duration-500 fixed bottom-[100px] end-4 sm:end-6 z-[95] bg-gray-800 text-white w-10 h-10 rounded-full items-center justify-center shadow-lg hover:bg-red-500 border-2 border-white/20">
         <i class="fas fa-arrow-up"></i>
     </button>
 
@@ -1297,33 +1314,28 @@ let relatedItemsData = []; // (You did this perfectly!)
             }
         };
 
-        // ==========================================
-        // 🌟 AI VOICE AGENT INJECTOR
-        // ==========================================
+      
         // ==========================================
         // 🌟 AI VOICE AGENT INJECTOR
         // ==========================================
         function injectCustomerAIAgent(agentId) {
             if (document.getElementById('elevenlabs-customer-widget')) return;
 
-            const wrapper = document.getElementById('ai-agent-wrapper');
-            if (!wrapper) return;
-
-            // Make the wrapper visible now that we have an AI agent
-            wrapper.classList.remove('hidden');
-
             // 1. Build the widget tag
             const widget = document.createElement('elevenlabs-convai');
             widget.id = 'elevenlabs-customer-widget';
             widget.setAttribute('agent-id', agentId);
             
-            // Force the widget to perfectly fill our tiny container!
-            widget.style.position = 'absolute';
-            widget.style.inset = '0';
-            widget.style.width = '100%';
-            widget.style.height = '100%';
+            // 🌟 FORCE IT TO THE BOTTOM RIGHT (Under the Up Arrow)
+            widget.style.position = 'fixed';
+            widget.style.bottom = '24px';
+            widget.style.right = '24px';
+            widget.style.zIndex = '90'; 
             
-            wrapper.appendChild(widget);
+            // 🌟 HIDE IT COMPLETELY BY DEFAULT!
+            widget.style.display = 'none'; 
+            
+            document.body.appendChild(widget);
 
             // 2. Load the ElevenLabs system script
             if (!document.getElementById('elevenlabs-script')) {
@@ -1336,21 +1348,40 @@ let relatedItemsData = []; // (You did this perfectly!)
             }
         }
 
+        // 🌟 NEW: This unhides the ElevenLabs widget when the user asks for it!
+        window.activateAIAgent = function() {
+            const widget = document.getElementById('elevenlabs-customer-widget');
+            if (widget) {
+                widget.style.display = 'block'; 
+            }
+        };
+
         // 🌟 NEW: Toggle Logic for the Action Menu
         let isActionMenuOpen = false;
         window.toggleActionMenu = function() {
             isActionMenuOpen = !isActionMenuOpen;
             const items = document.getElementById('action-menu-items');
-            const icon = document.getElementById('action-menu-icon');
+            const slider = document.getElementById('action-icon-slider');
+            const closeIcon = document.getElementById('action-menu-close');
             
             if (isActionMenuOpen) {
+                // Open Menu
                 items.classList.remove('scale-y-0', 'opacity-0', 'pointer-events-none');
                 items.classList.add('scale-y-100', 'opacity-100', 'pointer-events-auto');
-                icon.classList.replace('fa-sparkles', 'fa-times');
+                
+                // Swap Main Icon to X
+                slider.classList.add('opacity-0');
+                closeIcon.classList.remove('opacity-0', 'scale-50');
+                closeIcon.classList.add('opacity-100', 'scale-100');
             } else {
+                // Close Menu
                 items.classList.add('scale-y-0', 'opacity-0', 'pointer-events-none');
                 items.classList.remove('scale-y-100', 'opacity-100', 'pointer-events-auto');
-                icon.classList.replace('fa-times', 'fa-sparkles');
+                
+                // Swap X back to Sliding Icons
+                slider.classList.remove('opacity-0');
+                closeIcon.classList.add('opacity-0', 'scale-50');
+                closeIcon.classList.remove('opacity-100', 'scale-100');
             }
         };
 
@@ -1557,18 +1588,27 @@ let relatedItemsData = []; // (You did this perfectly!)
                 toggleBtn.classList.remove('hidden'); toggleBtn.classList.add('flex');
             }
 
+            // Check Features
             isGameTriggerEnabled = (String(rawBranding.P || "").trim().toLowerCase() === 'true');
+            const aiEnabled = rawBranding.ai_agent_enabled;
+            
             const gameBtn = document.getElementById('game-trigger-btn');
+            const aiBtn = document.getElementById('ai-trigger-btn');
             const actionMenu = document.getElementById('smart-action-menu');
             
+            // Activate internal buttons if features are enabled
             if (isGameTriggerEnabled && gameBtn) {
                 gameBtn.classList.remove('hidden');
                 gameBtn.classList.add('flex');
             }
+            if (aiEnabled && aiBtn) {
+                aiBtn.classList.remove('hidden');
+                aiBtn.classList.add('flex');
+            }
             
-            // Show the action menu container 2 seconds after load (if features are active)
+            // Reveal the master Action Hub 2 seconds after load
             setTimeout(() => {
-                if (!uiScrollTimeout && actionMenu && (isGameTriggerEnabled || rawBranding.ai_agent_enabled)) {
+                if (!uiScrollTimeout && actionMenu && (isGameTriggerEnabled || aiEnabled)) {
                     actionMenu.classList.remove('opacity-0', 'pointer-events-none');
                     actionMenu.classList.add('opacity-100', 'pointer-events-auto');
                 }
