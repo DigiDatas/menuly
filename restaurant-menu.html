@@ -1439,7 +1439,7 @@ let relatedItemsData = []; // (You did this perfectly!)
                 
                 restaurantId = tenantData.id; 
                 window.businessType = tenantData.business_type || 'restaurant'; // 🌟 Save globally!
-                document.title = (tenantData.restaurant_name || "Digital Menu") + " - Order Online";
+                document.title = (settingsData.brand_name || "Digital Menu") + " - Order Online";
                 // Load favorites now that we know the ID
                 likedItems = new Set(JSON.parse(localStorage.getItem('likedItems_' + restaurantId)) || []);
 
