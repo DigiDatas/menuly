@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Menu</title>
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" id="dynamic-manifest" href="">
     <meta name="theme-color" content="#ef4444">
     <link rel="apple-touch-icon" href="logo.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1462,8 +1462,37 @@ let relatedItemsData = []; // (You did this perfectly!)
                     brandNameEn = settingsData.brand_name || "Our Restaurant";
                     brandNameAr = settingsData.brand_name_ar || brandNameEn; 
                     
-                    // 🌟 ADD THIS ONE LINE RIGHT HERE! 🌟
                     document.title = brandNameEn + " - Order Online";
+                    
+                    // ==========================================
+                    // 🌟 NEW: DYNAMIC PWA MANIFEST GENERATOR
+                    // ==========================================
+                    const manifestData = {
+                        "name": brandNameEn,
+                        "short_name": brandNameEn.substring(0, 12), // Keep it short for home screens
+                        "start_url": window.location.href, // Locks in the exact slug!
+                        "display": "standalone",
+                        "background_color": "#f8fafc",
+                        "theme_color": "#ef4444",
+                        "icons": [
+                            {
+                                "src": settingsData.logo_link || "logo.png", // Uses their logo if they uploaded one!
+                                "sizes": "192x192",
+                                "type": "image/png"
+                            },
+                            {
+                                "src": settingsData.logo_link || "logo.png",
+                                "sizes": "512x512",
+                                "type": "image/png"
+                            }
+                        ]
+                    };
+
+                    // Convert the JSON object into a Blob and attach it to the HTML header
+                    const manifestString = JSON.stringify(manifestData);
+                    const manifestBlob = new Blob([manifestString], { type: 'application/json' });
+                    const manifestUrl = URL.createObjectURL(manifestBlob);
+                    document.getElementById('dynamic-manifest').setAttribute('href', manifestUrl);
                     
                     // Update the screen immediately
                     if (typeof updateBrandNamesUI === "function") {
