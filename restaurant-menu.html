@@ -209,14 +209,21 @@
         
         <!-- Expanded Items Stack (Pops UP) -->
         <div id="action-menu-items" class="flex flex-col items-center gap-3 transition-all duration-300 origin-bottom scale-y-0 opacity-0 pointer-events-none mb-1">
+            
             <!-- AI Agent Trigger Button -->
-            <button id="ai-trigger-btn" onclick="activateAIAgent(); toggleActionMenu()" class="hidden w-12 h-12 bg-gradient-to-r from-teal-400 to-emerald-500 text-white rounded-full items-center justify-center shadow-lg hover:scale-110 transition-transform" title="Call AI Agent">
+            <button id="ai-trigger-btn" onclick="activateAIAgent(); toggleActionMenu()" class="hidden relative w-12 h-12 bg-gradient-to-r from-teal-400 to-emerald-500 text-white rounded-full items-center justify-center shadow-lg hover:scale-110 transition-transform" title="Call AI Agent">
                 <i class="fas fa-microphone text-lg"></i>
+                <!-- 🌟 NEW: Floating Text Label -->
+                <span class="absolute start-14 bg-white text-gray-800 text-xs font-bold px-3 py-1.5 rounded-lg shadow-md whitespace-nowrap border border-gray-100 pointer-events-none">Talk for Menu</span>
             </button>
+            
             <!-- Game Trigger Button -->
-            <button id="game-trigger-btn" onclick="openGameModal(); toggleActionMenu()" class="hidden w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-full items-center justify-center shadow-lg hover:scale-110 transition-transform" title="Play & Win">
+            <button id="game-trigger-btn" onclick="openGameModal(); toggleActionMenu()" class="hidden relative w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-full items-center justify-center shadow-lg hover:scale-110 transition-transform" title="Play & Win">
                 <i class="fas fa-gamepad text-lg"></i>
+                <!-- 🌟 NEW: Floating Text Label -->
+                <span class="absolute start-14 bg-white text-gray-800 text-xs font-bold px-3 py-1.5 rounded-lg shadow-md whitespace-nowrap border border-gray-100 pointer-events-none">Play & Win</span>
             </button>
+            
         </div>
     </div>
 
