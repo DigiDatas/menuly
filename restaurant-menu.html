@@ -51,18 +51,24 @@
 
         /* Image Loading Animation */
         .img-loading { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: loading 1.5s infinite; }
-       @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+      @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
         
-        /* 🌟 NEW: Action Hub Sliding Animation */
-        @keyframes slideSwap {
-            0%, 40% { transform: translateX(0); opacity: 1; }
-            45%, 50% { transform: translateX(100%); opacity: 0; }
-            55% { transform: translateX(-100%); opacity: 0; }
-            60%, 100% { transform: translateX(0); opacity: 1; }
+        /* 🌟 FIX: Clean Push & Slide Animation for Action Hub */
+        @keyframes slide1 {
+            0%, 40% { transform: translateX(0) scale(1); opacity: 1; }
+            45%, 50% { transform: translateX(-100%) scale(0.5); opacity: 0; }
+            50.1%, 90% { transform: translateX(100%) scale(0.5); opacity: 0; }
+            95%, 100% { transform: translateX(0) scale(1); opacity: 1; }
         }
-        .animate-slide-swap-1 { animation: slideSwap 6s infinite ease-in-out; }
-        .animate-slide-swap-2 { animation: slideSwap 6s infinite ease-in-out; animation-delay: 3s; opacity: 0; }
+        @keyframes slide2 {
+            0%, 40% { transform: translateX(100%) scale(0.5); opacity: 0; }
+            45%, 50% { transform: translateX(0) scale(1); opacity: 1; }
+            50.1%, 90% { transform: translateX(0) scale(1); opacity: 1; }
+            95%, 100% { transform: translateX(-100%) scale(0.5); opacity: 0; }
+        }
+        .animate-slide-swap-1 { animation: slide1 5s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+        .animate-slide-swap-2 { animation: slide2 5s infinite cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
 <body class="text-gray-800 antialiased transition-colors duration-300" ondragstart="return false;" onselectstart="return false;">
@@ -180,45 +186,35 @@
             <h3 id="empty-text" class="text-xl font-medium text-gray-500">No items found.</h3>
         </div>
     </main>
-    <!-- 🌟 NEW: Animated Action Hub (Bottom Left) -->
+    <!-- 🌟 FIX: Animated Action Hub (Bottom Left) -->
     <div id="smart-action-menu" class="fixed bottom-6 start-4 sm:start-6 z-[100] flex flex-col-reverse items-center gap-3 transition-opacity duration-500 opacity-0 pointer-events-none">
         
         <!-- Main Animated Toggle Button -->
         <button onclick="toggleActionMenu()" class="w-14 h-14 bg-gray-900 text-white rounded-full shadow-2xl overflow-hidden border-2 border-white/20 hover:scale-105 transition-transform relative">
-            
             <div id="action-icon-slider" class="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
-                <!-- Sliding Icons -->
                 <i class="fas fa-gamepad text-2xl text-purple-400 absolute animate-slide-swap-1"></i>
                 <i class="fas fa-robot text-2xl text-teal-400 absolute animate-slide-swap-2"></i>
             </div>
-            
             <i id="action-menu-close" class="fas fa-times text-xl absolute inset-0 m-auto flex items-center justify-center opacity-0 transition-opacity duration-300 scale-50"></i>
         </button>
         
         <!-- Expanded Items Stack (Pops UP) -->
         <div id="action-menu-items" class="flex flex-col items-center gap-3 transition-all duration-300 origin-bottom scale-y-0 opacity-0 pointer-events-none mb-1">
-            
             <!-- AI Agent Trigger Button -->
             <button id="ai-trigger-btn" onclick="activateAIAgent(); toggleActionMenu()" class="hidden w-12 h-12 bg-gradient-to-r from-teal-400 to-emerald-500 text-white rounded-full items-center justify-center shadow-lg hover:scale-110 transition-transform" title="Call AI Agent">
                 <i class="fas fa-microphone text-lg"></i>
             </button>
-
             <!-- Game Trigger Button -->
             <button id="game-trigger-btn" onclick="openGameModal(); toggleActionMenu()" class="hidden w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-full items-center justify-center shadow-lg hover:scale-110 transition-transform" title="Play & Win">
                 <i class="fas fa-gamepad text-lg"></i>
             </button>
-            
         </div>
     </div>
 
-    <!-- Game Arcade Modal -->
-    <div id="gameModal" class="fixed inset-0 z-[80] hidden items-center justify-center p-4 sm:p-6">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity" onclick="closeGameModal()"></div>
-        <div class="relative z-10 w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col h-[85vh] md:h-[700px] transform transition-all">
-            <!-- Universal Close Button -->
-            <button id="arcade-close-btn" onclick="closeGameModal()" class="absolute top-3 end-3 z-40 bg-black/50 hover:bg-black/80 backdrop-blur text-white w-8 h-8 rounded-full flex items-center justify-center shadow transition-colors">
-    <i class="fas fa-times"></i>
-</button>
+    <!-- 🌟 FIX: Back to Top Arrow (Defaults to normal bottom-6 position!) -->
+    <button id="back-to-top-btn" onclick="scrollToTop()" class="flex opacity-0 pointer-events-none transition-all duration-500 fixed bottom-6 end-4 sm:end-6 z-[95] bg-gray-800 text-white w-10 h-10 rounded-full items-center justify-center shadow-lg hover:bg-red-500 border-2 border-white/20">
+        <i class="fas fa-arrow-up"></i>
+    </button>
             
             <!-- VIEW 1: The Game Selection Lobby -->
             <div id="game-lobby-view" class="w-full h-full bg-slate-50 flex flex-col overflow-y-auto p-5 pt-10">
@@ -1348,11 +1344,18 @@ let relatedItemsData = []; // (You did this perfectly!)
             }
         }
 
-        // 🌟 NEW: This unhides the ElevenLabs widget when the user asks for it!
+        // 🌟 NEW: This unhides the ElevenLabs widget when the user asks for it AND pushes the arrow up!
         window.activateAIAgent = function() {
             const widget = document.getElementById('elevenlabs-customer-widget');
             if (widget) {
                 widget.style.display = 'block'; 
+                
+                // 🌟 THIS IS THE NEW PART FOR STEP 4: Push Arrow Up!
+                const arrowBtn = document.getElementById('back-to-top-btn');
+                if (arrowBtn) {
+                    arrowBtn.classList.remove('bottom-6');
+                    arrowBtn.classList.add('bottom-[100px]');
+                }
             }
         };
 
@@ -1588,15 +1591,14 @@ let relatedItemsData = []; // (You did this perfectly!)
                 toggleBtn.classList.remove('hidden'); toggleBtn.classList.add('flex');
             }
 
-            // Check Features
+            // 🌟 FIX: Pull AI Status from window.dbSettingsEn!
             isGameTriggerEnabled = (String(rawBranding.P || "").trim().toLowerCase() === 'true');
-            const aiEnabled = rawBranding.ai_agent_enabled;
+            const aiEnabled = window.dbSettingsEn && window.dbSettingsEn.ai_agent_enabled === true;
             
             const gameBtn = document.getElementById('game-trigger-btn');
             const aiBtn = document.getElementById('ai-trigger-btn');
             const actionMenu = document.getElementById('smart-action-menu');
             
-            // Activate internal buttons if features are enabled
             if (isGameTriggerEnabled && gameBtn) {
                 gameBtn.classList.remove('hidden');
                 gameBtn.classList.add('flex');
@@ -1606,7 +1608,7 @@ let relatedItemsData = []; // (You did this perfectly!)
                 aiBtn.classList.add('flex');
             }
             
-            // Reveal the master Action Hub 2 seconds after load
+            // Show the action menu container 2 seconds after load
             setTimeout(() => {
                 if (!uiScrollTimeout && actionMenu && (isGameTriggerEnabled || aiEnabled)) {
                     actionMenu.classList.remove('opacity-0', 'pointer-events-none');
