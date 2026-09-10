@@ -3813,14 +3813,14 @@ async function handleVrUpload(event) {
                 ? ['ITM-001', 'en', 'Fresh Apples 1kg', 'Fruits', 'Fresh', '15', '1', '', 'TRUE', 'https://example.com/apple.jpg', '', '', '1kg=15|2kg=28', 'Farm fresh organic apples']
                 : ['ITM-001', 'en', 'Spicy Chicken Burger', 'Burgers', 'Chicken', '25', '450', '1', '', 'FALSE', 'https://example.com/burger.jpg', '', '', 'Combo=35|Spicy=26', 'Chicken, lettuce, spicy mayo'];
             
-            // Sample AR Data
+            // Sample AR Data (Updated ID to 002)
             const dummyRowAr = isGrocery 
-                ? ['ITM-001', 'ar', 'تفاح طازج 1 كجم', 'فواكه', 'طازج', '15', '1', '', 'TRUE', 'https://example.com/apple.jpg', '', '', '1kg=15|2kg=28', 'تفاح عضوي طازج من المزرعة']
-                : ['ITM-001', 'ar', 'برجر دجاج حار', 'برجر', 'دجاج', '25', '450', '1', '', 'FALSE', 'https://example.com/burger.jpg', '', '', 'Combo=35|Spicy=26', 'دجاج، خس، مايونيز حار'];
+                ? ['ITM-002', 'ar', 'تفاح طازج 1 كجم', 'فواكه', 'طازج', '15', '1', '', 'TRUE', 'https://example.com/apple.jpg', '', '', '1kg=15|2kg=28', 'تفاح عضوي طازج من المزرعة']
+                : ['ITM-002', 'ar', 'برجر دجاج حار', 'برجر', 'دجاج', '25', '450', '1', '', 'FALSE', 'https://example.com/burger.jpg', '', '', 'Combo=35|Spicy=26', 'دجاج، خس، مايونيز حار'];
 
-            // Build standard CSV format, wrapping cells in quotes
-            let csvContent = "\\uFEFF" + headers.join(',') + '\\n' + 
-                             dummyRowEn.map(v => `"${v}"`).join(',') + '\\n' + 
+            // 🌟 FIX: Use \n instead of \\n so Excel correctly breaks the rows!
+            let csvContent = "\uFEFF" + headers.join(',') + '\n' + 
+                             dummyRowEn.map(v => `"${v}"`).join(',') + '\n' + 
                              dummyRowAr.map(v => `"${v}"`).join(',');
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -3916,7 +3916,10 @@ async function handleVrUpload(event) {
                     const rowData = {};
                     headers.forEach((h, index) => { rowData[h] = cols[index] ? cols[index].trim() : ''; });
 
-                    if (!rowData.item_code || !rowData.name) continue; // Skip totally empty rows
+                    if (!rowData.name) continue; // Skip if there is no item name
+
+                    // 🌟 FIX: Auto-generate an Item Code if the user left it blank!
+                    const finalItemCode = rowData.item_code ? rowData.item_code : 'ITM-BLK-' + Math.floor(1000 + Math.random() * 9000) + '-' + i;
 
                     // Validate Language
                     const lang = rowData.language.toLowerCase();
@@ -3942,7 +3945,7 @@ async function handleVrUpload(event) {
                     // Build Payload for Database
                     newItems.push({
                         restaurant_id: activeRestaurantId, // 🔒 Strict Tenant Security Link
-                        item_code: rowData.item_code,
+                        item_code: finalItemCode, // 🌟 FIX: Uses the auto-generated code!
                         language: lang,
                         name: rowData.name,
                         main_cat: rowData.main_cat,
