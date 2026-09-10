@@ -25,13 +25,11 @@
             .h-screen { height: auto !important; min-height: 100vh !important; }
             .flex-1.overflow-hidden { overflow-y: visible !important; overflow-x: hidden !important; }
             
-            /* 1. Fix Sidebar Icon & Text Alignment */
-            #admin-sidebar { z-index: 60 !important; }
-            #admin-sidebar span.absolute { opacity: 1 !important; left: 3.5rem !important; }
+            /* 2. Fix Sidebar Icon, Titles & Profile Alignment */
+            #admin-sidebar span.absolute, #admin-sidebar h1.absolute { opacity: 1 !important; left: 3.5rem !important; }
             #admin-sidebar div.absolute { left: 1rem !important; transform: translateX(0) !important; opacity: 1 !important; }
-            #admin-sidebar .sidebar-btn { justify-content: flex-start !important; padding-left: 1rem !important; }
-            #admin-sidebar .sidebar-btn div.absolute { position: static !important; width: auto !important; margin-right: 0.75rem !important; }
-            #admin-sidebar .sidebar-btn span.absolute { position: static !important; }
+            #admin-sidebar > div.p-3 > div.relative > div.absolute:first-child { left: 0.5rem !important; }
+            #admin-sidebar > div.p-3 > div.relative > div.absolute:last-child { left: 3.25rem !important; }
             
             /* 3. Allow Tabs to expand inside the scrollable Main container */
             .tab-section { height: max-content !important; min-height: 100% !important; padding-bottom: 80px !important; }
@@ -641,8 +639,8 @@
             <div class="flex flex-row gap-4 h-[calc(100vh-100px)] lg:h-full min-h-0 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-4">
                 
                 <!-- ================= LEFT PANE: ORDER LINE ================= -->
-                <!-- 🌟 FIX: Full width on mobile -->
-                <div class="w-[85vw] lg:w-[280px] xl:w-[320px] flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 shrink-0 overflow-hidden min-h-[500px] lg:min-h-0 snap-center">
+                <!-- 🌟 FIX: Reduced width to maximize middle pane -->
+                <div class="w-[65vw] lg:w-[240px] xl:w-[280px] flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 shrink-0 overflow-hidden min-h-[500px] lg:min-h-0 snap-center">
                     <div class="p-4 border-b border-gray-100">
                         <div class="flex justify-between items-center mb-3">
                             <h2 class="text-lg font-black text-gray-800">Order Line</h2>
@@ -663,7 +661,7 @@
 
                 <!-- ================= MIDDLE PANE: DYNAMIC (TABLES / MENU) ================= -->
                 <!-- 🌟 FIX: Stack on mobile with minimum height so tables show clearly -->
-                <div class="w-[90vw] lg:w-auto flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px] lg:min-h-0 snap-center shrink-0 lg:shrink">
+                <div class="w-[85vw] lg:w-auto flex-none lg:flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px] lg:min-h-0 snap-center shrink-0 lg:shrink mt-0">
                     <!-- Middle Header Toggle -->
                     <div class="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
                         <div class="flex bg-gray-200 p-1 rounded-lg">
@@ -720,7 +718,7 @@
 
                 <!-- ================= RIGHT PANE: CART & RECEIPT ================= -->
                 <!-- 🌟 FIX: Full width on mobile -->
-                <div class="w-[85vw] lg:w-[280px] xl:w-[320px] flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 shrink-0 overflow-hidden relative min-h-[500px] lg:min-h-0 snap-center">
+                <div class="w-[80vw] lg:w-[260px] xl:w-[300px] flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 shrink-0 overflow-hidden relative min-h-[500px] lg:min-h-0 snap-center mt-0">
                     
                     <div class="p-4 border-b border-gray-100 bg-teal-50/30 shrink-0 flex justify-between items-start">
                         <div>
@@ -841,7 +839,7 @@
                                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Brand Name (EN) *</label>
                                     <input type="text" id="set-brand" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-gray-50 font-bold">
                                     <!-- 🌟 NEW: Warning Text -->
-                                    <p class="text-[9px] text-red-500 font-bold mt-1 leading-tight"><i class="fas fa-exclamation-triangle"></i> Warning: Changing this will alter your menu URL. Old QR codes will break.</p>
+                                    <p class="text-[9px] text-red-500 font-bold mt-1 leading-tight"><i class="fas fa-exclamation-triangle"></i> Changing this will alter your menu URL and break old QR codes. Fix the name before publishing.</p>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Restaurant Description (English)</label>
