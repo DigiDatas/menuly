@@ -179,12 +179,13 @@
         </div>
 
         <div id="menu-container" class="hidden flex-col gap-10">
-            </div>
+        </div>
         
         <div id="empty-state" class="hidden text-center py-20">
             <i class="fas fa-search text-5xl text-gray-300 mb-4"></i>
             <h3 id="empty-text" class="text-xl font-medium text-gray-500">No items found.</h3>
         </div>
+    </main> <!-- 🌟 FIX: THIS TAG WAS MISSING! -->
     
     <!-- 🌟 FIX: Animated Action Hub (Bottom Left) -->
     <div id="smart-action-menu" class="fixed bottom-6 start-4 sm:start-6 z-[100] flex flex-col-reverse items-center gap-3 transition-opacity duration-500 opacity-0 pointer-events-none">
@@ -215,6 +216,15 @@
     <button id="back-to-top-btn" onclick="scrollToTop()" class="flex opacity-0 pointer-events-none transition-all duration-500 fixed bottom-6 end-4 sm:end-6 z-[95] bg-gray-800 text-white w-10 h-10 rounded-full items-center justify-center shadow-lg hover:bg-red-500 border-2 border-white/20">
         <i class="fas fa-arrow-up"></i>
     </button>
+
+    <!-- 🌟 FIX: Restored Game Arcade Modal Wrapper -->
+    <div id="gameModal" class="fixed inset-0 z-[80] hidden items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity" onclick="closeGameModal()"></div>
+        <div class="relative z-10 w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col h-[85vh] md:h-[700px] transform transition-all">
+            <!-- Universal Close Button -->
+            <button id="arcade-close-btn" onclick="closeGameModal()" class="absolute top-3 end-3 z-40 bg-black/50 hover:bg-black/80 backdrop-blur text-white w-8 h-8 rounded-full flex items-center justify-center shadow transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
             
             <!-- VIEW 1: The Game Selection Lobby -->
             <div id="game-lobby-view" class="w-full h-full bg-slate-50 flex flex-col overflow-y-auto p-5 pt-10">
