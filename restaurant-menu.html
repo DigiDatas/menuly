@@ -69,6 +69,14 @@
         }
         .animate-slide-swap-1 { animation: slide1 5s infinite cubic-bezier(0.4, 0, 0.2, 1); }
         .animate-slide-swap-2 { animation: slide2 5s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+    /* 🌟 FIX: Automatically hide floating widgets when ANY modal opens */
+        body[style*="overflow: hidden"] #smart-action-menu,
+        body[style*="overflow: hidden"] #back-to-top-btn {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
 <body class="text-gray-800 antialiased transition-colors duration-300" ondragstart="return false;" onselectstart="return false;">
@@ -433,8 +441,7 @@
 
                 <div id="modalCategoryBadge" class="absolute bottom-3 start-3 bg-white/95 backdrop-blur px-3 py-1.5 rounded-lg text-sm font-bold text-red-600 shadow-sm z-20"></div>
                 
-                <!-- 🌟 NEW: Expanded Modal Sizes Badge -->
-                <div id="modalOptionsBadge" class="hidden absolute bottom-3 end-3 bg-blue-600/95 backdrop-blur px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold text-white shadow-sm z-20 items-center gap-1 border border-blue-400 max-w-[50%]"></div>
+                
                 
                 <div id="modalTodaySpecialBadge" class="hidden absolute top-3 start-3 md:end-12 md:start-auto bg-gradient-to-r from-orange-400 to-red-500 px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold text-white shadow-lg flex items-center gap-1 z-20">
                     <i class="fas fa-star text-yellow-200"></i> <span id="label-modal-special">Today's Special</span>
@@ -461,11 +468,13 @@
                 <p id="modalDesc" class="text-gray-600 mb-4 leading-relaxed text-sm"></p>
                 
                 <div class="flex flex-wrap gap-2 mb-4">
-                    <div class="flex items-center text-gray-700 text-sm bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg inline-flex">
+                    <div id="modalCaloriesWrapper" class="hidden items-center text-gray-700 text-sm bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg">
                         <i class="fas fa-fire text-orange-500 me-2 text-lg"></i>
                         <span id="modalCalories" class="font-bold text-gray-900 text-base me-1"></span>
                         <span id="label-calories" class="text-xs">Calories</span>
                     </div>
+                    <!-- 🌟 MOVED: Expanded Modal Sizes Badge -->
+                    <div id="modalOptionsBadge" class="hidden items-center text-blue-700 text-sm bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg max-w-[60%]"></div>
                 </div>
 
                 <!-- NEW: Expandable Recipe Area -->
@@ -2553,12 +2562,17 @@ let badgeHtml = '';
                 else if(item.isTodaySpecial) badgeHtml = `<div class="absolute top-2 end-2 bg-gradient-to-r from-orange-400 to-red-500 px-2 py-1 rounded-lg text-[8px] sm:text-[10px] font-bold text-white shadow-sm z-10"><i class="fas fa-star text-[8px]"></i> Special</div>`;
                 else if(item.video) badgeHtml = `<div class="absolute top-2 end-2 bg-black/70 backdrop-blur px-2 py-1 rounded-lg text-[10px] sm:text-xs font-bold text-white shadow-sm flex items-center gap-1 z-10"><i class="fas fa-play"></i> Video</div>`;
 
-                // 🌟 UPDATED: Dynamically injects actual sizes!
+                // 🌟 MOVED: Variations Badge now sits next to Calories
                 let optionsBadge = '';
                 if (item.variations && item.variations.length > 0) {
                     const sizeNames = item.variations.map(v => v.name).join(' / ');
-                    optionsBadge = `<div class="absolute bottom-2 start-2 bg-blue-600/90 backdrop-blur px-2 py-1 rounded-lg text-[8px] sm:text-[10px] font-bold text-white shadow-sm z-20 flex items-center gap-1 border border-blue-400 max-w-[85%]"><i class="fas fa-tags text-[8px] shrink-0"></i> <span class="truncate">${sizeNames}</span></div>`;
+                    optionsBadge = `<div class="flex items-center gap-1 text-[8px] font-bold text-blue-600 bg-blue-50 border border-blue-100 w-fit px-1.5 py-0.5 rounded max-w-[100px]"><i class="fas fa-tags shrink-0"></i> <span class="truncate">${sizeNames}</span></div>`;
                 }
+                
+                let caloriesBadge = item.calories ? `<div class="flex items-center gap-1 text-[8px] font-bold text-orange-500 bg-orange-50 w-fit px-1.5 py-0.5 rounded"><i class="fas fa-fire"></i> ${item.calories} Cal</div>` : '';
+                
+                let combinedBadges = `<div class="flex items-center gap-1 flex-wrap">${caloriesBadge}${optionsBadge}</div>`;
+                if (!caloriesBadge && !optionsBadge) combinedBadges = '<div></div>';
 
                 const urls = item.imgUrls || [item.img];
                 let imagesHtml = '';
@@ -2580,7 +2594,6 @@ let badgeHtml = '';
                             ${imagesHtml}
                         </div>
                         ${badgeHtml}
-                        ${optionsBadge} <!-- 🌟 INJECTED HERE -->
                     </div>
                     <div class="p-3 sm:p-4 flex flex-col flex-grow">
                         <div class="flex justify-between items-start mb-1 sm:mb-2 gap-2">
@@ -2591,14 +2604,10 @@ let badgeHtml = '';
                         </div>
                         <p class="text-xs text-gray-500 line-clamp-2 mt-1 mb-2 flex-grow">${item.desc}</p>
                         
-                        <div class="flex justify-between items-end mt-1">
-                            ${item.calories ? `
-                            <div class="flex items-center gap-1 text-[10px] sm:text-xs font-bold text-orange-500 bg-orange-50 w-fit px-2 py-1 rounded-md">
-                                <i class="fas fa-fire"></i> ${item.calories} Cal
-                            </div>
-                            ` : '<div></div>'}
+                        <div class="flex justify-between items-end mt-1 gap-1">
+                            ${combinedBadges}
                             
-                            <button onclick="event.stopPropagation(); toggleQuickCart('${item.id}')" class="quick-add-btn-${item.id} bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-colors duration-300">
+                            <button onclick="event.stopPropagation(); toggleQuickCart('${item.id}')" class="quick-add-btn-${item.id} shrink-0 bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-colors duration-300">
                                 <i class="quick-add-icon-${item.id} fas fa-plus text-sm transition-transform duration-500"></i>
                             </button>
                         </div>
@@ -2703,16 +2712,16 @@ let badgeHtml = '';
             document.getElementById('modalTitle').textContent = item.name;
             document.getElementById('modalDesc').textContent = item.desc;
             
-            // 🌟 NEW: Fill the Modal Options Badge
+           // 🌟 MOVED: Fill the Modal Options Badge next to Calories
             const optionsBadgeEl = document.getElementById('modalOptionsBadge');
             if (item.variations && item.variations.length > 0) {
                 const sizeNames = item.variations.map(v => v.name).join(' / ');
-                optionsBadgeEl.innerHTML = `<i class="fas fa-tags text-[10px] shrink-0"></i> <span class="truncate">${sizeNames}</span>`;
+                optionsBadgeEl.innerHTML = `<i class="fas fa-tags text-blue-500 me-2 text-lg shrink-0"></i> <span class="font-bold truncate">${sizeNames}</span>`;
                 optionsBadgeEl.classList.remove('hidden');
-                optionsBadgeEl.classList.add('flex');
+                optionsBadgeEl.classList.add('inline-flex');
             } else {
                 optionsBadgeEl.classList.add('hidden');
-                optionsBadgeEl.classList.remove('flex');
+                optionsBadgeEl.classList.remove('inline-flex');
             }
             
             const specialBadge = document.getElementById('modalTodaySpecialBadge');
@@ -3957,12 +3966,17 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
                 if(item.isTodaySpecial) badgeHtml = `<div class="absolute top-2 end-2 bg-gradient-to-r from-orange-400 to-red-500 px-2 py-1 rounded-lg text-[8px] sm:text-[10px] font-bold text-white shadow-sm z-10"><i class="fas fa-star text-[8px]"></i> Special</div>`;
                 else if(item.video) badgeHtml = `<div class="absolute top-2 end-2 bg-black/70 backdrop-blur px-2 py-1 rounded-lg text-[8px] sm:text-[10px] font-bold text-white shadow-sm flex items-center gap-1 z-10"><i class="fas fa-play"></i> Video</div>`;
 
-                // 🌟 UPDATED: Dynamically injects actual sizes!
+                // 🌟 MOVED: Variations Badge now sits next to Calories
                 let optionsBadge = '';
                 if (item.variations && item.variations.length > 0) {
                     const sizeNames = item.variations.map(v => v.name).join(' / ');
-                    optionsBadge = `<div class="absolute bottom-2 start-2 bg-blue-600/90 backdrop-blur px-2 py-1 rounded-lg text-[8px] sm:text-[10px] font-bold text-white shadow-sm z-20 flex items-center gap-1 border border-blue-400 max-w-[85%]"><i class="fas fa-tags text-[8px] shrink-0"></i> <span class="truncate">${sizeNames}</span></div>`;
+                    optionsBadge = `<div class="flex items-center gap-1 text-[8px] font-bold text-blue-600 bg-blue-50 border border-blue-100 w-fit px-1.5 py-0.5 rounded max-w-[100px]"><i class="fas fa-tags shrink-0"></i> <span class="truncate">${sizeNames}</span></div>`;
                 }
+                
+                let caloriesBadge = item.calories ? `<div class="flex items-center gap-1 text-[8px] font-bold text-orange-500 bg-orange-50 w-fit px-1.5 py-0.5 rounded"><i class="fas fa-fire"></i> ${item.calories} Cal</div>` : '';
+                
+                let combinedBadges = `<div class="flex items-center gap-1 flex-wrap">${caloriesBadge}${optionsBadge}</div>`;
+                if (!caloriesBadge && !optionsBadge) combinedBadges = '<div></div>';
 
                 const urls = item.imgUrls || [item.img];
                 let imagesHtml = '';
@@ -3977,15 +3991,15 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
                             ${imagesHtml}
                         </div>
                         ${badgeHtml}
-                        ${optionsBadge} <!-- 🌟 INJECTED HERE -->
                     </div>
                     <div class="p-2 sm:p-3 flex flex-col flex-grow">
                         <h4 class="text-[11px] sm:text-xs font-bold text-gray-900 leading-tight line-clamp-1 mb-1">${item.name}</h4>
                         <span class="font-extrabold text-red-600 whitespace-nowrap text-sm shrink-0 mb-1">${priceHtml}</span>
                         <p class="text-[9px] sm:text-[10px] text-gray-500 line-clamp-2 mb-2 flex-grow">${item.desc}</p>
-                        <div class="flex justify-between items-end mt-auto">
-                            ${item.calories ? `<div class="flex items-center gap-1 text-[8px] font-bold text-orange-500 bg-orange-50 w-fit px-1.5 py-0.5 rounded"><i class="fas fa-fire"></i> ${item.calories} Cal</div>` : '<div></div>'}
-                            <button onclick="event.stopPropagation(); toggleQuickCart('${item.id}')" class="quick-add-btn-${item.id} bg-orange-500 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-colors duration-300">
+                        <div class="flex justify-between items-end mt-auto gap-1">
+                            ${combinedBadges}
+                            
+                            <button onclick="event.stopPropagation(); toggleQuickCart('${item.id}')" class="quick-add-btn-${item.id} shrink-0 bg-orange-500 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-colors duration-300">
                                 <i class="quick-add-icon-${item.id} fas fa-plus text-[10px] transition-transform duration-500"></i>
                             </button>
                         </div>
