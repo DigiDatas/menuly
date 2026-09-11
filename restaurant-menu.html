@@ -78,6 +78,15 @@
             transform: scale(0.8);
             transition: all 0.3s ease;
         }
+/* 🌟 LOGO OVERLAP & ALIGNMENT FIX 🌟 */
+        /* 1. Hides the default icon if a custom logo exists */
+        img[src]:not(.hidden) + i { display: none !important; }
+        
+        /* 2. Removes the red background box behind the logo */
+        div:has(> img[src]:not(.hidden)) { background-color: transparent !important; box-shadow: none !important; }
+        
+        /* 3. Forces the logo back to the exact center (fixes the "moved right" issue) */
+        .-translate-x-1\/2 { transform: translateX(-50%) !important; }
     </style>
 </head>
 <body class="text-gray-800 antialiased transition-colors duration-300" ondragstart="return false;" onselectstart="return false;">
