@@ -78,28 +78,37 @@
             transform: scale(0.8);
             transition: all 0.3s ease;
         }
-/* 🌟 CUSTOMER MENU LOGO POSITION & OVERLAP FIX 🌟 */
-        header img:not(.hidden) {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            transform: none !important; /* Kills the weird right-shift */
-            object-fit: cover !important;
-            margin: 0 !important;
-        }
+/* 🌟 CUSTOMER MENU LOGO OVERLAP & LEFT-ALIGN FIX 🌟 */
         
-        /* Kill the red background box */
+        /* 1. Stop the logo container from floating like the admin sidebar */
         header div:has(> img:not(.hidden)) {
-            background-color: transparent !important;
+            position: relative !important;
+            left: 0 !important;
+            transform: none !important;
+            background-color: transparent !important; /* Kills the red box */
             box-shadow: none !important;
+            margin-right: 12px !important; /* Adds nice space before the text */
         }
         
-        /* Kill the default icon */
+        /* 2. Force the image itself to stay perfectly in place */
+        header img:not(.hidden) {
+            position: relative !important;
+            left: 0 !important;
+            transform: none !important; 
+            object-fit: cover !important;
+        }
+
+        /* 3. Kill the default store icon if your custom logo is loaded */
         header img:not(.hidden) ~ i,
         header img:not(.hidden) + i {
             display: none !important;
+        }
+        
+        /* 4. Make sure the text sits normally next to the logo */
+        header h1 {
+            position: relative !important;
+            left: 0 !important;
+            transform: none !important;
         }
     </style>
 </head>
