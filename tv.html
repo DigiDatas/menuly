@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant TV Display</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Scanner Block -->
+    <script>
+        tailwind.config = {
+            content: ["./*.html", "./js/*.js"]
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background-color: black; margin: 0; overflow: hidden; cursor: none; }
@@ -20,11 +27,7 @@
     </div>
 
     <script>
-        // 🌟 REPLACE WITH YOUR ACTUAL SUPABASE KEYS
-        const SUPABASE_URL = 'https://vhrxsjfblldksnalpyio.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_we3X4oxc_1R2mQVtlSuJVA_gGcQoQ-k';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+        
         let playlist = [];
         let currentIndex = 0;
         let loopTimeout;
