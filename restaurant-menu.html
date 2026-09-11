@@ -78,16 +78,29 @@
             transform: scale(0.8);
             transition: all 0.3s ease;
         }
-/* 🌟 CUSTOMER MENU LOGO OVERLAP & ALIGNMENT FIX 🌟 */
-        /* 1. Hides the default store icon (using ~ to catch it anywhere in the box) */
-        img[id*="logo"]:not(.hidden) ~ i { display: none !important; }
+/* 🌟 CUSTOMER MENU LOGO POSITION & OVERLAP FIX 🌟 */
+        header img:not(.hidden) {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            transform: none !important; /* Kills the weird right-shift */
+            object-fit: cover !important;
+            margin: 0 !important;
+        }
         
-        /* 2. Removes the red background box behind the logo */
-        div:has(> img[id*="logo"]:not(.hidden)) { background-color: transparent !important; box-shadow: none !important; }
+        /* Kill the red background box */
+        header div:has(> img:not(.hidden)) {
+            background-color: transparent !important;
+            box-shadow: none !important;
+        }
         
-        /* 3. Forces the logo back to the exact center */
-        .-translate-x-1\/2 { transform: translateX(-50%) !important; }
-    </style>
+        /* Kill the default icon */
+        header img:not(.hidden) ~ i,
+        header img:not(.hidden) + i {
+            display: none !important;
+        }
 </head>
 <body class="text-gray-800 antialiased transition-colors duration-300" ondragstart="return false;" onselectstart="return false;">
     <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-40 top-0 transition-all duration-300 border-b border-gray-100">
