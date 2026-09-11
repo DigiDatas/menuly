@@ -78,14 +78,14 @@
             transform: scale(0.8);
             transition: all 0.3s ease;
         }
-/* 🌟 LOGO OVERLAP & ALIGNMENT FIX 🌟 */
-        /* 1. Hides the default icon if a custom logo exists */
-        img[src]:not(.hidden) + i { display: none !important; }
+/* 🌟 CUSTOMER MENU LOGO OVERLAP & ALIGNMENT FIX 🌟 */
+        /* 1. Hides the default store icon (using ~ to catch it anywhere in the box) */
+        img[id*="logo"]:not(.hidden) ~ i { display: none !important; }
         
         /* 2. Removes the red background box behind the logo */
-        div:has(> img[src]:not(.hidden)) { background-color: transparent !important; box-shadow: none !important; }
+        div:has(> img[id*="logo"]:not(.hidden)) { background-color: transparent !important; box-shadow: none !important; }
         
-        /* 3. Forces the logo back to the exact center (fixes the "moved right" issue) */
+        /* 3. Forces the logo back to the exact center */
         .-translate-x-1\/2 { transform: translateX(-50%) !important; }
     </style>
 </head>
