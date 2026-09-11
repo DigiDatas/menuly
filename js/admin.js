@@ -4833,12 +4833,15 @@ function updatePosRightPanelLabels() {
             waiterChannel.on('broadcast', { event: 'bell-ring' }, (payload) => {
                 const data = payload.payload;
                 
+                // 🌟 FIX 1: Create a safe ID that won't break if the table name has spaces!
+                const safeTableId = String(data.table).replace(/[^a-zA-Z0-9]/g, '-');
+
                 // 1. Play the Bell Sound!
-                const audio = new Audio('https://raw.githubusercontent.com/DigiDatas/ShawarMax-Menu/main/images/service-bell.mp3'); 
+                const audio = new Audio('https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/bell.mp3'); 
                 audio.play().catch(e => console.log("Audio requires user interaction first."));
 
                 const container = document.getElementById('waiter-toast-container');
-                const existingToast = document.getElementById(`toast-${data.table}`);
+                const existingToast = document.getElementById(`toast-${safeTableId}`);
 
                 // 2. Anti-Spam Stacking Logic
                 if (existingToast) {
@@ -4852,22 +4855,31 @@ function updatePosRightPanelLabels() {
 
                 // 3. Create New Toast
                 const toast = document.createElement('div');
-                toast.id = `toast-${data.table}`;
-                toast.className = "bg-white p-4 rounded-2xl shadow-2xl border-l-4 border-yellow-400 flex items-start gap-3 pointer-events-auto transform transition-all duration-500 translate-x-full opacity-0";
+                toast.id = `toast-${safeTableId}`;
+                
+                // 🌟 FIX 1: Added cursor-pointer so your mouse shows it is clickable!
+                toast.className = "bg-white p-4 rounded-2xl shadow-2xl border-l-4 border-yellow-400 flex items-start gap-3 pointer-events-auto transform transition-all duration-500 translate-x-full opacity-0 cursor-pointer hover:shadow-lg hover:scale-105";
+                
+                // 🌟 FIX 2: Native Javascript Click Listener (Bypasses all CSS shields and works 100% of the time!)
+                toast.onclick = function() {
+                    this.remove();
+                };
                 
                 toast.innerHTML = `
-                    <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500 shrink-0">
+                    <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500 shrink-0 pointer-events-none">
                         <i class="fas fa-concierge-bell text-lg animate-bounce"></i>
                     </div>
-                    <div class="flex-1">
+                    <div class="flex-1 pointer-events-none">
                         <div class="flex justify-between items-start">
                             <h4 class="font-black text-gray-900 text-sm">Table ${data.table}</h4>
                             <span class="text-[9px] font-bold text-gray-400 call-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                         </div>
                         <p class="text-[10px] text-gray-500 font-bold mt-0.5">${data.name} requires assistance.</p>
-                        <button onclick="this.closest('div[id^=toast-]').remove()" class="mt-2 text-[10px] font-black text-yellow-600 bg-yellow-50 hover:bg-yellow-100 px-3 py-1.5 rounded-lg transition uppercase tracking-wider w-full text-center">
-                            <i class="fas fa-check"></i> Mark Attended
-                        </button>
+                        
+                        <!-- Turned the button into a visual badge so they know to click -->
+                        <div class="mt-2 text-[10px] font-black text-yellow-700 bg-yellow-100 border border-yellow-300 px-3 py-1.5 rounded-lg uppercase tracking-wider w-full text-center shadow-sm">
+                            <i class="fas fa-check"></i> Click anywhere to dismiss
+                        </div>
                     </div>
                 `;
 
