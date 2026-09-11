@@ -78,36 +78,22 @@
             transform: scale(0.8);
             transition: all 0.3s ease;
         }
-/* 🌟 CUSTOMER MENU LOGO OVERLAP & LEFT-ALIGN FIX 🌟 */
-        
-        /* 1. Stop the logo container from floating like the admin sidebar */
-        header div:has(> img:not(.hidden)) {
-            position: relative !important;
-            left: 0 !important;
-            transform: none !important;
-            background-color: transparent !important; /* Kills the red box */
-            box-shadow: none !important;
-            margin-right: 12px !important; /* Adds nice space before the text */
+#brand-logo-container:has(> img:not(.hidden)) > i { 
+            display: none !important; 
         }
         
-        /* 2. Force the image itself to stay perfectly in place */
-        header img:not(.hidden) {
-            position: relative !important;
-            left: 0 !important;
-            transform: none !important; 
-            object-fit: cover !important;
+        /* Removes the red background box to let the logo shine */
+        #brand-logo-container:has(> img:not(.hidden)) { 
+            background-color: transparent !important; 
+            box-shadow: none !important;
+            padding: 0 !important;
         }
 
-        /* 3. Kill the default store icon if your custom logo is loaded */
-        header img:not(.hidden) ~ i,
-        header img:not(.hidden) + i {
-            display: none !important;
-        }
-        
-        /* 4. Make sure the text sits normally next to the logo */
-        header h1 {
-            position: relative !important;
-            left: 0 !important;
+        /* Ensures the logo fills the space perfectly */
+        #brand-logo-img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain !important;
             transform: none !important;
         }
     </style>
@@ -119,9 +105,9 @@
                 
                 <!-- 🌟 LEFT SIDE: Added flex-1 and min-w-0 so it knows it is allowed to shrink -->
                 <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 pe-2">
-                    <div id="brand-logo-container" onclick="openBrandModal()" class="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-red-50 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer hover:scale-105 hover:shadow-md transition-all duration-300 relative group">
-                        <i id="default-logo-icon" class="fas fa-utensils text-red-500 text-xl group-hover:text-red-600 transition-colors"></i>
-                        <img id="brand-logo-img" src="" alt="Logo" class="w-full h-full object-cover hidden group-hover:opacity-80 transition-opacity">
+                    <div id="brand-logo-container" onclick="openBrandModal()" class="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-red-50 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer hover:scale-105 hover:shadow-md transition-all duration-300 relative group">
+                        <i id="default-logo-icon" class="fas fa-utensils text-red-500 text-xl group-hover:text-red-600 transition-colors absolute inset-0 m-auto flex items-center justify-center"></i>
+                        <img id="brand-logo-img" src="" alt="Logo" class="hidden relative z-10 w-full h-full object-contain group-hover:opacity-80 transition-opacity">
                     </div>
                     <!-- Added w-full and text-base for mobile so truncate works flawlessly -->
                     <span id="nav-title" onclick="openBrandModal()" class="font-bold text-base sm:text-xl tracking-tight text-gray-900 truncate w-full cursor-pointer hover:text-red-600 transition-colors">Loading...</span>
