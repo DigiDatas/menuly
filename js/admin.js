@@ -4869,8 +4869,8 @@ function updatePosRightPanelLabels() {
                         </div>
                         <p class="text-[10px] text-gray-500 font-bold mt-0.5">${data.name} requires assistance.</p>
                         
-                        <!-- 🌟 ULTIMATE FIX: Target the exact ID to delete it -->
-                        <button onclick="document.getElementById('toast-${safeTableId}').remove()" class="mt-2 text-[10px] font-black text-yellow-600 bg-yellow-50 hover:bg-yellow-100 px-3 py-1.5 rounded-lg transition uppercase tracking-wider w-full text-center">
+                        <!-- 🌟 FIX 2: Tell the button to close the nearest 'waiter-toast-msg' -->
+                        <button onclick="this.closest('.waiter-toast-msg').remove()" class="mt-2 text-[10px] font-black text-yellow-600 bg-yellow-50 hover:bg-yellow-100 px-3 py-1.5 rounded-lg transition uppercase tracking-wider w-full text-center">
                             <i class="fas fa-check"></i> Mark Attended
                         </button>
                     </div>
