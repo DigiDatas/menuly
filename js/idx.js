@@ -52,11 +52,6 @@ const storyObserver = new IntersectionObserver((entries) => {
 }, { threshold:0.5, rootMargin:"-15% 0px -15% 0px" });
 blocks.forEach(b => storyObserver.observe(b));
 
-// --- UNIFIED TREE-LAYOUT MODAL SCRIPTS ---
-const SUPABASE_URL = "https://vhrxsjfblldksnalpyio.supabase.co";
-const SUPABASE_KEY = "sb_publishable_we3X4oxc_1R2mQVtlSuJVA_gGcQoQ-k";
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
 function openLoginModal(mode = 'signup') {
     const modal = document.getElementById('loginModal');
     const box = document.getElementById('auth-modal-box');
