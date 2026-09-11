@@ -4833,12 +4833,15 @@ function updatePosRightPanelLabels() {
             waiterChannel.on('broadcast', { event: 'bell-ring' }, (payload) => {
                 const data = payload.payload;
                 
+                // 🌟 FIX 1: Create a safe ID that won't break if the table name has spaces!
+                const safeTableId = String(data.table).replace(/[^a-zA-Z0-9]/g, '-');
+
                 // 1. Play the Bell Sound!
                 const audio = new Audio('https://raw.githubusercontent.com/DigiDatas/menuly/main/multimedia/bell.mp3'); 
                 audio.play().catch(e => console.log("Audio requires user interaction first."));
 
                 const container = document.getElementById('waiter-toast-container');
-                const existingToast = document.getElementById(`toast-${data.table}`);
+                const existingToast = document.getElementById(`toast-${safeTableId}`);
 
                 // 2. Anti-Spam Stacking Logic
                 if (existingToast) {
@@ -4852,7 +4855,7 @@ function updatePosRightPanelLabels() {
 
                 // 3. Create New Toast
                 const toast = document.createElement('div');
-                toast.id = `toast-${data.table}`;
+                toast.id = `toast-${safeTableId}`;
                 toast.className = "bg-white p-4 rounded-2xl shadow-2xl border-l-4 border-yellow-400 flex items-start gap-3 pointer-events-auto transform transition-all duration-500 translate-x-full opacity-0";
                 
                 toast.innerHTML = `
@@ -4865,7 +4868,9 @@ function updatePosRightPanelLabels() {
                             <span class="text-[9px] font-bold text-gray-400 call-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                         </div>
                         <p class="text-[10px] text-gray-500 font-bold mt-0.5">${data.name} requires assistance.</p>
-                        <button onclick="this.closest('div[id^=toast-]').remove()" class="mt-2 text-[10px] font-black text-yellow-600 bg-yellow-50 hover:bg-yellow-100 px-3 py-1.5 rounded-lg transition uppercase tracking-wider w-full text-center">
+                        
+                        <!-- 🌟 FIX 2: Bulletproof close button using parent traversal instead of ID searching -->
+                        <button onclick="this.parentElement.parentElement.remove()" class="mt-2 text-[10px] font-black text-yellow-600 bg-yellow-50 hover:bg-yellow-100 px-3 py-1.5 rounded-lg transition uppercase tracking-wider w-full text-center">
                             <i class="fas fa-check"></i> Mark Attended
                         </button>
                     </div>
