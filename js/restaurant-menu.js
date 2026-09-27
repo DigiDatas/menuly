@@ -3100,16 +3100,18 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
             const backdrop = document.getElementById('category-backdrop');
             const content = document.getElementById('category-content');
             
+            // 1. Force the overlay visible as a flexbox container
             modal.style.display = 'flex';
             
-            requestAnimationFrame(() => {
+            // 2. Animate directly via inline CSS variables (immune to Tailwind bugs)
+            setTimeout(() => {
                 backdrop.style.opacity = '1';
                 content.style.opacity = '1';
-                content.style.transform = 'scale(1)';
-            });
+                content.style.transform = 'translateY(0%)';
+            }, 20);
             
             document.body.style.overflow = 'hidden';
-            updateQuickAddButtons();
+            if (typeof updateQuickAddButtons === 'function') updateQuickAddButtons(); 
 
             const scrollArea = content.querySelector('.overflow-y-auto');
             if (scrollArea) {
@@ -3124,15 +3126,16 @@ if (cartItem.itemCode && String(cartItem.itemCode).trim() !== "") {
             
             if (!modal) return;
             
+            // Slide down and fade out
             backdrop.style.opacity = '0';
             content.style.opacity = '0';
-            content.style.transform = 'scale(0.95)';
+            content.style.transform = 'translateY(100%)';
             
             document.body.style.overflow = '';
             
             setTimeout(() => {
                 modal.style.display = 'none';
-            }, 300);
+            }, 350);
         }
 
         // 5. Smart Swipe-to-Close Gestures
